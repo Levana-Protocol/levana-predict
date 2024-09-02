@@ -54,7 +54,8 @@ impl StoredMarket {
 pub struct StoredOutcome {
     pub id: OutcomeId,
     pub label: String,
-    pub tokens: Token,
+    pub pool_tokens: Token,
+    pub total_tokens: Token,
 }
 
 #[derive(Serialize, Deserialize, Default)]

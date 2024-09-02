@@ -93,10 +93,12 @@ fn add_market(
             )| {
                 total += initial_amount;
                 let id = OutcomeId(u8::try_from(idx + 1).unwrap());
+                let pool_tokens = Token(Decimal256::from_ratio(initial_amount.0, 1u8));
                 StoredOutcome {
                     id,
                     label,
-                    tokens: Token(Decimal256::from_ratio(initial_amount.0, 1u8)),
+                    pool_tokens,
+                    total_tokens: pool_tokens,
                 }
             },
         )

@@ -1,6 +1,6 @@
 use std::{
     fmt::Display,
-    ops::{Add, AddAssign, Div, Mul, MulAssign, Sub},
+    ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign},
 };
 
 use cosmwasm_std::{ConversionOverflowError, OverflowError};
@@ -78,9 +78,23 @@ impl Sub for Token {
     }
 }
 
+impl SubAssign for Token {
+    fn sub_assign(&mut self, rhs: Self) {
+        self.0 -= rhs.0;
+    }
+}
+
 impl MulAssign<Decimal256> for Token {
     fn mul_assign(&mut self, rhs: Decimal256) {
         self.0 *= rhs;
+    }
+}
+
+impl Div for Token {
+    type Output = Decimal256;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        self.0 / rhs.0
     }
 }
 
