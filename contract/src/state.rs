@@ -26,6 +26,7 @@ pub struct StoredMarket {
     pub deposit_stop_date: Timestamp,
     pub withdrawal_stop_date: Timestamp,
     pub winner: Option<OutcomeId>,
+    pub house: Addr,
 }
 
 impl StoredMarket {

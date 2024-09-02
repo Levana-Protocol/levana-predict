@@ -53,6 +53,7 @@ fn add_market(
         withdrawal_fee,
         withdrawal_stop_date,
         deposit_stop_date,
+        house,
     }: AddMarketParams,
     funds: Funds,
 ) -> Result<Response> {
@@ -119,6 +120,7 @@ fn add_market(
             deposit_stop_date,
             withdrawal_stop_date,
             winner: None,
+            house: deps.api.addr_validate(&house)?,
         },
     )?;
 
@@ -256,6 +258,8 @@ fn set_winner(
     market.assert_valid_outcome(outcome)?;
     market.winner = Some(outcome);
     MARKETS.save(deps.storage, id, &market)?;
+
+    // FIXME: house winnings
 
     Ok(Response::new().add_event(
         Event::new("set-winner")

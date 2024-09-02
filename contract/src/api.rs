@@ -57,6 +57,8 @@ pub struct AddMarketParams {
     pub withdrawal_fee: Decimal256,
     pub withdrawal_stop_date: Timestamp,
     pub deposit_stop_date: Timestamp,
+    /// Which wallet receives house winnings.
+    pub house: String,
 }
 
 #[derive(Clone, Serialize, Deserialize, JsonSchema, Debug)]
