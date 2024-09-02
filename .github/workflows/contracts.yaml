@@ -1,0 +1,56 @@
+name: Rust
+
+on:
+  push:
+    branches: [develop,main]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: 0
+  CARGO_NET_RETRY: 10
+  RUST_BACKTRACE: short
+  RUSTUP_MAX_RETRIES: 10
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: just@1.16.0
+      - name: Check commit
+        run: just check-commits
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: 1.75.0
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            contract
+      - name: Cache contract builds
+        uses: actions/cache@v4
+        with:
+          key: contracts-${{ hashFiles('Cargo.toml') }}-${{hashFiles('Cargo.lock')}}
+          restore-keys: |
+            contracts-${{ hashFiles('Cargo.toml') }}
+            contracts
+          path: |
+            wasm
+      - name: Compile
+        run: just cargo-compile
+      - name: Run tests
+        run: just cargo-test
+      - name: Clippy
+        run: just cargo-clippy-check
+        working-directory: contract
+      - name: Rustfmt
+        run: just cargo-fmt-check
+        working-directory: contract
+      - name: Build contracts
+        run: just build-contracts
+      - name: Print contract sizes
+        run: ls -l wasm/artifacts/*.wasm
