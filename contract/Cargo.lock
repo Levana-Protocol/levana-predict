@@ -485,7 +485,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "levana-gov"
+name = "levana-predict"
 version = "0.1.0"
 dependencies = [
  "cosmwasm-schema",

@@ -244,7 +244,7 @@ fn set_winner(
 ) -> Result<Response> {
     let mut market = StoredMarket::load(deps.storage, id)?;
 
-    if env.block.time >= market.withdrawal_stop_date {
+    if env.block.time < market.withdrawal_stop_date {
         return Err(Error::MarketStillActive {
             id,
             now: env.block.time,
@@ -264,13 +264,24 @@ fn set_winner(
     market.winner = Some(outcome);
     MARKETS.save(deps.storage, id, &market)?;
 
-    // FIXME: house winnings
+    let house_winnings = market.winnings_for(
+        outcome,
+        market.outcomes[usize::from(outcome.0 - 1)].pool_tokens,
+    )?;
 
-    Ok(Response::new().add_event(
-        Event::new("set-winner")
-            .add_attribute("market-id", id.to_string())
-            .add_attribute("outcome-id", outcome.to_string()),
-    ))
+    Ok(Response::new()
+        .add_event(
+            Event::new("set-winner")
+                .add_attribute("market-id", id.to_string())
+                .add_attribute("outcome-id", outcome.to_string()),
+        )
+        .add_message(CosmosMsg::Bank(BankMsg::Send {
+            to_address: market.house.into_string(),
+            amount: vec![Coin {
+                denom: market.denom,
+                amount: house_winnings.0,
+            }],
+        })))
 }
 
 fn collect(deps: DepsMut, info: MessageInfo, id: MarketId) -> Result<Response> {

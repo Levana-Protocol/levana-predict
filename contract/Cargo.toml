@@ -1,5 +1,5 @@
 [package]
-name = "levana-gov"
+name = "levana-predict"
 version = "0.1.0"
 authors = ["Levana Team"]
 edition = "2021"
