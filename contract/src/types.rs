@@ -1,6 +1,9 @@
-use std::{fmt::Display, ops::AddAssign};
+use std::{
+    fmt::Display,
+    ops::{Add, AddAssign, Div, Mul, MulAssign, Sub},
+};
 
-use cosmwasm_std::OverflowError;
+use cosmwasm_std::{ConversionOverflowError, OverflowError};
 use cw_storage_plus::{Key, KeyDeserialize, Prefixer, PrimaryKey};
 
 use crate::prelude::*;
@@ -17,9 +20,42 @@ impl Collateral {
     }
 }
 
+impl Add for Collateral {
+    type Output = Collateral;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Collateral(self.0 + rhs.0)
+    }
+}
+
 impl AddAssign for Collateral {
     fn add_assign(&mut self, rhs: Self) {
         self.0 += rhs.0;
+    }
+}
+
+impl Sub for Collateral {
+    type Output = Collateral;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Collateral(self.0 - rhs.0)
+    }
+}
+
+impl Mul<Decimal256> for Collateral {
+    type Output = Result<Collateral, ConversionOverflowError>;
+
+    fn mul(self, rhs: Decimal256) -> Self::Output {
+        let uint256 = (Decimal256::from_ratio(self.0, 1u8) * rhs).to_uint_floor();
+        uint256.try_into().map(Collateral)
+    }
+}
+
+impl Div for Collateral {
+    type Output = Decimal256;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        Decimal256::from_ratio(self.0, rhs.0)
     }
 }
 
@@ -33,6 +69,20 @@ impl Display for Collateral {
     Clone, Serialize, Deserialize, JsonSchema, Debug, Copy, PartialEq, Eq, PartialOrd, Ord,
 )]
 pub struct Token(pub Decimal256);
+
+impl Sub for Token {
+    type Output = Token;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Token(self.0 - rhs.0)
+    }
+}
+
+impl MulAssign<Decimal256> for Token {
+    fn mul_assign(&mut self, rhs: Decimal256) {
+        self.0 *= rhs;
+    }
+}
 
 impl Display for Token {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
