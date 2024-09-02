@@ -36,7 +36,10 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> R
             assert_is_admin(deps.storage, &info)?;
             appoint_admin(deps, addr)
         }
-        ExecuteMsg::AcceptAdmin {} => todo!(),
+        ExecuteMsg::AcceptAdmin {} => {
+            funds.require_none()?;
+            accept_admin(deps, info)
+        }
     }
 }
 
@@ -309,4 +312,16 @@ fn appoint_admin(deps: DepsMut, addr: String) -> Result<Response> {
     APPOINTED_ADMIN.save(deps.storage, &addr)?;
     Ok(Response::new()
         .add_event(Event::new("appoint-admin").add_attribute("new-admin", addr.into_string())))
+}
+
+fn accept_admin(deps: DepsMut, info: MessageInfo) -> Result<Response> {
+    let appointed = APPOINTED_ADMIN
+        .may_load(deps.storage)?
+        .ok_or(Error::NoAppointedAdmin {})?;
+    if appointed != info.sender {
+        return Err(Error::NotAppointedAdmin {});
+    }
+    APPOINTED_ADMIN.remove(deps.storage);
+    ADMIN.save(deps.storage, &appointed)?;
+    Ok(Response::new().add_event(Event::new("accept-admin").add_attribute("new-admin", appointed)))
 }

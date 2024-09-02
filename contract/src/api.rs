@@ -1,3 +1,5 @@
+use std::collections::BTreeMap;
+
 use crate::prelude::*;
 
 #[derive(Clone, Serialize, Deserialize, JsonSchema, Debug)]
@@ -86,16 +88,7 @@ pub struct GlobalInfo {
     pub admin: Addr,
 }
 
-#[derive(Clone, Serialize, Deserialize, JsonSchema, Debug)]
-#[serde(rename_all = "snake_case")]
-pub struct MarketResp {
-    pub id: MarketId,
-    pub title: String,
-    pub description: String,
-    pub arbitrator: Addr,
-    pub outcomes: Vec<OutcomeInfo>,
-    pub pool_size: Collateral,
-}
+pub type MarketResp = StoredMarket;
 
 #[derive(Clone, Serialize, Deserialize, JsonSchema, Debug)]
 #[serde(rename_all = "snake_case")]
@@ -108,7 +101,7 @@ pub struct OutcomeInfo {
 #[derive(Clone, Serialize, Deserialize, JsonSchema, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct PositionsResp {
-    pub outcome: Vec<Token>,
+    pub outcomes: BTreeMap<OutcomeId, Token>,
 }
 
 #[derive(Serialize, Deserialize, JsonSchema, Debug)]

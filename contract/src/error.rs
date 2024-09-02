@@ -92,4 +92,8 @@ pub enum Error {
     NoWinnerSet { id: MarketId },
     #[error("You already claimed winnings for market {id}")]
     AlreadyClaimedWinnings { id: MarketId },
+    #[error("No appointed admin set")]
+    NoAppointedAdmin {},
+    #[error("You are not the appointed admin")]
+    NotAppointedAdmin {},
 }
