@@ -19,4 +19,9 @@ impl StoredMarket {
     pub fn sell(&mut self, outcome: OutcomeId, tokens: Token) -> Result<Collateral> {
         todo!()
     }
+
+    /// Winnings for the given number of tokens in the given winner.
+    pub(crate) fn winnings_for(&self, winner: OutcomeId, tokens: Token) -> Result<Collateral> {
+        todo!()
+    }
 }

@@ -1,3 +1,5 @@
+use std::num::TryFromIntError;
+
 use cosmwasm_std::{ConversionOverflowError, OverflowError};
 
 use crate::prelude::*;
@@ -12,6 +14,8 @@ pub enum Error {
     ConversionOverflow(#[from] ConversionOverflowError),
     #[error(transparent)]
     Overflow(#[from] OverflowError),
+    #[error(transparent)]
+    TryFromInt(#[from] TryFromIntError),
     #[error(
         "Multiple assets provided, this contract only supports 0 or 1 assets attached per message"
     )]
@@ -74,4 +78,18 @@ pub enum Error {
         now: Timestamp,
         deposit_stop_date: Timestamp,
     },
+    #[error(
+        "Invalid outcome {outcome} specified for market {id}. Total outcome count: {outcome_count}."
+    )]
+    InvalidOutcome {
+        id: MarketId,
+        outcome_count: u32,
+        outcome: OutcomeId,
+    },
+    #[error("Winner already set for market {id}")]
+    WinnerAlreadySet { id: MarketId },
+    #[error("No winner set for market {id}")]
+    NoWinnerSet { id: MarketId },
+    #[error("You already claimed winnings for market {id}")]
+    AlreadyClaimedWinnings { id: MarketId },
 }

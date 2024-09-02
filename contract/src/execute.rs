@@ -27,8 +27,15 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> R
             funds.require_none()?;
             set_winner(deps, env, info, id, outcome)
         }
-        ExecuteMsg::Collect { id } => todo!(),
-        ExecuteMsg::AppointAdmin { addr } => todo!(),
+        ExecuteMsg::Collect { id } => {
+            funds.require_none()?;
+            collect(deps, info, id)
+        }
+        ExecuteMsg::AppointAdmin { addr } => {
+            funds.require_none()?;
+            assert_is_admin(deps.storage, &info)?;
+            appoint_admin(deps, addr)
+        }
         ExecuteMsg::AcceptAdmin {} => todo!(),
     }
 }
@@ -242,6 +249,10 @@ fn set_winner(
         return Err(Error::Unauthorized);
     }
 
+    if market.winner.is_some() {
+        return Err(Error::WinnerAlreadySet { id });
+    }
+
     market.assert_valid_outcome(outcome)?;
     market.winner = Some(outcome);
     MARKETS.save(deps.storage, id, &market)?;
@@ -251,4 +262,47 @@ fn set_winner(
             .add_attribute("market-id", id.to_string())
             .add_attribute("outcome-id", outcome.to_string()),
     ))
+}
+
+fn collect(deps: DepsMut, info: MessageInfo, id: MarketId) -> Result<Response> {
+    let market = StoredMarket::load(deps.storage, id)?;
+    let winner = market.winner.ok_or(Error::NoWinnerSet { id })?;
+    let mut share_info = SHARES
+        .may_load(deps.storage, (id, &info.sender))?
+        .ok_or(Error::NoPositionsOnMarket { id })?;
+    if share_info.claimed_winnings {
+        return Err(Error::AlreadyClaimedWinnings { id });
+    }
+    share_info.claimed_winnings = true;
+    let tokens = share_info
+        .outcomes
+        .get(&winner)
+        .ok_or(Error::NoTokensFound {
+            id,
+            outcome: winner,
+        })?;
+    SHARES.save(deps.storage, (id, &info.sender), &share_info)?;
+    let winnings = market.winnings_for(winner, *tokens)?;
+
+    Ok(Response::new()
+        .add_event(
+            Event::new("collect")
+                .add_attribute("market-id", id.to_string())
+                .add_attribute("winner", winner.to_string())
+                .add_attribute("tokens", tokens.to_string()),
+        )
+        .add_message(CosmosMsg::Bank(BankMsg::Send {
+            to_address: info.sender.into_string(),
+            amount: vec![Coin {
+                denom: market.denom,
+                amount: winnings.0,
+            }],
+        })))
+}
+
+fn appoint_admin(deps: DepsMut, addr: String) -> Result<Response> {
+    let addr = deps.api.addr_validate(&addr)?;
+    APPOINTED_ADMIN.save(deps.storage, &addr)?;
+    Ok(Response::new()
+        .add_event(Event::new("appoint-admin").add_attribute("new-admin", addr.into_string())))
 }

@@ -4,6 +4,8 @@ use crate::prelude::*;
 
 pub const ADMIN: Item<Addr> = Item::new("admin");
 
+pub const APPOINTED_ADMIN: Item<Addr> = Item::new("appointed-admin");
+
 pub const LAST_MARKET_ID: Item<MarketId> = Item::new("last-market-id");
 
 pub const MARKETS: Map<MarketId, StoredMarket> = Map::new("markets");
@@ -33,8 +35,17 @@ impl StoredMarket {
             .ok_or(Error::MarketNotFound { id })
     }
 
-    pub(crate) fn assert_valid_outcome(&self, outcome: OutcomeId) -> Result<()> {
-        todo!()
+    pub(crate) fn assert_valid_outcome(&self, outcome_id: OutcomeId) -> Result<()> {
+        let outcome = usize::from(outcome_id.0);
+        if outcome == 0 && outcome > self.outcomes.len() {
+            Err(Error::InvalidOutcome {
+                id: self.id,
+                outcome_count: u32::try_from(self.outcomes.len())?,
+                outcome: outcome_id,
+            })
+        } else {
+            Ok(())
+        }
     }
 }
 
