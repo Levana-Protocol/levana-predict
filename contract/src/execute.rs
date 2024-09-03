@@ -214,7 +214,7 @@ fn withdraw(
 
     let funds = market.sell(outcome, tokens)?;
 
-    let fee = Decimal256::from_ratio(funds.0, 1u8) * market.deposit_fee;
+    let fee = Decimal256::from_ratio(funds.0, 1u8) * market.withdrawal_fee;
     let fee = Collateral(Uint128::try_from(fee.to_uint_ceil())?);
     market.add_liquidity(fee);
     let funds = funds.checked_sub(fee)?;
