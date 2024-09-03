@@ -116,6 +116,10 @@ impl Token {
     pub fn zero() -> Self {
         Token(Decimal256::zero())
     }
+
+    pub fn is_zero(&self) -> bool {
+        self.0.is_zero()
+    }
 }
 
 impl AddAssign for Token {
@@ -171,13 +175,41 @@ impl<'a> Prefixer<'a> for MarketId {
     }
 }
 
+/// Identifier of the outcome for a market.
+///
+/// Outcomes are 0-indexed, and we restrict them to a u8. Yes, that means
+/// we cannot support bets with 257 outcomes.
 #[derive(
     Clone, Serialize, Deserialize, JsonSchema, Debug, Copy, PartialEq, Eq, PartialOrd, Ord,
 )]
-pub struct OutcomeId(pub u8);
+pub struct OutcomeId(u8);
+impl OutcomeId {
+    pub(crate) fn usize(&self) -> usize {
+        self.0.into()
+    }
+}
 
 impl Display for OutcomeId {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         self.0.fmt(f)
+    }
+}
+
+impl From<u8> for OutcomeId {
+    fn from(value: u8) -> Self {
+        OutcomeId(value)
+    }
+}
+
+impl TryFrom<usize> for OutcomeId {
+    type Error = Error;
+
+    fn try_from(idx: usize) -> std::result::Result<Self, Self::Error> {
+        u8::try_from(idx)
+            .map(Self)
+            .map_err(|source| Error::TooManyOutcomes {
+                idx: idx.to_string(),
+                source,
+            })
     }
 }

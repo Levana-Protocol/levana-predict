@@ -133,12 +133,12 @@ impl Predict {
         }
     }
 
-    fn set_winner(&self, sender: &Addr, outcome: OutcomeId) -> AnyResult<AppResponse> {
+    fn set_winner(&self, sender: &Addr, outcome: u8) -> AnyResult<AppResponse> {
         self.execute(
             sender,
             &ExecuteMsg::SetWinner {
                 id: self.id,
-                outcome,
+                outcome: outcome.into(),
             },
             None,
         )
@@ -157,18 +157,18 @@ impl Predict {
         Ok(amount)
     }
 
-    fn place_bet(&self, sender: &Addr, outcome: OutcomeId, funds: u64) -> AnyResult<AppResponse> {
+    fn place_bet(&self, sender: &Addr, outcome: u8, funds: u64) -> AnyResult<AppResponse> {
         self.execute(
             sender,
             &ExecuteMsg::Deposit {
                 id: self.id,
-                outcome,
+                outcome: outcome.into(),
             },
             Some(funds),
         )
     }
 
-    fn query_tokens(&self, better: &Addr, outcome: OutcomeId) -> StdResult<Token> {
+    fn query_tokens(&self, better: &Addr, outcome: u8) -> StdResult<Token> {
         let PositionsResp { outcomes } = self.app.borrow().wrap().query_wasm_smart(
             &self.contract,
             &QueryMsg::Positions {
@@ -176,15 +176,20 @@ impl Predict {
                 addr: better.to_string(),
             },
         )?;
-        Ok(outcomes.get(usize::from(outcome.0 - 1)).copied().unwrap())
+        outcomes
+            .get(usize::from(outcome))
+            .copied()
+            .ok_or_else(|| StdError::GenericErr {
+                msg: "Invalid outcome ID provided to query_tokens".to_owned(),
+            })
     }
 
-    fn withdraw(&self, addr: &Addr, outcome: OutcomeId, tokens: Token) -> AnyResult<AppResponse> {
+    fn withdraw(&self, addr: &Addr, outcome: u8, tokens: Token) -> AnyResult<AppResponse> {
         self.execute(
             addr,
             &ExecuteMsg::Withdraw {
                 id: self.id,
-                outcome,
+                outcome: outcome.into(),
                 tokens,
             },
             None,
@@ -200,9 +205,9 @@ impl Predict {
 fn sanity() {
     let app = Predict::new();
     app.jump_days(3);
-    app.set_winner(&app.admin, OutcomeId(1)).unwrap_err();
+    app.set_winner(&app.admin, 0).unwrap_err();
 
-    app.set_winner(&app.arbitrator, OutcomeId(1)).unwrap();
+    app.set_winner(&app.arbitrator, 0).unwrap();
 
     let amount_after = app.query_balance(&app.house).unwrap();
     assert_eq!(Uint128::from(1000u16), amount_after);
@@ -213,15 +218,14 @@ fn losing_bet() {
     let app = Predict::new();
 
     // No funds
-    app.place_bet(&app.arbitrator, OutcomeId(2), 1_000)
-        .unwrap_err();
+    app.place_bet(&app.arbitrator, 1, 1_000).unwrap_err();
 
-    app.place_bet(&app.better, OutcomeId(2), 1_000).unwrap();
+    app.place_bet(&app.better, 1, 1_000).unwrap();
 
     app.jump_days(3);
 
     let better_before = app.query_balance(&app.better).unwrap();
-    app.set_winner(&app.arbitrator, OutcomeId(1)).unwrap();
+    app.set_winner(&app.arbitrator, 0).unwrap();
     let better_after = app.query_balance(&app.better).unwrap();
 
     assert_eq!(better_before, better_after);
@@ -235,19 +239,17 @@ fn withdrawal_leaves_money() {
     let app = Predict::new();
 
     // No funds
-    app.place_bet(&app.arbitrator, OutcomeId(2), 1_000)
-        .unwrap_err();
+    app.place_bet(&app.arbitrator, 1, 1_000).unwrap_err();
 
     let better_before = app.query_balance(&app.better).unwrap();
-    let tokens1 = app.query_tokens(&app.better, OutcomeId(2)).unwrap();
+    let tokens1 = app.query_tokens(&app.better, 1).unwrap();
     assert_eq!(tokens1, Token::zero());
-    app.place_bet(&app.better, OutcomeId(2), 1_000).unwrap();
-    let tokens2 = app.query_tokens(&app.better, OutcomeId(2)).unwrap();
+    app.place_bet(&app.better, 1, 1_000).unwrap();
+    let tokens2 = app.query_tokens(&app.better, 1).unwrap();
     assert_ne!(tokens2, Token::zero());
-    app.withdraw(&app.better, OutcomeId(2), tokens2 + tokens2)
-        .unwrap_err();
-    app.withdraw(&app.better, OutcomeId(2), tokens2).unwrap();
-    let tokens3 = app.query_tokens(&app.better, OutcomeId(2)).unwrap();
+    app.withdraw(&app.better, 1, tokens2 + tokens2).unwrap_err();
+    app.withdraw(&app.better, 1, tokens2).unwrap();
+    let tokens3 = app.query_tokens(&app.better, 1).unwrap();
     assert_eq!(tokens3, Token::zero());
     let better_after = app.query_balance(&app.better).unwrap();
 
@@ -256,7 +258,7 @@ fn withdrawal_leaves_money() {
 
     app.jump_days(3);
 
-    app.set_winner(&app.arbitrator, OutcomeId(1)).unwrap();
+    app.set_winner(&app.arbitrator, 0).unwrap();
     let better_final = app.query_balance(&app.better).unwrap();
 
     assert_eq!(better_after, better_final);
@@ -272,12 +274,12 @@ fn withdrawal_leaves_money() {
 fn winning_bet() {
     let app = Predict::new();
 
-    app.place_bet(&app.better, OutcomeId(1), 1_000).unwrap();
+    app.place_bet(&app.better, 0, 1_000).unwrap();
 
     app.jump_days(3);
 
     let better_before = app.query_balance(&app.better).unwrap();
-    app.set_winner(&app.arbitrator, OutcomeId(1)).unwrap();
+    app.set_winner(&app.arbitrator, 0).unwrap();
 
     app.collect(&app.better).unwrap();
     app.collect(&app.better).unwrap_err();
@@ -294,40 +296,51 @@ fn winning_bet() {
 fn wrong_time() {
     let app = Predict::new();
 
-    app.set_winner(&app.arbitrator, OutcomeId(1)).unwrap_err();
+    app.set_winner(&app.arbitrator, 0).unwrap_err();
 
-    app.place_bet(&app.better, OutcomeId(1), 1000).unwrap();
-    app.withdraw(
-        &app.better,
-        OutcomeId(1),
-        app.query_tokens(&app.better, OutcomeId(1)).unwrap(),
-    )
-    .unwrap();
+    app.place_bet(&app.better, 0, 1000).unwrap();
+    app.withdraw(&app.better, 0, app.query_tokens(&app.better, 0).unwrap())
+        .unwrap();
     app.collect(&app.better).unwrap_err();
 
     // Withdrawals paused but deposits are active
     app.jump_days(1);
-    app.place_bet(&app.better, OutcomeId(1), 1000).unwrap();
-    app.withdraw(
-        &app.better,
-        OutcomeId(1),
-        app.query_tokens(&app.better, OutcomeId(1)).unwrap(),
-    )
-    .unwrap_err();
-    app.set_winner(&app.arbitrator, OutcomeId(1)).unwrap_err();
+    app.place_bet(&app.better, 0, 1000).unwrap();
+    app.withdraw(&app.better, 0, app.query_tokens(&app.better, 0).unwrap())
+        .unwrap_err();
+    app.set_winner(&app.arbitrator, 0).unwrap_err();
     app.collect(&app.better).unwrap_err();
 
     // Deposits paused too
     app.jump_days(1);
-    app.place_bet(&app.better, OutcomeId(1), 1000).unwrap_err();
-    app.withdraw(
-        &app.better,
-        OutcomeId(1),
-        app.query_tokens(&app.better, OutcomeId(1)).unwrap(),
-    )
-    .unwrap_err();
-    app.set_winner(&app.arbitrator, OutcomeId(1)).unwrap();
+    app.place_bet(&app.better, 0, 1000).unwrap_err();
+    app.withdraw(&app.better, 0, app.query_tokens(&app.better, 0).unwrap())
+        .unwrap_err();
+    app.set_winner(&app.arbitrator, 0).unwrap();
     app.collect(&app.better).unwrap();
+}
+
+#[test]
+fn invalid_outcome_ids() {
+    let app = Predict::new();
+
+    app.place_bet(&app.better, 0, 1_000).unwrap();
+    app.place_bet(&app.better, 1, 1_000).unwrap();
+    app.place_bet(&app.better, 2, 1_000).unwrap_err();
+    let tokens0 = app.query_tokens(&app.better, 0).unwrap();
+    let tokens1 = app.query_tokens(&app.better, 1).unwrap();
+    app.query_tokens(&app.better, 2).unwrap_err();
+    assert_ne!(tokens0, Token::zero());
+    assert_ne!(tokens1, Token::zero());
+    app.withdraw(&app.better, 0, tokens0).unwrap();
+    app.withdraw(&app.better, 1, tokens1).unwrap();
+    app.withdraw(&app.better, 2, tokens1).unwrap_err();
+    app.withdraw(&app.better, 2, Token::zero()).unwrap_err();
+
+    app.jump_days(3);
+
+    app.set_winner(&app.arbitrator, 2).unwrap_err();
+    app.set_winner(&app.arbitrator, 0).unwrap();
 }
 
 proptest! {
@@ -348,7 +361,7 @@ fn test_cpmm_buy_sell(pool_one in 1..1000u32, pool_two in 1..1000u32, buy in 2..
         initial_amount: pool_two_collateral,
     };
     let outcomes = vec![pool_one, pool_two];
-    let (outcomes, total) = to_stored_outcome(outcomes);
+    let (outcomes, total) = to_stored_outcome(outcomes).unwrap();
     let mut original_variant = Decimal256::one();
     for outcome in &outcomes {
         original_variant *= outcome.pool_tokens.0;
@@ -371,7 +384,7 @@ fn test_cpmm_buy_sell(pool_one in 1..1000u32, pool_two in 1..1000u32, buy in 2..
         winner: None,
         house: Addr::unchecked("house"),
     };
-    let yes_id = OutcomeId(1);
+    let yes_id = OutcomeId::from(0);
     let yes_tokens = stored.buy(yes_id, buy).unwrap();
     let mut mid_variant = Decimal256::one();
     for outcome in &stored.outcomes {

@@ -43,7 +43,9 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> R
     }
 }
 
-pub(crate) fn to_stored_outcome(outcomes: Vec<OutcomeDef>) -> (Vec<StoredOutcome>, Collateral) {
+pub(crate) fn to_stored_outcome(
+    outcomes: Vec<OutcomeDef>,
+) -> Result<(Vec<StoredOutcome>, Collateral)> {
     let mut total = Collateral::zero();
     let outcomes = outcomes
         .into_iter()
@@ -57,18 +59,18 @@ pub(crate) fn to_stored_outcome(outcomes: Vec<OutcomeDef>) -> (Vec<StoredOutcome
                 },
             )| {
                 total += initial_amount;
-                let id = OutcomeId(u8::try_from(idx + 1).unwrap());
+                let id = OutcomeId::try_from(idx)?;
                 let pool_tokens = Token(Decimal256::from_ratio(initial_amount.0, 1u8));
-                StoredOutcome {
+                Ok(StoredOutcome {
                     id,
                     label,
                     pool_tokens,
                     total_tokens: pool_tokens,
-                }
+                })
             },
         )
-        .collect();
-    (outcomes, total)
+        .collect::<Result<_>>()?;
+    Ok((outcomes, total))
 }
 
 fn add_market(
@@ -107,7 +109,7 @@ fn add_market(
         .map_or_else(MarketId::one, MarketId::next);
     LAST_MARKET_ID.save(deps.storage, &id)?;
     let arbitrator = deps.api.addr_validate(&arbitrator)?;
-    let (outcomes, total) = to_stored_outcome(outcomes);
+    let (outcomes, total) = to_stored_outcome(outcomes)?;
     if total != funds {
         return Err(Error::IncorrectFundsPerOutcome {
             provided: funds,
@@ -168,17 +170,14 @@ fn deposit(
 
     assert_eq!(share_info.outcomes.len(), market.outcomes.len());
 
-    let outcome_tokens = share_info
-        .outcomes
-        .get_mut(usize::from(outcome.0) - 1)
-        .unwrap();
+    let outcome_tokens = share_info.get_outcome_mut(id, outcome).unwrap();
     *outcome_tokens += tokens;
     share_info.save(deps.storage, &market, &info.sender)?;
     Ok(Response::new().add_event(
         Event::new("deposit")
-            .add_attribute("market-id", id.0.to_string())
-            .add_attribute("outcome-id", outcome.0.to_string())
-            .add_attribute("tokens", tokens.0.to_string())
+            .add_attribute("market-id", id.to_string())
+            .add_attribute("outcome-id", outcome.to_string())
+            .add_attribute("tokens", tokens.to_string())
             .add_attribute("deposit-amount", deposit_amount.to_string())
             .add_attribute("fee", fee.to_string()),
     ))
@@ -205,10 +204,10 @@ fn withdraw(
     let mut share_info = ShareInfo::load(deps.storage, &market, &info.sender)?
         .ok_or(Error::NoPositionsOnMarket { id })?;
 
-    let user_tokens = share_info
-        .outcomes
-        .get_mut(usize::from(outcome.0 - 1))
-        .ok_or(Error::NoTokensFound { id, outcome })?;
+    let user_tokens = share_info.get_outcome_mut(id, outcome)?;
+    if user_tokens.is_zero() {
+        return Err(Error::NoTokensFound { id, outcome });
+    }
 
     if *user_tokens < tokens {
         return Err(Error::InsufficientTokens {
@@ -233,9 +232,9 @@ fn withdraw(
     Ok(Response::new()
         .add_event(
             Event::new("deposit")
-                .add_attribute("market-id", id.0.to_string())
-                .add_attribute("outcome-id", outcome.0.to_string())
-                .add_attribute("tokens", tokens.0.to_string())
+                .add_attribute("market-id", id.to_string())
+                .add_attribute("outcome-id", outcome.to_string())
+                .add_attribute("tokens", tokens.to_string())
                 .add_attribute("fee", fee.to_string())
                 .add_attribute("withdrawal", funds.to_string()),
         )
@@ -273,14 +272,10 @@ fn set_winner(
         return Err(Error::WinnerAlreadySet { id });
     }
 
-    market.assert_valid_outcome(outcome)?;
     market.winner = Some(outcome);
     MARKETS.save(deps.storage, id, &market)?;
 
-    let house_winnings = market.winnings_for(
-        outcome,
-        market.outcomes[usize::from(outcome.0 - 1)].pool_tokens,
-    )?;
+    let house_winnings = market.winnings_for(outcome, market.get_outcome(outcome)?.pool_tokens)?;
 
     Ok(Response::new()
         .add_event(
@@ -306,16 +301,15 @@ fn collect(deps: DepsMut, info: MessageInfo, id: MarketId) -> Result<Response> {
         return Err(Error::AlreadyClaimedWinnings { id });
     }
     share_info.claimed_winnings = true;
-    let tokens =
-        share_info
-            .outcomes
-            .get(usize::from(winner.0 - 1))
-            .ok_or(Error::NoTokensFound {
-                id,
-                outcome: winner,
-            })?;
+    let tokens = share_info.get_outcome(id, winner)?;
+    if tokens.is_zero() {
+        return Err(Error::NoTokensFound {
+            id,
+            outcome: winner,
+        });
+    }
     share_info.save(deps.storage, &market, &info.sender)?;
-    let winnings = market.winnings_for(winner, *tokens)?;
+    let winnings = market.winnings_for(winner, tokens)?;
 
     Ok(Response::new()
         .add_event(
