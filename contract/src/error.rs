@@ -83,7 +83,8 @@ pub enum Error {
     )]
     InvalidOutcome {
         id: MarketId,
-        outcome_count: u32,
+        /// Use a String to avoid trying to serialize a usize or convert to a u32
+        outcome_count: String,
         outcome: OutcomeId,
     },
     #[error("Winner already set for market {id}")]
@@ -96,4 +97,9 @@ pub enum Error {
     NoAppointedAdmin {},
     #[error("You are not the appointed admin")]
     NotAppointedAdmin {},
+    #[error("Too many outcomes specified, we found index {idx}. {source}")]
+    TooManyOutcomes {
+        idx: String,
+        source: std::num::TryFromIntError,
+    },
 }
