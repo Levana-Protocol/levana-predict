@@ -151,11 +151,11 @@ fn deposit(
         });
     }
 
-    let funds = funds.require_funds(&market.denom)?;
-    let fee = Decimal256::from_ratio(funds.0, 1u8) * market.deposit_fee;
+    let deposit_amount = funds.require_funds(&market.denom)?;
+    let fee = Decimal256::from_ratio(deposit_amount.0, 1u8) * market.deposit_fee;
     let fee = Collateral(Uint128::try_from(fee.to_uint_ceil())?);
     market.add_liquidity(fee);
-    let funds = funds.checked_sub(fee)?;
+    let funds = deposit_amount.checked_sub(fee)?;
     let tokens = market.buy(outcome, funds)?;
     MARKETS.save(deps.storage, id, &market)?;
     let mut share_info = SHARES
@@ -170,7 +170,9 @@ fn deposit(
         Event::new("deposit")
             .add_attribute("market-id", id.0.to_string())
             .add_attribute("outcome-id", outcome.0.to_string())
-            .add_attribute("tokens", tokens.0.to_string()),
+            .add_attribute("tokens", tokens.0.to_string())
+            .add_attribute("deposit-amount", deposit_amount.to_string())
+            .add_attribute("fee", fee.to_string()),
     ))
 }
 
@@ -224,7 +226,9 @@ fn withdraw(
             Event::new("deposit")
                 .add_attribute("market-id", id.0.to_string())
                 .add_attribute("outcome-id", outcome.0.to_string())
-                .add_attribute("tokens", tokens.0.to_string()),
+                .add_attribute("tokens", tokens.0.to_string())
+                .add_attribute("fee", fee.to_string())
+                .add_attribute("withdrawal", funds.to_string()),
         )
         .add_message(CosmosMsg::Bank(BankMsg::Send {
             to_address: info.sender.into_string(),
