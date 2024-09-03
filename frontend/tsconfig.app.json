@@ -1,0 +1,53 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": "./src",
+    "paths": {
+      "@assets/*": [
+        "assets/*"
+      ],
+      "@api/*": [
+        "api/*"
+      ],
+      "@common/*": [
+        "components/common/*"
+      ],
+      "@config/*": [
+        "config/*"
+      ],
+      "@lib/*": [
+        "components/lib/*"
+      ],
+      "@utils/*": [
+        "utils/*"
+      ],
+      "@features/*": [
+        "features/*"
+      ],
+      "@pages/*": [
+        "pages/*"
+      ]
+    }
+  },
+  "include": [
+    "src"
+  ],
+}
