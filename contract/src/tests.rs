@@ -168,14 +168,18 @@ impl Predict {
         )
     }
 
+    fn query<T: serde::de::DeserializeOwned>(&self, msg: &QueryMsg) -> StdResult<T> {
+        self.app
+            .borrow()
+            .wrap()
+            .query_wasm_smart(&self.contract, msg)
+    }
+
     fn query_tokens(&self, better: &Addr, outcome: u8) -> StdResult<Token> {
-        let PositionsResp { outcomes } = self.app.borrow().wrap().query_wasm_smart(
-            &self.contract,
-            &QueryMsg::Positions {
-                id: self.id,
-                addr: better.to_string(),
-            },
-        )?;
+        let PositionsResp { outcomes } = self.query(&QueryMsg::Positions {
+            id: self.id,
+            addr: better.to_string(),
+        })?;
         outcomes
             .get(usize::from(outcome))
             .copied()
@@ -198,6 +202,14 @@ impl Predict {
 
     fn collect(&self, addr: &Addr) -> AnyResult<AppResponse> {
         self.execute(addr, &ExecuteMsg::Collect { id: self.id }, None)
+    }
+
+    fn query_wallet_count(&self) -> StdResult<(u32, Vec<u32>)> {
+        let resp = self.query::<MarketResp>(&QueryMsg::Market { id: self.id })?;
+        Ok((
+            resp.total_wallets,
+            resp.outcomes.iter().map(|o| o.wallets).collect(),
+        ))
     }
 }
 
@@ -343,6 +355,34 @@ fn invalid_outcome_ids() {
     app.set_winner(&app.arbitrator, 0).unwrap();
 }
 
+#[test]
+fn wallet_count() {
+    let app = Predict::new();
+
+    assert_eq!(app.query_wallet_count().unwrap(), (0, vec![0, 0]));
+
+    app.place_bet(&app.better, 0, 1_000).unwrap();
+    assert_eq!(app.query_wallet_count().unwrap(), (1, vec![1, 0]));
+
+    app.place_bet(&app.better, 1, 1_000).unwrap();
+    assert_eq!(app.query_wallet_count().unwrap(), (1, vec![1, 1]));
+
+    app.place_bet(&app.admin, 0, 1_000).unwrap();
+    assert_eq!(app.query_wallet_count().unwrap(), (2, vec![2, 1]));
+
+    let tokens0 = app.query_tokens(&app.better, 0).unwrap();
+    app.withdraw(&app.better, 0, tokens0).unwrap();
+    assert_eq!(app.query_wallet_count().unwrap(), (2, vec![1, 1]));
+
+    let tokens1 = app.query_tokens(&app.better, 1).unwrap();
+    app.withdraw(&app.better, 1, tokens1).unwrap();
+    assert_eq!(app.query_wallet_count().unwrap(), (1, vec![1, 0]));
+
+    let tokens0 = app.query_tokens(&app.admin, 0).unwrap();
+    app.withdraw(&app.admin, 0, tokens0).unwrap();
+    assert_eq!(app.query_wallet_count().unwrap(), (0, vec![0, 0]));
+}
+
 proptest! {
 #[test]
 fn test_cpmm_buy_sell(pool_one in 1..1000u32, pool_two in 1..1000u32, buy in 2..50u32) {
@@ -383,6 +423,7 @@ fn test_cpmm_buy_sell(pool_one in 1..1000u32, pool_two in 1..1000u32, buy in 2..
         withdrawal_stop_date: ts.plus_days(1),
         winner: None,
         house: Addr::unchecked("house"),
+        total_wallets: 0
     };
     let yes_id = OutcomeId::from(0);
     let yes_tokens = stored.buy(yes_id, buy).unwrap();
