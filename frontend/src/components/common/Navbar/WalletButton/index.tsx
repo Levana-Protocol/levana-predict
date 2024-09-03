@@ -1,13 +1,13 @@
-import { WalletType, useAccount, useConnect } from 'graz'
+import { useAccount } from 'graz'
 import { forwardRef } from 'react'
 import { Button, ButtonProps, Dropdown, MenuButton, Typography } from '@mui/joy'
 
 import { ChevronDownIcon } from '@assets/icons/ChevronDown'
-import { CHAIN_ID } from '@config/chain'
 import { abbreviateWalletAddress } from '@utils/string'
 import { hiddenUpTo, mergeSx, stylesUpTo, useCurrentBreakpoint } from '@utils/styles'
 import { WalletAvatar } from '@common/Wallet/Avatar'
 import { NavbarWalletMenu } from './Menu'
+import { presentConnectionModal } from '@common/ConnectionModal'
 
 interface NavbarWalletButtonProps extends Omit<ButtonProps, "children"> { }
 
@@ -76,7 +76,6 @@ const DisconnectedWalletButton = (props: NavbarWalletButtonProps) => {
   const { ...buttonProps } = props
   const isXsScreen = useCurrentBreakpoint() === "xs"
   const { isConnecting, isDisconnected, isLoading } = useAccount()
-  const { connect } = useConnect()
 
   return (
     <Button
@@ -92,7 +91,7 @@ const DisconnectedWalletButton = (props: NavbarWalletButtonProps) => {
         buttonProps.sx,
       )}
       aria-label="Connect wallet"
-      onClick={() => { connect({ chainId: CHAIN_ID, walletType: WalletType.KEPLR }) }}
+      onClick={() => { presentConnectionModal() }}
     >
       <Typography textColor="text.primary" level={isXsScreen ? "body-xs" : "body-sm"} fontWeight={600}>
         {isConnecting && (isXsScreen ? "Connecting" : "Connecting wallet")}
