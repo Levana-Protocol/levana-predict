@@ -66,6 +66,7 @@ pub(crate) fn to_stored_outcome(
                     label,
                     pool_tokens,
                     total_tokens: pool_tokens,
+                    wallets: 0,
                 })
             },
         )
@@ -133,6 +134,7 @@ fn add_market(
             withdrawal_stop_date,
             winner: None,
             house: deps.api.addr_validate(&house)?,
+            total_wallets: 0,
         },
     )?;
 
@@ -164,15 +166,29 @@ fn deposit(
     market.add_liquidity(fee);
     let funds = deposit_amount.checked_sub(fee)?;
     let tokens = market.buy(outcome, funds)?;
-    MARKETS.save(deps.storage, id, &market)?;
     let mut share_info = ShareInfo::load(deps.storage, &market, &info.sender)?
         .unwrap_or_else(|| ShareInfo::new(market.outcomes.len()));
 
     assert_eq!(share_info.outcomes.len(), market.outcomes.len());
 
+    let had_any_tokens = share_info.has_tokens();
+
     let outcome_tokens = share_info.get_outcome_mut(id, outcome).unwrap();
+    let had_these_tokens = !outcome_tokens.is_zero();
+
+    if !had_any_tokens {
+        market.total_wallets += 1;
+    }
+
+    if !had_these_tokens {
+        market.get_outcome_mut(outcome)?.wallets += 1;
+    }
+
     *outcome_tokens += tokens;
     share_info.save(deps.storage, &market, &info.sender)?;
+
+    MARKETS.save(deps.storage, id, &market)?;
+
     Ok(Response::new().add_event(
         Event::new("deposit")
             .add_attribute("market-id", id.to_string())
@@ -219,6 +235,13 @@ fn withdraw(
     }
 
     *user_tokens -= tokens;
+
+    if user_tokens.is_zero() {
+        market.get_outcome_mut(outcome)?.wallets -= 1;
+        if !share_info.has_tokens() {
+            market.total_wallets -= 1;
+        }
+    }
 
     share_info.save(deps.storage, &market, &info.sender)?;
 

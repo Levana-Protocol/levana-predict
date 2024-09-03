@@ -63,6 +63,10 @@ impl ShareInfo {
                 outcome,
             })
     }
+
+    pub(crate) fn has_tokens(&self) -> bool {
+        self.outcomes.iter().any(|token| !token.is_zero())
+    }
 }
 
 #[derive(Serialize, Deserialize)]
@@ -80,6 +84,7 @@ pub struct StoredMarket {
     pub withdrawal_stop_date: Timestamp,
     pub winner: Option<OutcomeId>,
     pub house: Addr,
+    pub total_wallets: u32,
 }
 
 impl StoredMarket {
@@ -117,6 +122,8 @@ pub struct StoredOutcome {
     pub label: String,
     pub pool_tokens: Token,
     pub total_tokens: Token,
+    /// Count of wallets holding tokens
+    pub wallets: u32,
 }
 
 #[derive(Serialize, Deserialize)]
