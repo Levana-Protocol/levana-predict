@@ -38,7 +38,7 @@ impl StoredMarket {
 
     pub(crate) fn assert_valid_outcome(&self, outcome_id: OutcomeId) -> Result<()> {
         let outcome = usize::from(outcome_id.0);
-        if outcome == 0 && outcome > self.outcomes.len() {
+        if outcome == 0 || outcome > self.outcomes.len() {
             Err(Error::InvalidOutcome {
                 id: self.id,
                 outcome_count: u32::try_from(self.outcomes.len())?,
