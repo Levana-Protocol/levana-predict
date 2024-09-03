@@ -260,7 +260,6 @@ fn set_winner(
         return Err(Error::WinnerAlreadySet { id });
     }
 
-    market.assert_valid_outcome(outcome)?;
     market.winner = Some(outcome);
     MARKETS.save(deps.storage, id, &market)?;
 
