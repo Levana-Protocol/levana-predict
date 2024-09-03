@@ -25,9 +25,10 @@ fn market(deps: Deps, id: MarketId) -> Result<MarketResp> {
 
 fn positions(deps: Deps, id: MarketId, addr: String) -> Result<PositionsResp> {
     let addr = deps.api.addr_validate(&addr)?;
-    let outcomes = SHARES
-        .may_load(deps.storage, (id, &addr))?
-        .unwrap_or_default()
+    let market = StoredMarket::load(deps.storage, id)?;
+    let outcomes = ShareInfo::load(deps.storage, &market, &addr)?
+        .unwrap_or_else(|| ShareInfo::new(market.outcomes.len()))
         .outcomes;
+
     Ok(PositionsResp { outcomes })
 }

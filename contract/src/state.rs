@@ -1,5 +1,3 @@
-use std::collections::BTreeMap;
-
 use crate::prelude::*;
 
 pub const ADMIN: Item<Addr> = Item::new("admin");
@@ -10,7 +8,36 @@ pub const LAST_MARKET_ID: Item<MarketId> = Item::new("last-market-id");
 
 pub const MARKETS: Map<MarketId, StoredMarket> = Map::new("markets");
 
-pub const SHARES: Map<(MarketId, &Addr), ShareInfo> = Map::new("shares");
+const SHARES: Map<(MarketId, &Addr), ShareInfo> = Map::new("shares");
+
+impl ShareInfo {
+    pub fn load(
+        store: &dyn Storage,
+        market: &StoredMarket,
+        addr: &Addr,
+    ) -> Result<Option<ShareInfo>> {
+        match SHARES.may_load(store, (market.id, addr))? {
+            None => Ok(None),
+            Some(share_info) => {
+                if share_info.outcomes.len() != market.outcomes.len() {
+                    unreachable!()
+                } else {
+                    Ok(Some(share_info))
+                }
+            }
+        }
+    }
+
+    pub fn save(
+        &self,
+        store: &mut dyn Storage,
+        market: &StoredMarket,
+        addr: &Addr,
+    ) -> StdResult<()> {
+        assert_eq!(market.outcomes.len(), self.outcomes.len());
+        SHARES.save(store, (market.id, addr), self)
+    }
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct StoredMarket {
@@ -58,8 +85,19 @@ pub struct StoredOutcome {
     pub total_tokens: Token,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct ShareInfo {
-    pub outcomes: BTreeMap<OutcomeId, Token>,
+    pub outcomes: Vec<Token>,
     pub claimed_winnings: bool,
+}
+
+impl ShareInfo {
+    pub fn new(outcome_count: usize) -> Self {
+        ShareInfo {
+            outcomes: std::iter::repeat(Token::zero())
+                .take(outcome_count)
+                .collect(),
+            claimed_winnings: false,
+        }
+    }
 }

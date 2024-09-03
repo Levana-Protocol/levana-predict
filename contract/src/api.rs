@@ -1,5 +1,3 @@
-use std::collections::BTreeMap;
-
 use crate::prelude::*;
 
 #[derive(Clone, Serialize, Deserialize, JsonSchema, Debug)]
@@ -101,7 +99,7 @@ pub struct OutcomeInfo {
 #[derive(Clone, Serialize, Deserialize, JsonSchema, Debug)]
 #[serde(rename_all = "snake_case")]
 pub struct PositionsResp {
-    pub outcomes: BTreeMap<OutcomeId, Token>,
+    pub outcomes: Vec<Token>,
 }
 
 #[derive(Serialize, Deserialize, JsonSchema, Debug)]

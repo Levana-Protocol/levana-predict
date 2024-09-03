@@ -163,14 +163,17 @@ fn deposit(
     let funds = deposit_amount.checked_sub(fee)?;
     let tokens = market.buy(outcome, funds)?;
     MARKETS.save(deps.storage, id, &market)?;
-    let mut share_info = SHARES
-        .may_load(deps.storage, (id, &info.sender))?
-        .unwrap_or_default();
-    *share_info
+    let mut share_info = ShareInfo::load(deps.storage, &market, &info.sender)?
+        .unwrap_or_else(|| ShareInfo::new(market.outcomes.len()));
+
+    assert_eq!(share_info.outcomes.len(), market.outcomes.len());
+
+    let outcome_tokens = share_info
         .outcomes
-        .entry(outcome)
-        .or_insert_with(Token::zero) += tokens;
-    SHARES.save(deps.storage, (id, &info.sender), &share_info)?;
+        .get_mut(usize::from(outcome.0) - 1)
+        .unwrap();
+    *outcome_tokens += tokens;
+    share_info.save(deps.storage, &market, &info.sender)?;
     Ok(Response::new().add_event(
         Event::new("deposit")
             .add_attribute("market-id", id.0.to_string())
@@ -199,13 +202,12 @@ fn withdraw(
         });
     }
 
-    let mut share_info = SHARES
-        .may_load(deps.storage, (id, &info.sender))?
+    let mut share_info = ShareInfo::load(deps.storage, &market, &info.sender)?
         .ok_or(Error::NoPositionsOnMarket { id })?;
 
     let user_tokens = share_info
         .outcomes
-        .get_mut(&outcome)
+        .get_mut(usize::from(outcome.0 - 1))
         .ok_or(Error::NoTokensFound { id, outcome })?;
 
     if *user_tokens < tokens {
@@ -217,7 +219,9 @@ fn withdraw(
         });
     }
 
-    SHARES.save(deps.storage, (id, &info.sender), &share_info)?;
+    *user_tokens -= tokens;
+
+    share_info.save(deps.storage, &market, &info.sender)?;
 
     let funds = market.sell(outcome, tokens)?;
 
@@ -253,7 +257,7 @@ fn set_winner(
 ) -> Result<Response> {
     let mut market = StoredMarket::load(deps.storage, id)?;
 
-    if env.block.time < market.withdrawal_stop_date {
+    if env.block.time < market.deposit_stop_date {
         return Err(Error::MarketStillActive {
             id,
             now: env.block.time,
@@ -296,21 +300,21 @@ fn set_winner(
 fn collect(deps: DepsMut, info: MessageInfo, id: MarketId) -> Result<Response> {
     let market = StoredMarket::load(deps.storage, id)?;
     let winner = market.winner.ok_or(Error::NoWinnerSet { id })?;
-    let mut share_info = SHARES
-        .may_load(deps.storage, (id, &info.sender))?
+    let mut share_info = ShareInfo::load(deps.storage, &market, &info.sender)?
         .ok_or(Error::NoPositionsOnMarket { id })?;
     if share_info.claimed_winnings {
         return Err(Error::AlreadyClaimedWinnings { id });
     }
     share_info.claimed_winnings = true;
-    let tokens = share_info
-        .outcomes
-        .get(&winner)
-        .ok_or(Error::NoTokensFound {
-            id,
-            outcome: winner,
-        })?;
-    SHARES.save(deps.storage, (id, &info.sender), &share_info)?;
+    let tokens =
+        share_info
+            .outcomes
+            .get(usize::from(winner.0 - 1))
+            .ok_or(Error::NoTokensFound {
+                id,
+                outcome: winner,
+            })?;
+    share_info.save(deps.storage, &market, &info.sender)?;
     let winnings = market.winnings_for(winner, *tokens)?;
 
     Ok(Response::new()

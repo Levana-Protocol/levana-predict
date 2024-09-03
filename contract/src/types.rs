@@ -70,6 +70,14 @@ impl Display for Collateral {
 )]
 pub struct Token(pub Decimal256);
 
+impl Add for Token {
+    type Output = Token;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Token(self.0 + rhs.0)
+    }
+}
+
 impl Sub for Token {
     type Output = Token;
 
