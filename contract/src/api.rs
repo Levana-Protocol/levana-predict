@@ -44,7 +44,7 @@ pub enum ExecuteMsg {
 pub struct AddMarketParams {
     pub title: String,
     pub description: String,
-    /// Wallet address
+    /// Wallet address. Sets the winner.
     pub arbitrator: String,
     pub outcomes: Vec<OutcomeDef>,
     /// Denom of collateral for this market.

@@ -43,6 +43,34 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> R
     }
 }
 
+pub(crate) fn to_stored_outcome(outcomes: Vec<OutcomeDef>) -> (Vec<StoredOutcome>, Collateral) {
+    let mut total = Collateral::zero();
+    let outcomes = outcomes
+        .into_iter()
+        .enumerate()
+        .map(
+            |(
+                idx,
+                OutcomeDef {
+                    label,
+                    initial_amount,
+                },
+            )| {
+                total += initial_amount;
+                let id = OutcomeId(u8::try_from(idx + 1).unwrap());
+                let pool_tokens = Token(Decimal256::from_ratio(initial_amount.0, 1u8));
+                StoredOutcome {
+                    id,
+                    label,
+                    pool_tokens,
+                    total_tokens: pool_tokens,
+                }
+            },
+        )
+        .collect();
+    (outcomes, total)
+}
+
 fn add_market(
     deps: DepsMut,
     env: Env,
@@ -79,30 +107,7 @@ fn add_market(
         .map_or_else(MarketId::one, MarketId::next);
     LAST_MARKET_ID.save(deps.storage, &id)?;
     let arbitrator = deps.api.addr_validate(&arbitrator)?;
-    let mut total = Collateral::zero();
-    let outcomes = outcomes
-        .into_iter()
-        .enumerate()
-        .map(
-            |(
-                idx,
-                OutcomeDef {
-                    label,
-                    initial_amount,
-                },
-            )| {
-                total += initial_amount;
-                let id = OutcomeId(u8::try_from(idx + 1).unwrap());
-                let pool_tokens = Token(Decimal256::from_ratio(initial_amount.0, 1u8));
-                StoredOutcome {
-                    id,
-                    label,
-                    pool_tokens,
-                    total_tokens: pool_tokens,
-                }
-            },
-        )
-        .collect();
+    let (outcomes, total) = to_stored_outcome(outcomes);
     if total != funds {
         return Err(Error::IncorrectFundsPerOutcome {
             provided: funds,

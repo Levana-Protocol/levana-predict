@@ -2,8 +2,9 @@ use std::cell::RefCell;
 
 use cosmwasm_std::Addr;
 use cw_multi_test::{error::AnyResult, App, AppResponse, ContractWrapper, Executor};
+use proptest::prelude::*;
 
-use crate::prelude::*;
+use crate::{execute::to_stored_outcome, prelude::*};
 
 struct Predict {
     app: RefCell<App>,
@@ -327,4 +328,67 @@ fn wrong_time() {
     .unwrap_err();
     app.set_winner(&app.arbitrator, OutcomeId(1)).unwrap();
     app.collect(&app.better).unwrap();
+}
+
+proptest! {
+#[test]
+fn test_cpmm_buy_sell(pool_one in 1..1000u32, pool_two in 1..1000u32, buy in 2..50u32) {
+    let pool_one_collateral = Collateral(pool_one.into());
+    let pool_two_collateral = Collateral(pool_two.into());
+
+    let buy = pool_one_collateral * Decimal256::from_ratio(1u32, buy);
+    let buy = buy.unwrap();
+
+    let pool_one = OutcomeDef {
+        label: "Yes".to_owned(),
+        initial_amount: pool_one_collateral,
+    };
+    let pool_two = OutcomeDef {
+        label: "No".to_owned(),
+        initial_amount: pool_two_collateral,
+    };
+    let outcomes = vec![pool_one, pool_two];
+    let (outcomes, total) = to_stored_outcome(outcomes);
+    let mut original_variant = Decimal256::one();
+    for outcome in &outcomes {
+        original_variant *= outcome.pool_tokens.0;
+    }
+
+    let ts = Timestamp::from_nanos(1_000_000_202);
+
+    let mut stored = StoredMarket {
+        id: MarketId::one(),
+        title: "ATOM_USDT".to_owned(),
+        description: "Some desc".to_owned(),
+        arbitrator: Addr::unchecked("arbitrator"),
+        outcomes,
+        denom: DENOM.to_owned(),
+        deposit_fee: "0.01".parse().unwrap(),
+        withdrawal_fee: "0.01".parse().unwrap(),
+        pool_size: total,
+        deposit_stop_date: ts.plus_days(2),
+        withdrawal_stop_date: ts.plus_days(1),
+        winner: None,
+        house: Addr::unchecked("house"),
+    };
+    let yes_id = OutcomeId(1);
+    let yes_tokens = stored.buy(yes_id, buy).unwrap();
+    let mut mid_variant = Decimal256::one();
+    for outcome in &stored.outcomes {
+        mid_variant *= outcome.pool_tokens.0;
+    }
+
+    let _funds = stored.sell(yes_id, yes_tokens).unwrap();
+
+    let mut new_variant = Decimal256::one();
+    for outcome in &stored.outcomes {
+        new_variant *= outcome.pool_tokens.0;
+    }
+
+    let diff1 = original_variant.abs_diff(new_variant);
+    let diff2 = original_variant.abs_diff(mid_variant);
+
+    assert!(diff1 < Decimal256::from_ratio(1u32, 10u32));
+    assert!(diff2 < Decimal256::from_ratio(1u32, 10u32));
+}
 }
