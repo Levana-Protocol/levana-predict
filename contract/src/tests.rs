@@ -198,6 +198,11 @@ fn test_cpmm_buy_sell(pool_one in 1..1000u32, pool_two in 1..1000u32, buy in 2..
     };
     let yes_id = OutcomeId(1);
     let yes_tokens = stored.buy(yes_id, buy).unwrap();
+    let mut mid_variant = Decimal256::one();
+    for outcome in &stored.outcomes {
+        mid_variant *= outcome.pool_tokens.0;
+    }
+
     let _funds = stored.sell(yes_id, yes_tokens).unwrap();
 
     let mut new_variant = Decimal256::one();
@@ -205,8 +210,10 @@ fn test_cpmm_buy_sell(pool_one in 1..1000u32, pool_two in 1..1000u32, buy in 2..
         new_variant *= outcome.pool_tokens.0;
     }
 
-    let diff = original_variant.abs_diff(new_variant);
+    let diff1 = original_variant.abs_diff(new_variant);
+    let diff2 = original_variant.abs_diff(mid_variant);
 
-    assert!(diff < Decimal256::from_ratio(1u32, 10u32));
+    assert!(diff1 < Decimal256::from_ratio(1u32, 10u32));
+    assert!(diff2 < Decimal256::from_ratio(1u32, 10u32));
 }
 }
