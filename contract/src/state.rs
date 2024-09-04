@@ -69,7 +69,7 @@ impl ShareInfo {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct StoredMarket {
     pub id: MarketId,
     pub title: String,
@@ -116,7 +116,7 @@ impl StoredMarket {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct StoredOutcome {
     pub id: OutcomeId,
     pub label: String,
