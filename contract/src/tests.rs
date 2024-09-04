@@ -82,7 +82,7 @@ impl Predict {
             ],
             denom: DENOM.to_owned(),
             deposit_fee: "0.01".parse().unwrap(),
-            withdrawal_fee: "0.01".parse().unwrap(),
+            withdrawal_fee: "0.02".parse().unwrap(),
             withdrawal_stop_date: app.block_info().time.plus_days(1),
             deposit_stop_date: app.block_info().time.plus_days(2),
             house: house.clone().into_string(),
@@ -360,6 +360,55 @@ fn winning_bet() {
 
     let house_after = app.query_balance(&app.house).unwrap();
     assert!(Uint128::from(1000u16) > house_after);
+}
+
+#[test]
+fn deposit_fees_check() {
+    let app = Predict::new();
+
+    let before_market = app.query_latest_market().unwrap();
+
+    let bet_amount = 1000u64;
+    app.place_bet(&app.better, 0, bet_amount).unwrap();
+
+    let deposit_fee = before_market.deposit_fee * Decimal256::from_ratio(bet_amount, 1u64);
+    let deposit_fee: Uint128 = deposit_fee.to_uint_ceil().try_into().unwrap();
+
+    let tokens = app.query_tokens(&app.better, 0).unwrap();
+    let tokens_in_collateral = {
+        let mut market = app.query_latest_market().unwrap();
+        market.sell(0.into(), tokens).unwrap()
+    };
+
+    let calculated_deposit_fees = Collateral(Uint128::from(bet_amount))
+        .checked_sub(tokens_in_collateral)
+        .unwrap()
+        .0;
+    assert_eq!(deposit_fee, calculated_deposit_fees);
+    assert_eq!(deposit_fee, Uint128::from(10u8));
+}
+
+#[test]
+fn withdrawal_fees_check() {
+    let app = Predict::new();
+
+    let bet_amount = 1000u64;
+    app.place_bet(&app.better, 0, bet_amount).unwrap();
+
+    let initial_balance = app.query_balance(&app.better).unwrap();
+    let tokens = app.query_tokens(&app.better, 0).unwrap();
+    let market = app.query_latest_market().unwrap();
+    let fees = market.withdrawal_fee * Decimal256::from_ratio(bet_amount, 1u64);
+    let fees: Uint128 = fees.to_uint_ceil().try_into().unwrap();
+
+    app.withdraw(&app.better, 0, tokens).unwrap();
+    let final_balance = app.query_balance(&app.better).unwrap();
+    let withdraw_amount = final_balance.checked_sub(initial_balance).unwrap();
+    let total_fees = Uint128::from(bet_amount).checked_sub(withdraw_amount).unwrap();
+
+    // We know that deposit fees is 10 from the previous test
+    let withdrawal_fees = total_fees.checked_sub(Uint128::from(10u8)).unwrap();
+    assert_eq!(fees, withdrawal_fees);
 }
 
 #[test]
