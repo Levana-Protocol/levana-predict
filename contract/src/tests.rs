@@ -175,6 +175,10 @@ impl Predict {
             .query_wasm_smart(&self.contract, msg)
     }
 
+    fn query_latest_market(&self) -> StdResult<MarketResp> {
+        self.query(&QueryMsg::Market { id: self.id })
+    }
+
     fn query_tokens(&self, better: &Addr, outcome: u8) -> StdResult<Token> {
         let PositionsResp { outcomes } = self.query(&QueryMsg::Positions {
             id: self.id,
@@ -362,27 +366,38 @@ fn winning_bet() {
 fn wrong_time() {
     let app = Predict::new();
 
+    // You cannot set winner till you allow deposits
     app.set_winner(&app.arbitrator, 0).unwrap_err();
 
     app.place_bet(&app.better, 0, 1000).unwrap();
     app.withdraw(&app.better, 0, app.query_tokens(&app.better, 0).unwrap())
         .unwrap();
+    // Better does not have anything to collect since he doesn't hold
+    // any tokens anymore
     app.collect(&app.better).unwrap_err();
 
     // Withdrawals paused but deposits are active
     app.jump_days(1);
     app.place_bet(&app.better, 0, 1000).unwrap();
+    // Withdrawal fails since it is paused
     app.withdraw(&app.better, 0, app.query_tokens(&app.better, 0).unwrap())
         .unwrap_err();
+    // You cannot set winner till you allow deposits
     app.set_winner(&app.arbitrator, 0).unwrap_err();
+    // Better does not have anything to collect since he doesn't hold
+    // any tokens anymore
     app.collect(&app.better).unwrap_err();
 
     // Deposits paused too
     app.jump_days(1);
+    // Not able to place bets since deposits are paused.
     app.place_bet(&app.better, 0, 1000).unwrap_err();
+    // Withdraw will still fail since it paused
     app.withdraw(&app.better, 0, app.query_tokens(&app.better, 0).unwrap())
         .unwrap_err();
+    // Winner is set successfully now
     app.set_winner(&app.arbitrator, 0).unwrap();
+    // Better can collect now
     app.collect(&app.better).unwrap();
 }
 
@@ -392,19 +407,22 @@ fn invalid_outcome_ids() {
 
     app.place_bet(&app.better, 0, 1_000).unwrap();
     app.place_bet(&app.better, 1, 1_000).unwrap();
+    // Fails because ther is no outcome 2
     app.place_bet(&app.better, 2, 1_000).unwrap_err();
     let tokens0 = app.query_tokens(&app.better, 0).unwrap();
     let tokens1 = app.query_tokens(&app.better, 1).unwrap();
+    // Fails because ther is no outcome 2
     app.query_tokens(&app.better, 2).unwrap_err();
     assert_ne!(tokens0, Token::zero());
     assert_ne!(tokens1, Token::zero());
     app.withdraw(&app.better, 0, tokens0).unwrap();
     app.withdraw(&app.better, 1, tokens1).unwrap();
+    // Fails because ther is no outcome 2
     app.withdraw(&app.better, 2, tokens1).unwrap_err();
     app.withdraw(&app.better, 2, Token::zero()).unwrap_err();
 
     app.jump_days(3);
-
+    // Fails because ther is no outcome 2
     app.set_winner(&app.arbitrator, 2).unwrap_err();
     app.set_winner(&app.arbitrator, 0).unwrap();
 }
@@ -412,28 +430,37 @@ fn invalid_outcome_ids() {
 #[test]
 fn wallet_count() {
     let app = Predict::new();
-
+    // Nobody betted so 0 wallets
     assert_eq!(app.query_wallet_count().unwrap(), (0, vec![0, 0]));
 
     app.place_bet(&app.better, 0, 1_000).unwrap();
+    // One new better
     assert_eq!(app.query_wallet_count().unwrap(), (1, vec![1, 0]));
-
+    // Same better in different outcome
     app.place_bet(&app.better, 1, 1_000).unwrap();
     assert_eq!(app.query_wallet_count().unwrap(), (1, vec![1, 1]));
 
+    // Same better on the outcome which he has already bet on
+    app.place_bet(&app.better, 1, 1_000).unwrap();
+    assert_eq!(app.query_wallet_count().unwrap(), (1, vec![1, 1]));
+
+    // New better
     app.place_bet(&app.admin, 0, 1_000).unwrap();
     assert_eq!(app.query_wallet_count().unwrap(), (2, vec![2, 1]));
 
     let tokens0 = app.query_tokens(&app.better, 0).unwrap();
     app.withdraw(&app.better, 0, tokens0).unwrap();
+    // Better has fully withdrawn from outcome 0
     assert_eq!(app.query_wallet_count().unwrap(), (2, vec![1, 1]));
 
     let tokens1 = app.query_tokens(&app.better, 1).unwrap();
     app.withdraw(&app.better, 1, tokens1).unwrap();
+    // Better has fully withdrawn from outcome 1
     assert_eq!(app.query_wallet_count().unwrap(), (1, vec![1, 0]));
 
     let tokens0 = app.query_tokens(&app.admin, 0).unwrap();
     app.withdraw(&app.admin, 0, tokens0).unwrap();
+    // Other better has fully withdrawn
     assert_eq!(app.query_wallet_count().unwrap(), (0, vec![0, 0]));
 }
 
