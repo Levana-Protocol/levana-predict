@@ -214,11 +214,57 @@ impl Predict {
 }
 
 #[test]
+fn non_admin_cannot_add_market() {
+    let app = Predict::new();
+    let params = AddMarketParams {
+        title: "Test market".to_owned(),
+        description: "Test description".to_owned(),
+        arbitrator: app.arbitrator.clone().to_string(),
+        outcomes: vec![
+            OutcomeDef {
+                label: "Yes".to_owned(),
+                initial_amount: Collateral(100u16.into()),
+            },
+            OutcomeDef {
+                label: "No".to_owned(),
+                initial_amount: Collateral(900u16.into()),
+            },
+        ],
+        denom: DENOM.to_owned(),
+        deposit_fee: "0.01".parse().unwrap(),
+        withdrawal_fee: "0.01".parse().unwrap(),
+        withdrawal_stop_date: app.app.borrow().block_info().time.plus_days(1),
+        deposit_stop_date: app.app.borrow().block_info().time.plus_days(2),
+        house: app.house.clone().into_string(),
+    };
+    // Better is try to add a market
+    app.app
+        .borrow_mut()
+        .execute_contract(
+            app.better.clone(),
+            app.contract.clone(),
+            &ExecuteMsg::AddMarket {
+                params: params.into(),
+            },
+            &[Coin {
+                denom: DENOM.to_owned(),
+                amount: 1000u16.into(),
+            }],
+        )
+        .unwrap_err();
+}
+
+#[test]
 fn sanity() {
     let app = Predict::new();
     app.jump_days(3);
+    let amount_before = app.query_balance(&app.house).unwrap();
+    assert_eq!(Uint128::from(0u16), amount_before);
+
+    // Admin cannot set the winner
     app.set_winner(&app.admin, 0).unwrap_err();
 
+    // Arbitrator can set the winner
     app.set_winner(&app.arbitrator, 0).unwrap();
 
     let amount_after = app.query_balance(&app.house).unwrap();
@@ -229,17 +275,19 @@ fn sanity() {
 fn losing_bet() {
     let app = Predict::new();
 
-    // No funds
+    // Arbitrator doesn't have any funds
     app.place_bet(&app.arbitrator, 1, 1_000).unwrap_err();
 
     app.place_bet(&app.better, 1, 1_000).unwrap();
 
     app.jump_days(3);
-
     let better_before = app.query_balance(&app.better).unwrap();
+
+    let house_before = app.query_balance(&app.house).unwrap();
+    assert_eq!(house_before, Uint128::from(0u16));
+
     app.set_winner(&app.arbitrator, 0).unwrap();
     let better_after = app.query_balance(&app.better).unwrap();
-
     assert_eq!(better_before, better_after);
 
     let house_after = app.query_balance(&app.house).unwrap();
@@ -250,13 +298,14 @@ fn losing_bet() {
 fn withdrawal_leaves_money() {
     let app = Predict::new();
 
-    // No funds
-    app.place_bet(&app.arbitrator, 1, 1_000).unwrap_err();
+    let bet_amount = 1_000u64;
+    // Arbitrator doesn't have any funds
+    app.place_bet(&app.arbitrator, 1, bet_amount).unwrap_err();
 
     let better_before = app.query_balance(&app.better).unwrap();
     let tokens1 = app.query_tokens(&app.better, 1).unwrap();
     assert_eq!(tokens1, Token::zero());
-    app.place_bet(&app.better, 1, 1_000).unwrap();
+    app.place_bet(&app.better, 1, bet_amount).unwrap();
     let tokens2 = app.query_tokens(&app.better, 1).unwrap();
     assert_ne!(tokens2, Token::zero());
     app.withdraw(&app.better, 1, tokens2 + tokens2).unwrap_err();
@@ -269,11 +318,16 @@ fn withdrawal_leaves_money() {
     assert!(better_before > better_after);
 
     app.jump_days(3);
-
     app.set_winner(&app.arbitrator, 0).unwrap();
     let better_final = app.query_balance(&app.better).unwrap();
 
+    // No change in better balance because he lost the bet (and also
+    // we didn't collect yet)
     assert_eq!(better_after, better_final);
+
+    // We try to collect and fail since we do not have any winning
+    // outcome tokens
+    app.collect(&app.better).unwrap_err();
 
     let house_after = app.query_balance(&app.house).unwrap();
     assert_eq!(
