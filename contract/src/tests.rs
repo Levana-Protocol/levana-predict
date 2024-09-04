@@ -404,7 +404,9 @@ fn withdrawal_fees_check() {
     app.withdraw(&app.better, 0, tokens).unwrap();
     let final_balance = app.query_balance(&app.better).unwrap();
     let withdraw_amount = final_balance.checked_sub(initial_balance).unwrap();
-    let total_fees = Uint128::from(bet_amount).checked_sub(withdraw_amount).unwrap();
+    let total_fees = Uint128::from(bet_amount)
+        .checked_sub(withdraw_amount)
+        .unwrap();
 
     // We know that deposit fees is 10 from the previous test
     let withdrawal_fees = total_fees.checked_sub(Uint128::from(10u8)).unwrap();
@@ -511,6 +513,24 @@ fn wallet_count() {
     app.withdraw(&app.admin, 0, tokens0).unwrap();
     // Other better has fully withdrawn
     assert_eq!(app.query_wallet_count().unwrap(), (0, vec![0, 0]));
+}
+
+#[test]
+fn house_always_wins() {
+    let app = Predict::new();
+
+    let house_balance = app.query_balance(&app.house).unwrap();
+    assert_eq!(house_balance, Uint128::zero());
+    app.place_bet(&app.better, 0, 1_000).unwrap();
+    app.place_bet(&app.admin, 0, 1_000).unwrap();
+
+    app.jump_days(3);
+    app.set_winner(&app.arbitrator, 0).unwrap();
+
+    app.collect(&app.better).unwrap();
+    app.collect(&app.admin).unwrap();
+    let house_balance = app.query_balance(&app.house).unwrap();
+    assert!(house_balance > Uint128::zero());
 }
 
 proptest! {
