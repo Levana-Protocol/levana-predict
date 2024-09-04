@@ -104,6 +104,8 @@ fn add_market(
         });
     }
 
+    assert!(outcomes.len() == 2, "Supports only two outcomes");
+
     let funds = funds.require_funds(&denom)?;
     let id = LAST_MARKET_ID
         .may_load(deps.storage)?
