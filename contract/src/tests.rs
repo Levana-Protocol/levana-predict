@@ -534,7 +534,6 @@ fn house_always_wins() {
 }
 
 #[test]
-#[should_panic]
 fn market_with_only_one_outcome() {
     let app = Predict::new();
     let params = AddMarketParams {

@@ -102,4 +102,6 @@ pub enum Error {
         idx: String,
         source: std::num::TryFromIntError,
     },
+    #[error("Supported only 2 outcomes, received {total_outcomes}")]
+    UnsupportedOutcomes { total_outcomes: usize },
 }
