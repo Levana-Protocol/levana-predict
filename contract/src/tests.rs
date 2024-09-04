@@ -533,6 +533,40 @@ fn house_always_wins() {
     assert!(house_balance > Uint128::zero());
 }
 
+#[test]
+fn market_with_only_one_outcome() {
+    let app = Predict::new();
+    let params = AddMarketParams {
+        title: "Test market".to_owned(),
+        description: "Test description".to_owned(),
+        arbitrator: app.arbitrator.clone().to_string(),
+        outcomes: vec![OutcomeDef {
+            label: "Yes".to_owned(),
+            initial_amount: Collateral(100u16.into()),
+        }],
+        denom: DENOM.to_owned(),
+        deposit_fee: "0.01".parse().unwrap(),
+        withdrawal_fee: "0.01".parse().unwrap(),
+        withdrawal_stop_date: app.app.borrow().block_info().time.plus_days(1),
+        deposit_stop_date: app.app.borrow().block_info().time.plus_days(2),
+        house: app.house.clone().into_string(),
+    };
+    app.app
+        .borrow_mut()
+        .execute_contract(
+            app.admin.clone(),
+            app.contract.clone(),
+            &ExecuteMsg::AddMarket {
+                params: params.into(),
+            },
+            &[Coin {
+                denom: DENOM.to_owned(),
+                amount: 100u16.into(),
+            }],
+        )
+        .unwrap();
+}
+
 proptest! {
 #[test]
 fn test_cpmm_buy_sell(pool_one in 1..1000u32, pool_two in 1..1000u32, buy in 2..50u32) {
