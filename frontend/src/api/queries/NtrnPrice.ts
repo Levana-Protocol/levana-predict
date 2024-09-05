@@ -2,7 +2,7 @@ import BigNumber from 'bignumber.js'
 import { queryOptions } from '@tanstack/react-query'
 
 import { MAINNET_NETWORK_ID } from '@config/chain'
-import { NTRN_DENOM } from '@config/environment'
+import { NTRN_CONFIG, NTRN_DENOM } from '@config/environment'
 import { fetchQuerier } from '@api/querier'
 import { MS_IN_SECOND } from '@utils/time'
 
@@ -22,7 +22,7 @@ interface NtrnPrice {
 }
 
 const ntrnPriceFromResponse = (tokens: TokenPricesResponse): NtrnPrice => {
-  const ntrn = tokens.find(token => token.id === NTRN_DENOM)?.price
+  const ntrn = tokens.find(token => token.id === NTRN_CONFIG.pythId)?.price
 
   if (ntrn) {
     return {
