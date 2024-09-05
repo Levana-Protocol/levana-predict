@@ -8,6 +8,7 @@ import { dismiss, present } from '@state/modals'
 const CONNECTION_MODAL_KEY = "connection_modal"
 
 const presentConnectionModal = () => { present(CONNECTION_MODAL_KEY, <ConnectionModal />) }
+const dismissConnectionModal = () => { dismiss(CONNECTION_MODAL_KEY) }
 
 interface WalletOption {
   type: WalletType,
@@ -56,11 +57,11 @@ const ConnectionModal = () => {
               color="primary"
               onClick={() => {
                 if (wallet.type === WalletType.WALLETCONNECT) {
-                  dismiss(CONNECTION_MODAL_KEY)
+                  dismissConnectionModal()
                 }
 
                 connectAsync({ chainId: CHAIN_INFO.chainId, walletType: wallet.type })
-                  .then(() => { dismiss(CONNECTION_MODAL_KEY) })
+                  .then(() => { dismissConnectionModal() })
                   .catch(err => {
                     if (!(err instanceof Error && err.message === "Request rejected") && !(err instanceof Error && err.message === "User closed wallet connect")) {
                       // notifications.notifyError(AppError.withCause(`Failed to connect with ${wallet.name}`, err))

@@ -11,8 +11,11 @@ export const NETWORK_ID = IS_TESTNET ? "neutron-testnet" : "neutron-mainnet"
 export const CHAIN_INFO = IS_TESTNET ? neutrontestnet : neutron
 export const CHAIN_ID = CHAIN_INFO.chainId
 
-export const TESTNET_RPC_URL = "https://querier-testnet.levana.finance/rpc/neutron-testnet"
 export const WALLET_CONNECT_ID = "0739280223ce943edb2c9fbbaefafdb6"
+
+export const TESTNET_RPC_URL = "https://querier-testnet.levana.finance/rpc/neutron-testnet"
+export const GAS_MULTIPLIER = 1.4
+export const DEFAULT_GAS_PRICE = 0.0025
 
 const ChainProvider = (props: PropsWithChildren) => {
   const { children } = props
