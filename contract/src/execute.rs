@@ -104,6 +104,11 @@ fn add_market(
         });
     }
 
+    let total_outcomes = outcomes.len();
+    if !total_outcomes == 2 {
+        return Err(Error::UnsupportedOutcomes { total_outcomes });
+    }
+
     let funds = funds.require_funds(&denom)?;
     let id = LAST_MARKET_ID
         .may_load(deps.storage)?

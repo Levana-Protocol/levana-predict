@@ -82,7 +82,7 @@ impl Predict {
             ],
             denom: DENOM.to_owned(),
             deposit_fee: "0.01".parse().unwrap(),
-            withdrawal_fee: "0.01".parse().unwrap(),
+            withdrawal_fee: "0.02".parse().unwrap(),
             withdrawal_stop_date: app.block_info().time.plus_days(1),
             deposit_stop_date: app.block_info().time.plus_days(2),
             house: house.clone().into_string(),
@@ -175,6 +175,10 @@ impl Predict {
             .query_wasm_smart(&self.contract, msg)
     }
 
+    fn query_latest_market(&self) -> StdResult<MarketResp> {
+        self.query(&QueryMsg::Market { id: self.id })
+    }
+
     fn query_tokens(&self, better: &Addr, outcome: u8) -> StdResult<Token> {
         let PositionsResp { outcomes } = self.query(&QueryMsg::Positions {
             id: self.id,
@@ -214,11 +218,57 @@ impl Predict {
 }
 
 #[test]
+fn non_admin_cannot_add_market() {
+    let app = Predict::new();
+    let params = AddMarketParams {
+        title: "Test market".to_owned(),
+        description: "Test description".to_owned(),
+        arbitrator: app.arbitrator.clone().to_string(),
+        outcomes: vec![
+            OutcomeDef {
+                label: "Yes".to_owned(),
+                initial_amount: Collateral(100u16.into()),
+            },
+            OutcomeDef {
+                label: "No".to_owned(),
+                initial_amount: Collateral(900u16.into()),
+            },
+        ],
+        denom: DENOM.to_owned(),
+        deposit_fee: "0.01".parse().unwrap(),
+        withdrawal_fee: "0.01".parse().unwrap(),
+        withdrawal_stop_date: app.app.borrow().block_info().time.plus_days(1),
+        deposit_stop_date: app.app.borrow().block_info().time.plus_days(2),
+        house: app.house.clone().into_string(),
+    };
+    // Better is try to add a market
+    app.app
+        .borrow_mut()
+        .execute_contract(
+            app.better.clone(),
+            app.contract.clone(),
+            &ExecuteMsg::AddMarket {
+                params: params.into(),
+            },
+            &[Coin {
+                denom: DENOM.to_owned(),
+                amount: 1000u16.into(),
+            }],
+        )
+        .unwrap_err();
+}
+
+#[test]
 fn sanity() {
     let app = Predict::new();
     app.jump_days(3);
+    let amount_before = app.query_balance(&app.house).unwrap();
+    assert_eq!(Uint128::from(0u16), amount_before);
+
+    // Admin cannot set the winner
     app.set_winner(&app.admin, 0).unwrap_err();
 
+    // Arbitrator can set the winner
     app.set_winner(&app.arbitrator, 0).unwrap();
 
     let amount_after = app.query_balance(&app.house).unwrap();
@@ -229,17 +279,19 @@ fn sanity() {
 fn losing_bet() {
     let app = Predict::new();
 
-    // No funds
+    // Arbitrator doesn't have any funds
     app.place_bet(&app.arbitrator, 1, 1_000).unwrap_err();
 
     app.place_bet(&app.better, 1, 1_000).unwrap();
 
     app.jump_days(3);
-
     let better_before = app.query_balance(&app.better).unwrap();
+
+    let house_before = app.query_balance(&app.house).unwrap();
+    assert_eq!(house_before, Uint128::from(0u16));
+
     app.set_winner(&app.arbitrator, 0).unwrap();
     let better_after = app.query_balance(&app.better).unwrap();
-
     assert_eq!(better_before, better_after);
 
     let house_after = app.query_balance(&app.house).unwrap();
@@ -250,13 +302,14 @@ fn losing_bet() {
 fn withdrawal_leaves_money() {
     let app = Predict::new();
 
-    // No funds
-    app.place_bet(&app.arbitrator, 1, 1_000).unwrap_err();
+    let bet_amount = 1_000u64;
+    // Arbitrator doesn't have any funds
+    app.place_bet(&app.arbitrator, 1, bet_amount).unwrap_err();
 
     let better_before = app.query_balance(&app.better).unwrap();
     let tokens1 = app.query_tokens(&app.better, 1).unwrap();
     assert_eq!(tokens1, Token::zero());
-    app.place_bet(&app.better, 1, 1_000).unwrap();
+    app.place_bet(&app.better, 1, bet_amount).unwrap();
     let tokens2 = app.query_tokens(&app.better, 1).unwrap();
     assert_ne!(tokens2, Token::zero());
     app.withdraw(&app.better, 1, tokens2 + tokens2).unwrap_err();
@@ -269,11 +322,16 @@ fn withdrawal_leaves_money() {
     assert!(better_before > better_after);
 
     app.jump_days(3);
-
     app.set_winner(&app.arbitrator, 0).unwrap();
     let better_final = app.query_balance(&app.better).unwrap();
 
+    // No change in better balance because he lost the bet (and also
+    // we didn't collect yet)
     assert_eq!(better_after, better_final);
+
+    // We try to collect and fail since we do not have any winning
+    // outcome tokens
+    app.collect(&app.better).unwrap_err();
 
     let house_after = app.query_balance(&app.house).unwrap();
     assert_eq!(
@@ -305,30 +363,92 @@ fn winning_bet() {
 }
 
 #[test]
+fn deposit_fees_check() {
+    let app = Predict::new();
+
+    let before_market = app.query_latest_market().unwrap();
+
+    let bet_amount = 1000u64;
+    app.place_bet(&app.better, 0, bet_amount).unwrap();
+
+    let deposit_fee = before_market.deposit_fee * Decimal256::from_ratio(bet_amount, 1u64);
+    let deposit_fee: Uint128 = deposit_fee.to_uint_ceil().try_into().unwrap();
+
+    let tokens = app.query_tokens(&app.better, 0).unwrap();
+    let tokens_in_collateral = {
+        let mut market = app.query_latest_market().unwrap();
+        market.sell(0.into(), tokens).unwrap()
+    };
+
+    let calculated_deposit_fees = Collateral(Uint128::from(bet_amount))
+        .checked_sub(tokens_in_collateral)
+        .unwrap()
+        .0;
+    assert_eq!(deposit_fee, calculated_deposit_fees);
+    assert_eq!(deposit_fee, Uint128::from(10u8));
+}
+
+#[test]
+fn withdrawal_fees_check() {
+    let app = Predict::new();
+
+    let bet_amount = 1000u64;
+    app.place_bet(&app.better, 0, bet_amount).unwrap();
+
+    let initial_balance = app.query_balance(&app.better).unwrap();
+    let tokens = app.query_tokens(&app.better, 0).unwrap();
+    let market = app.query_latest_market().unwrap();
+    let fees = market.withdrawal_fee * Decimal256::from_ratio(bet_amount, 1u64);
+    let fees: Uint128 = fees.to_uint_ceil().try_into().unwrap();
+
+    app.withdraw(&app.better, 0, tokens).unwrap();
+    let final_balance = app.query_balance(&app.better).unwrap();
+    let withdraw_amount = final_balance.checked_sub(initial_balance).unwrap();
+    let total_fees = Uint128::from(bet_amount)
+        .checked_sub(withdraw_amount)
+        .unwrap();
+
+    // We know that deposit fees is 10 from the previous test
+    let withdrawal_fees = total_fees.checked_sub(Uint128::from(10u8)).unwrap();
+    assert_eq!(fees, withdrawal_fees);
+}
+
+#[test]
 fn wrong_time() {
     let app = Predict::new();
 
+    // You cannot set winner till you allow deposits
     app.set_winner(&app.arbitrator, 0).unwrap_err();
 
     app.place_bet(&app.better, 0, 1000).unwrap();
     app.withdraw(&app.better, 0, app.query_tokens(&app.better, 0).unwrap())
         .unwrap();
+    // Better does not have anything to collect since he doesn't hold
+    // any tokens anymore
     app.collect(&app.better).unwrap_err();
 
     // Withdrawals paused but deposits are active
     app.jump_days(1);
     app.place_bet(&app.better, 0, 1000).unwrap();
+    // Withdrawal fails since it is paused
     app.withdraw(&app.better, 0, app.query_tokens(&app.better, 0).unwrap())
         .unwrap_err();
+    // You cannot set winner till you allow deposits
     app.set_winner(&app.arbitrator, 0).unwrap_err();
+    // Better does not have anything to collect since he doesn't hold
+    // any tokens anymore
     app.collect(&app.better).unwrap_err();
 
     // Deposits paused too
     app.jump_days(1);
+    // Not able to place bets since deposits are paused.
     app.place_bet(&app.better, 0, 1000).unwrap_err();
+    // Withdraw will still fail since it paused
     app.withdraw(&app.better, 0, app.query_tokens(&app.better, 0).unwrap())
         .unwrap_err();
+    // Winner is set successfully now
     app.set_winner(&app.arbitrator, 0).unwrap();
+    // Better can collect now
     app.collect(&app.better).unwrap();
 }
 
@@ -338,19 +458,22 @@ fn invalid_outcome_ids() {
 
     app.place_bet(&app.better, 0, 1_000).unwrap();
     app.place_bet(&app.better, 1, 1_000).unwrap();
+    // Fails because ther is no outcome 2
     app.place_bet(&app.better, 2, 1_000).unwrap_err();
     let tokens0 = app.query_tokens(&app.better, 0).unwrap();
     let tokens1 = app.query_tokens(&app.better, 1).unwrap();
+    // Fails because ther is no outcome 2
     app.query_tokens(&app.better, 2).unwrap_err();
     assert_ne!(tokens0, Token::zero());
     assert_ne!(tokens1, Token::zero());
     app.withdraw(&app.better, 0, tokens0).unwrap();
     app.withdraw(&app.better, 1, tokens1).unwrap();
+    // Fails because ther is no outcome 2
     app.withdraw(&app.better, 2, tokens1).unwrap_err();
     app.withdraw(&app.better, 2, Token::zero()).unwrap_err();
 
     app.jump_days(3);
-
+    // Fails because ther is no outcome 2
     app.set_winner(&app.arbitrator, 2).unwrap_err();
     app.set_winner(&app.arbitrator, 0).unwrap();
 }
@@ -358,29 +481,90 @@ fn invalid_outcome_ids() {
 #[test]
 fn wallet_count() {
     let app = Predict::new();
-
+    // Nobody betted so 0 wallets
     assert_eq!(app.query_wallet_count().unwrap(), (0, vec![0, 0]));
 
     app.place_bet(&app.better, 0, 1_000).unwrap();
+    // One new better
     assert_eq!(app.query_wallet_count().unwrap(), (1, vec![1, 0]));
-
+    // Same better in different outcome
     app.place_bet(&app.better, 1, 1_000).unwrap();
     assert_eq!(app.query_wallet_count().unwrap(), (1, vec![1, 1]));
 
+    // Same better on the outcome which he has already bet on
+    app.place_bet(&app.better, 1, 1_000).unwrap();
+    assert_eq!(app.query_wallet_count().unwrap(), (1, vec![1, 1]));
+
+    // New better
     app.place_bet(&app.admin, 0, 1_000).unwrap();
     assert_eq!(app.query_wallet_count().unwrap(), (2, vec![2, 1]));
 
     let tokens0 = app.query_tokens(&app.better, 0).unwrap();
     app.withdraw(&app.better, 0, tokens0).unwrap();
+    // Better has fully withdrawn from outcome 0
     assert_eq!(app.query_wallet_count().unwrap(), (2, vec![1, 1]));
 
     let tokens1 = app.query_tokens(&app.better, 1).unwrap();
     app.withdraw(&app.better, 1, tokens1).unwrap();
+    // Better has fully withdrawn from outcome 1
     assert_eq!(app.query_wallet_count().unwrap(), (1, vec![1, 0]));
 
     let tokens0 = app.query_tokens(&app.admin, 0).unwrap();
     app.withdraw(&app.admin, 0, tokens0).unwrap();
+    // Other better has fully withdrawn
     assert_eq!(app.query_wallet_count().unwrap(), (0, vec![0, 0]));
+}
+
+#[test]
+fn house_always_wins() {
+    let app = Predict::new();
+
+    let house_balance = app.query_balance(&app.house).unwrap();
+    assert_eq!(house_balance, Uint128::zero());
+    app.place_bet(&app.better, 0, 1_000).unwrap();
+    app.place_bet(&app.admin, 0, 1_000).unwrap();
+
+    app.jump_days(3);
+    app.set_winner(&app.arbitrator, 0).unwrap();
+
+    app.collect(&app.better).unwrap();
+    app.collect(&app.admin).unwrap();
+    let house_balance = app.query_balance(&app.house).unwrap();
+    assert!(house_balance > Uint128::zero());
+}
+
+#[test]
+fn market_with_only_one_outcome() {
+    let app = Predict::new();
+    let params = AddMarketParams {
+        title: "Test market".to_owned(),
+        description: "Test description".to_owned(),
+        arbitrator: app.arbitrator.clone().to_string(),
+        outcomes: vec![OutcomeDef {
+            label: "Yes".to_owned(),
+            initial_amount: Collateral(100u16.into()),
+        }],
+        denom: DENOM.to_owned(),
+        deposit_fee: "0.01".parse().unwrap(),
+        withdrawal_fee: "0.01".parse().unwrap(),
+        withdrawal_stop_date: app.app.borrow().block_info().time.plus_days(1),
+        deposit_stop_date: app.app.borrow().block_info().time.plus_days(2),
+        house: app.house.clone().into_string(),
+    };
+    app.app
+        .borrow_mut()
+        .execute_contract(
+            app.admin.clone(),
+            app.contract.clone(),
+            &ExecuteMsg::AddMarket {
+                params: params.into(),
+            },
+            &[Coin {
+                denom: DENOM.to_owned(),
+                amount: 100u16.into(),
+            }],
+        )
+        .unwrap();
 }
 
 proptest! {
