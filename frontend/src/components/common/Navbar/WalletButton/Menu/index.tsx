@@ -1,8 +1,9 @@
-import { useAccount, useDisconnect } from 'graz'
+import { useDisconnect } from 'graz'
 import { ListDivider, ListItemContent, ListItemDecorator, Menu, MenuItem, MenuProps, Typography } from '@mui/joy'
 
 import { CopyIcon } from '@assets/icons/Copy'
 import { DisconnectIcon } from '@assets/icons/Disconnect'
+import { useCurrentAccount } from '@config/chain'
 import { abbreviateWalletAddress } from '@utils/string'
 import { mergeSx } from '@utils/styles'
 import { useCopyToClipboard } from '@utils/hooks'
@@ -11,7 +12,7 @@ interface NavbarWalletMenuProps extends Omit<MenuProps, "children"> { }
 
 const NavbarWalletMenu = (props: NavbarWalletMenuProps) => {
   const { ...menuProps } = props
-  const account = useAccount()
+  const account = useCurrentAccount()
   const { disconnect } = useDisconnect()
   const copy = useCopyToClipboard()
 
@@ -27,21 +28,14 @@ const NavbarWalletMenu = (props: NavbarWalletMenuProps) => {
     >
       <MenuItem
         aria-label="Copy wallet address to clipboard"
-        onClick={() => {
-          const address = account.data?.bech32Address
-          if (address) {
-            copy(address)
-          }
-        }}
+        onClick={() => { copy(account.bech32Address) }}
       >
         <ListItemDecorator><CopyIcon /></ListItemDecorator>
         <ListItemContent>
           <Typography level="inherit">Copy address</Typography>
-          {account.data &&
-            <Typography level="body-sm" textColor="text.secondary">
-              {abbreviateWalletAddress(account.data.bech32Address)}
-            </Typography>
-          }
+          <Typography level="body-sm" textColor="text.secondary">
+            {abbreviateWalletAddress(account.bech32Address)}
+          </Typography>
         </ListItemContent>
       </MenuItem>
 

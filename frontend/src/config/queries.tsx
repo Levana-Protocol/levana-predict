@@ -23,4 +23,4 @@ const QueryClientProvider = (props: PropsWithChildren) => {
 
 const axiosClient = axios.create()
 
-export { axiosClient, QueryClientProvider }
+export { axiosClient, queryClient, QueryClientProvider }

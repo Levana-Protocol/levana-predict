@@ -1,5 +1,5 @@
 import { PropsWithChildren } from 'react'
-import { GrazProvider } from 'graz'
+import { GrazProvider, useAccount } from 'graz'
 import { neutron, neutrontestnet } from 'graz/chains'
 
 import { IS_TESTNET } from './environment'
@@ -7,7 +7,9 @@ import { IS_TESTNET } from './environment'
 export const MAINNET_CHAIN_NAME = "neutron"
 export const TESTNET_CHAIN_NAME = "neutrontestnet"
 export const CHAIN_NAME = IS_TESTNET ? "neutrontestnet" : "neutron"
-export const NETWORK_ID = IS_TESTNET ? "neutron-testnet" : "neutron-mainnet"
+export const MAINNET_NETWORK_ID = "neutron-mainnet"
+export const TESTNET_NETWORK_ID = "neutron-testnet"
+export const NETWORK_ID = IS_TESTNET ? TESTNET_NETWORK_ID : MAINNET_NETWORK_ID
 export const CHAIN_INFO = IS_TESTNET ? neutrontestnet : neutron
 export const CHAIN_ID = CHAIN_INFO.chainId
 
@@ -34,4 +36,17 @@ const ChainProvider = (props: PropsWithChildren) => {
   )
 }
 
-export { ChainProvider }
+/**
+ * @returns the currently connected account, throwing an error if no wallet is connected.
+ */
+const useCurrentAccount = () => {
+  const account = useAccount()
+
+  if (!account.data) {
+    throw new Error("Your wallet must be connected.")
+  }
+
+  return account.data
+}
+
+export { ChainProvider, useCurrentAccount }

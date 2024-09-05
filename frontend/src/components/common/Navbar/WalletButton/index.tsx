@@ -3,13 +3,14 @@ import { forwardRef } from 'react'
 import { Button, ButtonProps, Dropdown, MenuButton, Typography } from '@mui/joy'
 
 import { ChevronDownIcon } from '@assets/icons/ChevronDown'
+import { useCurrentAccount } from '@config/chain'
 import { abbreviateWalletAddress } from '@utils/string'
-import { hiddenUpTo, mergeSx, stylesUpTo, useCurrentBreakpoint } from '@utils/styles'
+import { hiddenUpTo, mergeSx, stylesUpTo } from '@utils/styles'
 import { WalletAvatar } from '@common/Wallet/Avatar'
+import { ConnectButton } from '@common/ConnectButton'
 import { NavbarWalletMenu } from './Menu'
-import { presentConnectionModal } from '@common/ConnectionModal'
 
-interface NavbarWalletButtonProps extends Omit<ButtonProps, "children"> { }
+interface NavbarWalletButtonProps extends Omit<ButtonProps, "children" | "onClick"> { }
 
 const NavbarWalletButton = (props: NavbarWalletButtonProps) => {
   const { isConnected } = useAccount()
@@ -21,13 +22,13 @@ const NavbarWalletButton = (props: NavbarWalletButtonProps) => {
         <MenuButton slots={{ root: ConnectedWalletButton }} slotProps={{ root: props }} />
         <NavbarWalletMenu />
       </Dropdown>
-      : <DisconnectedWalletButton {...props} />
+      : <ConnectButton {...props} />
   )
 }
 
 const ConnectedWalletButton = forwardRef<HTMLButtonElement, ButtonProps>((props, ref) => {
   const { ...buttonProps } = props
-  const account = useAccount()
+  const account = useCurrentAccount()
 
   return (
     <Button
@@ -35,8 +36,8 @@ const ConnectedWalletButton = forwardRef<HTMLButtonElement, ButtonProps>((props,
       ref={ref}
       variant="outlined"
       color="neutral"
-      startDecorator={account.data &&
-        <WalletAvatar address={account.data.bech32Address} />
+      startDecorator={
+        <WalletAvatar address={account.bech32Address} />
       }
       endDecorator={
         <ChevronDownIcon
@@ -66,40 +67,10 @@ const ConnectedWalletButton = forwardRef<HTMLButtonElement, ButtonProps>((props,
       aria-label={buttonProps['aria-expanded'] ? "Close wallet menu" : "Open wallet menu"}
     >
       <Typography textColor="text.primary" level="body-sm" sx={hiddenUpTo("sm")}>
-        {abbreviateWalletAddress(account.data?.bech32Address ?? "")}
+        {abbreviateWalletAddress(account.bech32Address)}
       </Typography>
     </Button>
   )
 })
-
-const DisconnectedWalletButton = (props: NavbarWalletButtonProps) => {
-  const { ...buttonProps } = props
-  const isXsScreen = useCurrentBreakpoint() === "xs"
-  const { isConnecting, isDisconnected, isLoading } = useAccount()
-
-  return (
-    <Button
-      variant="solid"
-      color="primary"
-      size={isXsScreen ? "sm" : "md"}
-      {...buttonProps}
-      sx={mergeSx(
-        {
-          borderRadius: "xl",
-          my: { xs: 0.75, sm: 0.5 },
-        },
-        buttonProps.sx,
-      )}
-      aria-label="Connect wallet"
-      onClick={() => { presentConnectionModal() }}
-    >
-      <Typography textColor="text.primary" level={isXsScreen ? "body-xs" : "body-sm"} fontWeight={600}>
-        {isConnecting && (isXsScreen ? "Connecting" : "Connecting wallet")}
-        {isDisconnected && (isXsScreen ? "Connect" : "Connect wallet")}
-        {isLoading && (isXsScreen ? "Connecting" : "Connecting wallet")}
-      </Typography>
-    </Button>
-  )
-}
 
 export { NavbarWalletButton, type NavbarWalletButtonProps }

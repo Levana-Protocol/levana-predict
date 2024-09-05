@@ -1,11 +1,10 @@
 import { BigNumber } from 'bignumber.js'
-import { queryOptions, useQueries, useQuery } from '@tanstack/react-query'
+import { queryOptions } from '@tanstack/react-query'
 
 import { NETWORK_ID } from '@config/chain'
 import { CONTRACT_ADDRESS } from '@config/environment'
 import { fetchQuerier } from '@api/querier'
 import { Nanoseconds } from '@utils/time'
-import { globalInfoQuery } from './GlobalInfo'
 
 interface ResponseMarket {
   id: string,
@@ -47,7 +46,7 @@ interface MarketOutcome {
   id: string,
   label: string,
   poolTokens: BigNumber,
-  total_tokens: BigNumber,
+  totalTokens: BigNumber,
   wallets: number,
 }
 
@@ -72,7 +71,7 @@ const outcomeFromResponse = (response: ResponseMarketOutcome): MarketOutcome => 
     id: response.id,
     label: response.label,
     poolTokens: BigNumber(response.pool_tokens),
-    total_tokens: BigNumber(response.total_tokens),
+    totalTokens: BigNumber(response.total_tokens),
     wallets: response.wallets,
   }
 }
@@ -89,24 +88,14 @@ const fetchMarket = (marketId: string): Promise<Market> => {
   )
 }
 
-const MARKET_KEY = (marketId: string) => ["market", marketId] as const
+const MARKET_KEYS = {
+  all: ["market"] as const,
+  market: (marketId: string) => [...MARKET_KEYS.all, marketId] as const,
+}
 
 const marketQuery = (marketId: string) => queryOptions({
-  queryKey: MARKET_KEY(marketId),
+  queryKey: MARKET_KEYS.market(marketId),
   queryFn: () => fetchMarket(marketId),
 })
 
-const useAllMarkets = () => {
-  const globalInfo = useQuery(globalInfoQuery)
-  const marketIds = globalInfo.data
-    ? [...Array(globalInfo.data.latestMarketId).keys()].map(index => `${index + 1}`)
-    : []
-
-  const markets = useQueries({
-    queries: marketIds.map(marketQuery),
-  })
-
-  return markets
-}
-
-export { marketQuery, useAllMarkets, type Market, type MarketOutcome }
+export { marketQuery, type Market, type MarketOutcome }
