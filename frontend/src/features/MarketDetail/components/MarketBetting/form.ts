@@ -30,11 +30,12 @@ const useMarketBettingForm = (marketId: string) => {
   const onSubmit = (formValues: BetFormValues) => {
     const isToggled = formValues.betAmount.toggled
     const betAmount = formValues.betAmount.value
-    const direction = formValues.direction
+    //const direction = formValues.direction
     const outcome = formValues.outcome
 
     if (betAmount && outcome && ntrnPrice.data?.price) {
       const ntrnAmount = isToggled ? new USD(betAmount).toNtrn(ntrnPrice.data.price) : NTRN.fromValue(betAmount)
+      console.log(marketId, ntrnAmount.toFullPrecision(true))
 
       // return betOnMarket.mutateAsync({ ... })
     } else {
