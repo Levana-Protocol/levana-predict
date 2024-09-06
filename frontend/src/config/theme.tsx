@@ -27,6 +27,7 @@ import { MS_IN_SECOND } from '@utils/time'
 declare module "@mui/joy/styles/types/colorSystem" {
   interface PaletteBackgroundOverrides {
     spotlight1: true,
+    level4: true,
   }
 
   interface Palette {
@@ -114,6 +115,7 @@ const colorScheme = ((): ColorSystemOptions => {
     level1: "#1D1A21",
     level2: "#26222A",
     level3: "#39343E",
+    level4: "#16111A",
     tooltip: gray[600],
     backdrop: "rgba(0 0 0 / 0.3)",
     spotlight1: "#211A33",

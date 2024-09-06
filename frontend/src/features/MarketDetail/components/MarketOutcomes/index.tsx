@@ -28,7 +28,11 @@ const MarketOutcomesContent = (props: { market: Market }) => {
     >
       {market.possibleOutcomes.map(outcome =>
         <Box key={outcome.id}>
-          <Typography level="title-md" fontWeight={600}>
+          <Typography
+            level="title-lg"
+            fontWeight={600}
+            color={outcome.label === "Yes" ? "success" : outcome.label === "No" ? "danger" : "neutral"}
+          >
             {getPercentage(outcome.wallets, market.totalWallets)}% {outcome.label}
           </Typography>
           <Typography level="title-md" textColor="text.secondary" fontWeight={500}>

@@ -127,7 +127,6 @@ const NtrnAmountField = (props: NtrnAmountFieldProps) => {
               borderStyle: "solid",
               borderColor: (theme) => !!fieldState.error ? theme.palette.warning.plainColor : "transparent",
               p: 2,
-              m: -2,
             },
             sheetProps.sx,
           )}
