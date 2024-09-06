@@ -3,6 +3,10 @@ import { Breakpoint, SxProps, useMediaQuery } from '@mui/system'
 
 const DESKTOP_BREAKPOINT = "lg" as const
 
+interface StyleProps {
+  sx?: SxProps<Theme>,
+}
+
 /**
  * @returns an `SxProps` object that applies the given styles, up to (and including) a certain breakpoint.
  */
@@ -120,5 +124,6 @@ const mergeSx = (...sxs: (SxProps<Theme> | undefined)[]): SxProps<Theme> => {
   return sxs.flatMap(sx => Array.isArray(sx) ? sx : [sx])
 }
 
+export type { StyleProps }
 export { stylesUpTo, hiddenUpTo , stylesFrom, hiddenFrom, stylesOnlyAt, buildGridAreas, widthMinusGap, cellWidthMinusGap, mergeSx }
 export { useScreenLargerThan, useScreenSmallerThan, useIsDesktop, useCurrentBreakpoint, DESKTOP_BREAKPOINT }

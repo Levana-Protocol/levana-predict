@@ -38,15 +38,15 @@ const router = createBrowserRouter([
   },
 ])
 
-const routes = {
-  markets: `/${routesBuilder.markets.get()}`,
-  market: (marketId: string) => generatePath(`/${routesBuilder.markets.market.get()}`, { marketId })
-}
-
 const RouterProvider = () => {
   return (
     <ReactRouterProvider router={router} />
   )
+}
+
+const routes = {
+  markets: `/${routesBuilder.markets.get()}`,
+  market: (marketId: string) => generatePath(`/${routesBuilder.markets.market.get()}`, { marketId })
 }
 
 export { routes, RouterProvider }
