@@ -1,6 +1,7 @@
 import { Navigate, createBrowserRouter, RouterProvider as ReactRouterProvider, generatePath } from 'react-router-dom'
 
 import { App } from 'app'
+import { MarketId } from '@api/queries/Market'
 import { ErrorPage } from '@common/ErrorPage'
 import { MarketPage } from '@pages/Market'
 import { MarketsPage } from '@pages/Markets'
@@ -46,7 +47,7 @@ const RouterProvider = () => {
 
 const routes = {
   markets: `/${routesBuilder.markets.get()}`,
-  market: (marketId: string) => generatePath(`/${routesBuilder.markets.market.get()}`, { marketId })
+  market: (marketId: MarketId) => generatePath(`/${routesBuilder.markets.market.get()}`, { marketId })
 }
 
 export { routes, RouterProvider }

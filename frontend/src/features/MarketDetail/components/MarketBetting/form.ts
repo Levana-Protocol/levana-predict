@@ -1,7 +1,9 @@
 import { useForm } from 'react-hook-form'
 import { useQuery } from '@tanstack/react-query'
 
+import { MarketId } from '@api/queries/Market'
 import { ntrnPriceQuery } from '@api/queries/NtrnPrice'
+import { usePlaceBet } from '@api/mutations/PlaceBet'
 import { NTRN, USD } from '@utils/tokens'
 
 interface BetFormValues {
@@ -12,7 +14,7 @@ interface BetFormValues {
   betOutcome: string | null,
 }
 
-const useMarketBettingForm = (marketId: string) => {
+const useMarketBettingForm = (marketId: MarketId) => {
   const form = useForm<BetFormValues>({
     defaultValues: {
       betAmount: {
@@ -23,6 +25,8 @@ const useMarketBettingForm = (marketId: string) => {
     },
   })
 
+  const placeBet = usePlaceBet(marketId)
+
   const ntrnPrice = useQuery(ntrnPriceQuery)
 
   const onSubmit = (formValues: BetFormValues) => {
@@ -32,9 +36,8 @@ const useMarketBettingForm = (marketId: string) => {
 
     if (betAmount && betOutcome && ntrnPrice.data?.price) {
       const ntrnAmount = isToggled ? new USD(betAmount).toNtrn(ntrnPrice.data.price) : NTRN.fromValue(betAmount)
-      console.log(marketId, ntrnAmount.toFullPrecision(true))
 
-      // return betOnMarket.mutateAsync({ ... })
+      return placeBet.mutateAsync({ outcomeId: betOutcome, ntrnAmount: ntrnAmount })
     } else {
       return Promise.reject()
     }

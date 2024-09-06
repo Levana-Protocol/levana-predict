@@ -79,7 +79,7 @@ const outcomeFromResponse = (response: ResponseMarketOutcome): MarketOutcome => 
   }
 }
 
-const fetchMarket = (marketId: string): Promise<Market> => {
+const fetchMarket = (marketId: MarketId): Promise<Market> => {
   return fetchQuerier(
     "/v1/predict/market",
     marketFromResponse,
@@ -93,7 +93,7 @@ const fetchMarket = (marketId: string): Promise<Market> => {
 
 const MARKET_KEYS = {
   all: ["market"] as const,
-  market: (marketId: string) => [...MARKET_KEYS.all, marketId] as const,
+  market: (marketId: MarketId) => [...MARKET_KEYS.all, marketId] as const,
 }
 
 const marketQuery = (marketId: string) => queryOptions({

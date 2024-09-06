@@ -41,4 +41,4 @@ const positionsQuery = (address: string, marketId: MarketId) => queryOptions({
   queryFn: () => fetchPositions(address, marketId),
 })
 
-export { positionsQuery, type Positions }
+export { positionsQuery, POSITIONS_KEYS, type Positions }

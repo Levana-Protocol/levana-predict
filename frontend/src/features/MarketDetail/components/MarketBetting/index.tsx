@@ -53,18 +53,51 @@ const MarketBettingForm = (props: { market: Market }) => {
         direction="column"
         rowGap={1.5}
       >
+        <Stack direction="row" columnGap={2}>
+          <Button
+            color="neutral"
+            variant="plain"
+            size="lg"
+            sx={{
+              px: 2,
+              py: 1,
+              width: "max-content",
+              borderRadius: 0,
+              borderBottom: "2px solid white"
+            }}
+          >
+            Buy
+          </Button>
+          <Button
+            color="neutral"
+            variant="plain"
+            size="lg"
+            sx={{
+              px: 2,
+              py: 1,
+              width: "max-content",
+            }}
+            disabled
+          >
+            Sell
+          </Button>
+        </Stack>
+
         <OutcomeField
           name="betOutcome"
           market={market}
         />
+
         <NtrnAmountField
           name="betAmount"
           ntrnBalance={balance.data}
           ntrnPrice={price.data?.price}
         />
+
         <Button
           aria-label="Place bet"
           type="submit"
+          size="lg"
           disabled={!canSubmit}
           fullWidth
         >

@@ -15,14 +15,14 @@ const OutcomeFieldItem = (props: OutcomeFieldItemProps) => {
       value={outcome.id}
       aria-label={`Set outcome of bet to "${outcome.label}"`}
       label={
-          <Stack direction="column" alignItems="center">
-            <Typography
-              level="body-md"
-              fontWeight={600}
-              color={outcome.label === "Yes" ? "success" : outcome.label === "No" ? "danger" : "neutral"}
-            >
-              {outcome.label}
-            </Typography>
+        <Stack direction="column" alignItems="center">
+          <Typography
+            level="body-md"
+            fontWeight={600}
+            color={outcome.label === "Yes" ? "success" : outcome.label === "No" ? "danger" : "neutral"}
+          >
+            {outcome.label}
+          </Typography>
         </Stack>
       }
       color="neutral"
@@ -30,7 +30,7 @@ const OutcomeFieldItem = (props: OutcomeFieldItemProps) => {
       {...radioProps}
       sx={mergeSx(
         {
-          p: 1,
+          p: 0.5,
           alignItems: "center",
           textAlign: "center",
           textDecoration: "none",
