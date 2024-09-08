@@ -60,6 +60,13 @@ const errorForAction = <T>(err: T, actionType?: UserAction): AppError | T => {
     // TODO: add known contract errors
     return match({ actionType, message })
       .with(
+        {
+          actionType: "buy",
+          message: P.string.regex("Deposits for market .+ have been stopped."),
+        },
+        () => AppError.withCause("You can no longer bet on this market.", err)
+      )
+      .with(
         { message: P.string.regex("out of gas") },
         () => AppError.withCause("The transaction doesn't have enough gas.", err)
       )

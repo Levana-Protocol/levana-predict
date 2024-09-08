@@ -20,7 +20,16 @@ const LoadableWidget = <T,>(props: LoadableWidgetProps<T>) => {
     <LoadableComponent
       useDeps={useDeps}
       renderContent={(deps) =>
-        <Sheet sx={mergeSx({ p: 3, height: "100%" }, sx)}>
+        <Sheet
+          sx={mergeSx(
+            {
+              p: 3,
+              height: "100%",
+              backgroundColor: theme => theme.palette.background.level4,
+            },
+            sx,
+          )}
+        >
           {renderContent(deps)}
         </Sheet>
       }

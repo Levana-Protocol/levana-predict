@@ -10,7 +10,7 @@ export const ENV: Environment = match(window.location.host)
 
 export const IS_TESTNET = ENV === "testnet"
 
-export const CONTRACT_ADDRESS = IS_TESTNET ? "neutron1cvdx6qpfetavhjejuf2e5lpzyslautwehrgc9uv04zj9vc7v468qsx22wk" : ""
+export const CONTRACT_ADDRESS = IS_TESTNET ? "neutron13cd0k8m8qspdydryvwus07hj5l6hqtss90ddypjg4wp20ncfunysar4x7y" : ""
 export const QUERIER_ADDRESS = IS_TESTNET ? "https://querier-testnet.levana.finance" : "https://querier-mainnet.levana.finance"
 export const INDEXER_ADDRESS = IS_TESTNET ? "https://indexer-testnet.levana.finance" : "https://indexer-mainnet.levana.finance"
 

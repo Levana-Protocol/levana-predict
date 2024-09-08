@@ -3,18 +3,19 @@ import { queryOptions } from '@tanstack/react-query'
 import { NETWORK_ID } from '@config/chain'
 import { CONTRACT_ADDRESS } from '@config/environment'
 import { fetchQuerier } from '@api/querier'
+import { MarketId } from './Market'
 
 interface ResponseGlobalInfo {
   latest_market_id: number | null,
 }
 
 interface GlobalInfo {
-  latestMarketId: number | undefined,
+  latestMarketId: MarketId | undefined,
 }
 
 const globalInfoFromResponse = (response: ResponseGlobalInfo): GlobalInfo => {
   return {
-    latestMarketId: response.latest_market_id ?? undefined,
+    latestMarketId: response.latest_market_id === null ? undefined : `${response.latest_market_id}`,
   }
 }
 

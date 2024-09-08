@@ -1,18 +1,19 @@
 import { useAccount } from 'graz'
-import { Button, Typography } from '@mui/joy'
+import { Button, Stack, Typography } from '@mui/joy'
+import { FormProvider } from 'react-hook-form'
 import { useQuery } from '@tanstack/react-query'
 
 import { useCurrentAccount } from '@config/chain'
 import { ntrnBalanceQuery } from '@api/queries/NtrnBalance'
 import { ntrnPriceQuery } from '@api/queries/NtrnPrice'
 import { Market } from '@api/queries/Market'
-import { StyleProps } from '@utils/styles'
+import { StyleProps, mergeSx } from '@utils/styles'
 import { LoadableWidget } from '@lib/Loadable/Widget'
-import { NtrnAmountField } from '@lib/NtrnAmountField'
+import { ConnectButton } from '@common/ConnectButton'
 import { useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
 import { useMarketBettingForm } from './form'
-import { FormProvider } from 'react-hook-form'
-import { ConnectButton } from '@common/ConnectButton'
+import { NtrnAmountField } from './NtrnAmountField'
+import { OutcomeField } from './OutcomeField'
 
 const MarketBetting = (props: StyleProps) => {
   return (
@@ -20,7 +21,7 @@ const MarketBetting = (props: StyleProps) => {
       useDeps={useSuspenseCurrentMarket}
       renderContent={(market) => <MarketBettingContent market={market} />}
       placeholderContent={<MarketBettingPlaceholder />}
-      sx={props.sx}
+      sx={mergeSx({ p: 1.5 }, props.sx)}
     />
   )
 }
@@ -46,21 +47,63 @@ const MarketBettingForm = (props: { market: Market }) => {
 
   return (
     <FormProvider {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)}>
+      <Stack
+        component="form"
+        onSubmit={form.handleSubmit(onSubmit)}
+        direction="column"
+        rowGap={1.5}
+      >
+        <Stack direction="row" columnGap={2}>
+          <Button
+            color="neutral"
+            variant="plain"
+            size="lg"
+            sx={{
+              px: 2,
+              py: 1,
+              width: "max-content",
+              borderRadius: 0,
+              borderBottom: "2px solid white"
+            }}
+          >
+            Buy
+          </Button>
+          <Button
+            color="neutral"
+            variant="plain"
+            size="lg"
+            sx={{
+              px: 2,
+              py: 1,
+              width: "max-content",
+            }}
+            disabled
+          >
+            Sell
+          </Button>
+        </Stack>
+
+        <OutcomeField
+          name="betOutcome"
+          market={market}
+        />
+
         <NtrnAmountField
           name="betAmount"
           ntrnBalance={balance.data}
           ntrnPrice={price.data?.price}
         />
+
         <Button
           aria-label="Place bet"
           type="submit"
+          size="lg"
           disabled={!canSubmit}
           fullWidth
         >
           {form.formState.isSubmitting ? "Placing bet..." : "Place bet"}
         </Button>
-      </form>
+      </Stack>
     </FormProvider>
   )
 }

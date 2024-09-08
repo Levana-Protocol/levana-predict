@@ -7,7 +7,7 @@ import { fetchQuerier } from '@api/querier'
 import { Nanoseconds } from '@utils/time'
 
 interface ResponseMarket {
-  id: string,
+  id: number,
   title: string,
   description: string,
   outcomes: ResponseMarketOutcome[],
@@ -21,7 +21,7 @@ interface ResponseMarket {
 }
 
 interface ResponseMarketOutcome {
-  id: string,
+  id: number,
   label: string,
   pool_tokens: string,
   total_tokens: string,
@@ -29,7 +29,7 @@ interface ResponseMarketOutcome {
 }
 
 interface Market {
-  id: string,
+  id: MarketId,
   title: string,
   description: string,
   possibleOutcomes: MarketOutcome[],
@@ -43,16 +43,19 @@ interface Market {
 }
 
 interface MarketOutcome {
-  id: string,
+  id: OutcomeId,
   label: string,
   poolTokens: BigNumber,
   totalTokens: BigNumber,
   wallets: number,
 }
 
+type MarketId = string
+type OutcomeId = string
+
 const marketFromResponse = (response: ResponseMarket): Market => {
   return {
-    id: response.id,
+    id: `${response.id}`,
     title: response.title,
     description: response.description,
     possibleOutcomes: response.outcomes.map(outcomeFromResponse),
@@ -68,7 +71,7 @@ const marketFromResponse = (response: ResponseMarket): Market => {
 
 const outcomeFromResponse = (response: ResponseMarketOutcome): MarketOutcome => {
   return {
-    id: response.id,
+    id: `${response.id}`,
     label: response.label,
     poolTokens: BigNumber(response.pool_tokens),
     totalTokens: BigNumber(response.total_tokens),
@@ -76,7 +79,7 @@ const outcomeFromResponse = (response: ResponseMarketOutcome): MarketOutcome => 
   }
 }
 
-const fetchMarket = (marketId: string): Promise<Market> => {
+const fetchMarket = (marketId: MarketId): Promise<Market> => {
   return fetchQuerier(
     "/v1/predict/market",
     marketFromResponse,
@@ -90,7 +93,7 @@ const fetchMarket = (marketId: string): Promise<Market> => {
 
 const MARKET_KEYS = {
   all: ["market"] as const,
-  market: (marketId: string) => [...MARKET_KEYS.all, marketId] as const,
+  market: (marketId: MarketId) => [...MARKET_KEYS.all, marketId] as const,
 }
 
 const marketQuery = (marketId: string) => queryOptions({
@@ -98,4 +101,4 @@ const marketQuery = (marketId: string) => queryOptions({
   queryFn: () => fetchMarket(marketId),
 })
 
-export { marketQuery, type Market, type MarketOutcome }
+export { marketQuery, type Market, type MarketOutcome, type MarketId, type OutcomeId }
