@@ -3,7 +3,9 @@ import { WalletType, checkWallet, useConnect } from 'graz'
 import { Button, DialogContent, DialogTitle, ModalClose, ModalDialog, Sheet } from '@mui/joy'
 
 import { CHAIN_INFO } from '@config/chain'
+import { useNotifications } from '@config/notifications'
 import { dismiss, present } from '@state/modals'
+import { AppError } from '@utils/errors'
 
 const CONNECTION_MODAL_KEY = "connection_modal"
 
@@ -41,6 +43,7 @@ const supportedWallets: WalletOption[] = [
 
 const ConnectionModal = () => {
   const { connectAsync } = useConnect()
+  const notifications = useNotifications()
 
   return (
     <ModalDialog>
@@ -64,7 +67,7 @@ const ConnectionModal = () => {
                   .then(() => { dismissConnectionModal() })
                   .catch(err => {
                     if (!(err instanceof Error && err.message === "Request rejected") && !(err instanceof Error && err.message === "User closed wallet connect")) {
-                      // notifications.notifyError(AppError.withCause(`Failed to connect with ${wallet.name}`, err))
+                      notifications.notifyError(AppError.withCause(`Failed to connect with ${wallet.name}`, err))
                     }
 
                     if (wallet.type === WalletType.WALLETCONNECT) {

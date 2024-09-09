@@ -36,7 +36,7 @@ const MarketOutcomesContent = (props: { market: Market }) => {
             {getPercentage(outcome.wallets, market.totalWallets)}% {outcome.label}
           </Typography>
           <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
-            {outcome.poolTokens.toFixed(0)} {market.denom}
+            {outcome.totalTokens.toFixed(0)} {market.denom}
           </Typography>
         </Box>
       )}

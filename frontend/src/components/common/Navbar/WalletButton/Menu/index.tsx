@@ -14,7 +14,7 @@ const NavbarWalletMenu = (props: NavbarWalletMenuProps) => {
   const { ...menuProps } = props
   const account = useCurrentAccount()
   const { disconnect } = useDisconnect()
-  const copy = useCopyToClipboard()
+  const [, copy] = useCopyToClipboard()
 
   return (
     <Menu
@@ -28,7 +28,7 @@ const NavbarWalletMenu = (props: NavbarWalletMenuProps) => {
     >
       <MenuItem
         aria-label="Copy wallet address to clipboard"
-        onClick={() => { copy(account.bech32Address) }}
+        onClick={() => { copy(account.bech32Address, abbreviateWalletAddress(account.bech32Address)) }}
       >
         <ListItemDecorator><CopyIcon /></ListItemDecorator>
         <ListItemContent>
