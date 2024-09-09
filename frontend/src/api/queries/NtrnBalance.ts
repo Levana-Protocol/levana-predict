@@ -32,4 +32,4 @@ const ntrnBalanceQuery = (address: string) => queryOptions({
   queryFn: () => fetchNtrnBalance(address),
 })
 
-export { ntrnBalanceQuery }
+export { ntrnBalanceQuery, BALANCE_KEYS }

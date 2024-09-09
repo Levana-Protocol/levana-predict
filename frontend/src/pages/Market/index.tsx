@@ -1,14 +1,16 @@
+import { useAccount } from 'graz'
 import { Box } from '@mui/joy'
 
 import { buildGridAreas } from '@utils/styles'
 import { BasePage } from '@common/BasePage'
 import { useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
-import { MarketTitle } from '@features/MarketDetail/components/MarketTitle'
-import { MarketOutcomes } from '@features/MarketDetail/components/MarketOutcomes'
+import { MarketDetails } from '@features/MarketDetail/components/MarketDetails'
+import { MyPositions } from '@features/MarketDetail/components/MyPositions'
 import { MarketBetting } from '@features/MarketDetail/components/MarketBetting'
 
 const MarketPage = () => {
   useSuspenseCurrentMarket()
+  const account = useAccount()
 
   return (
     <BasePage>
@@ -22,19 +24,21 @@ const MarketPage = () => {
           gridTemplateAreas: {
             xs: buildGridAreas([
               "title",
-              "outcomes",
+              "positions",
               "betting",
             ]),
             md: buildGridAreas([
               "title betting",
-              "outcomes betting",
+              "positions betting",
               "rest betting",
             ]),
           },
         }}
       >
-        <MarketTitle sx={{ gridArea: "title" }} />
-        <MarketOutcomes sx={{ gridArea: "outcomes" }} />
+        <MarketDetails sx={{ gridArea: "title" }} />
+        {account.isConnected &&
+          <MyPositions sx={{ gridArea: "positions" }} />
+        }
         <MarketBetting sx={{ gridArea: "betting", maxWidth: { md: 400 }, height: "max-content" }} />
       </Box>
     </BasePage>

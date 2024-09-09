@@ -10,6 +10,7 @@ import { MarketId, OutcomeId } from '@api/queries/Market'
 import { POSITIONS_KEYS } from '@api/queries/Positions'
 import { NTRN } from '@utils/tokens'
 import { AppError, errorsMiddleware } from '@utils/errors'
+import { BALANCE_KEYS } from '@api/queries/NtrnBalance'
 
 interface PlaceBetRequest {
   deposit: {
@@ -67,6 +68,7 @@ const usePlaceBet = (marketId: MarketId) => {
 
       return querierAwaitCacheAnd(
         () => queryClient.invalidateQueries({ queryKey: POSITIONS_KEYS.market(account.bech32Address, marketId)}),
+        () => queryClient.invalidateQueries({ queryKey: BALANCE_KEYS.address(account.bech32Address)}),
       )
     },
     onError: (err, args) => {
