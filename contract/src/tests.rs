@@ -179,6 +179,10 @@ impl Predict {
         self.query(&QueryMsg::Market { id: self.id })
     }
 
+    fn query_global_info(&self) -> StdResult<GlobalInfo> {
+        self.query(&QueryMsg::GlobalInfo {})
+    }
+
     fn query_tokens(&self, better: &Addr, outcome: u8) -> StdResult<Token> {
         let PositionsResp { outcomes } = self.query(&QueryMsg::Positions {
             id: self.id,
@@ -190,6 +194,20 @@ impl Predict {
             .ok_or_else(|| StdError::GenericErr {
                 msg: "Invalid outcome ID provided to query_tokens".to_owned(),
             })
+    }
+
+    fn exec_appoint_admin(&self, addr: &Addr) -> AnyResult<AppResponse> {
+        self.execute(
+            &self.admin,
+            &ExecuteMsg::AppointAdmin {
+                addr: addr.to_string(),
+            },
+            None,
+        )
+    }
+
+    fn exec_accept_admin(&self, addr: &Addr) -> AnyResult<AppResponse> {
+        self.execute(&addr, &ExecuteMsg::AcceptAdmin {}, None)
     }
 
     fn withdraw(&self, addr: &Addr, outcome: u8, tokens: Token) -> AnyResult<AppResponse> {
@@ -565,6 +583,22 @@ fn market_with_only_one_outcome() {
             }],
         )
         .unwrap();
+}
+
+#[test]
+fn change_admin() {
+    let app = Predict::new();
+
+    app.exec_accept_admin(&app.arbitrator).unwrap_err();
+    app.exec_appoint_admin(&app.arbitrator).unwrap();
+    app.exec_accept_admin(&app.admin).unwrap_err();
+    app.exec_appoint_admin(&app.better).unwrap();
+    app.exec_accept_admin(&app.arbitrator).unwrap_err();
+    app.exec_accept_admin(&app.better).unwrap();
+    app.exec_appoint_admin(&app.admin).unwrap_err();
+
+    let global_info = app.query_global_info().unwrap();
+    assert_eq!(global_info.admin, app.better);
 }
 
 proptest! {
