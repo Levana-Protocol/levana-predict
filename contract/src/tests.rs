@@ -207,7 +207,7 @@ impl Predict {
     }
 
     fn exec_accept_admin(&self, addr: &Addr) -> AnyResult<AppResponse> {
-        self.execute(&addr, &ExecuteMsg::AcceptAdmin {}, None)
+        self.execute(addr, &ExecuteMsg::AcceptAdmin {}, None)
     }
 
     fn withdraw(&self, addr: &Addr, outcome: u8, tokens: Token) -> AnyResult<AppResponse> {
