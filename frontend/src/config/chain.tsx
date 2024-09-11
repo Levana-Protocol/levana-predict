@@ -71,10 +71,10 @@ const useConnectWallet = () => {
   const { suggestAndConnectAsync } = useSuggestChainAndConnect()
 
   const connectWallet = (wallet: WalletType) => {
-    if (wallet === WalletType.WALLETCONNECT) {
-      return connectAsync({ chainId: CHAIN_ID, walletType: wallet })
-    } else {
+    if (wallet === WalletType.KEPLR || wallet === WalletType.LEAP) {
       return suggestAndConnectAsync({ chainInfo: CHAIN_INFO, walletType: wallet })
+    } else {
+      return connectAsync({ chainId: CHAIN_ID, walletType: wallet })
     }
   }
 

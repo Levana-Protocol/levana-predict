@@ -43,7 +43,8 @@ const MarketTitleContent = (props: { market: Market }) => {
       <Box>
         <IconButton
           aria-label="Copy market URL to clipboard"
-          onClick={() => { copy(routes.market(market.id), "Market URL") }}
+          onClick={() => {
+            copy(`${window.location.host}${routes.market(market.id)}`, "Market URL") }}
         >
           {copied ? <TickIcon /> : <CopyIcon />}
         </IconButton>
