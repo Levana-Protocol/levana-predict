@@ -1,14 +1,14 @@
 import { Box, IconButton, Stack, Typography } from '@mui/joy'
 
+import { CopyIcon } from '@assets/icons/Copy'
+import { TickIcon } from '@assets/icons/Tick'
+import { routes } from '@config/router'
 import { Market } from '@api/queries/Market'
 import { StyleProps } from '@utils/styles'
+import { useCopyToClipboard } from '@utils/hooks'
 import { LoadableWidget } from '@lib/Loadable/Widget'
 import { useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
 import { MarketImage } from '../MarketImage'
-import { CopyIcon } from '@assets/icons/Copy'
-import { useCopyToClipboard } from '@utils/hooks'
-import { TickIcon } from '@assets/icons/Tick'
-import { routes } from '@config/router'
 
 const MarketTitle = (props: StyleProps) => {
   return (

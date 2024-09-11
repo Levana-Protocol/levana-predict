@@ -120,6 +120,7 @@ const MarketBettingDisconnected = () => {
 }
 
 const MarketBettingPlaceholder = () => {
+  // TODO: much better placeholder
   return (
     <>
       <Typography level="h3">

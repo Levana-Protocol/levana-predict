@@ -5,7 +5,7 @@ import lvnLogo from '@assets/brand/logo.png'
 import { NETWORK_ID } from '@config/chain'
 import { CONTRACT_ADDRESS } from '@config/environment'
 import { fetchQuerier } from '@api/querier'
-import { Nanoseconds } from '@utils/time'
+import { Nanoseconds, sleep } from '@utils/time'
 import { USD } from '@utils/tokens'
 
 interface ResponseMarket {
@@ -85,8 +85,9 @@ const outcomeFromResponse = (response: ResponseMarketOutcome): MarketOutcome => 
   }
 }
 
-const fetchMarket = (marketId: MarketId): Promise<Market> => {
-  return fetchQuerier(
+const fetchMarket = async (marketId: MarketId): Promise<Market> => {
+  await sleep(3000)
+  return await fetchQuerier(
     "/v1/predict/market",
     marketFromResponse,
     {

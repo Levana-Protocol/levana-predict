@@ -10,6 +10,15 @@ const sleep = (ms: number) => {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
+const formatDate = (date: Date, options?: Intl.DateTimeFormatOptions): string => {
+  return date.toLocaleString(undefined, {
+    timeStyle: "short",
+    dateStyle: "short",
+    hour12: false,
+    ...options,
+  })
+}
+
 /**
  * A `BigNumber` that represents a number of nanoseconds, to make APIs more readable.
  */
@@ -43,4 +52,4 @@ class Nanoseconds extends BigNumber {
   }
 }
 
-export { Nanoseconds, sleep }
+export { Nanoseconds, sleep, formatDate }
