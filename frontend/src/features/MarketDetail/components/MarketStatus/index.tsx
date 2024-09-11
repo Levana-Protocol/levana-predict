@@ -18,7 +18,7 @@ const MarketStatus = (props: MarketStatusProps) => {
       {...chipProps}
     >
       {match(status)
-        .with({ state: "decided" }, ({ winner }) => `Winner: "${winner}"!`)
+        .with({ state: "decided" }, ({ winner }) => `Winner: "${winner.label}"!`)
         .with({ state: "deciding" }, () => "Awaiting arbitrator decision")
         .with({ state: "deposits" }, ({ timeLeft }) => `Withdrawals ended. Deposits end in ${timeLeft}`)
         .with({ state: "withdrawals" }, ({ timeLeft }) => `Withdrawals end in ${timeLeft}`)

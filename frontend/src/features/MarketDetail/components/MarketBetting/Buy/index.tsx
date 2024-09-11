@@ -20,9 +20,9 @@ const MarketBuyForm = (props: { market: Market }) => {
 
   return (
     <FormProvider {...form}>
-    <Stack
-      component="form"
-      onSubmit={form.handleSubmit(onSubmit)}
+      <Stack
+        component="form"
+        onSubmit={form.handleSubmit(onSubmit)}
         direction="column"
         rowGap={1.5}
       >

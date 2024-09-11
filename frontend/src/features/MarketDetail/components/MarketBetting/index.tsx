@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useAccount } from 'graz'
 import { P, match } from 'ts-pattern'
-import { Button, Stack, Typography } from '@mui/joy'
+import { Button, Sheet, Stack, Typography } from '@mui/joy'
 
 import { Market } from '@api/queries/Market'
 import { StyleProps, mergeSx } from '@utils/styles'
@@ -32,7 +32,7 @@ const MarketBettingContent = (props: { market: Market }) => {
     isConnected
       ?
         match(marketStatus)
-          .with({ state : "decided"}, () => <MarketClaimForm market={market} />)
+        .with({ state : "decided"}, () => <MarketClaimForm market={market} />)
           .with({ state: "deciding" }, () => <MarketBettingDeciding />)
           .otherwise((status) => <MarketBettingForm market={market} status={status} />)
       : <MarketBettingDisconnected status={marketStatus} />
@@ -88,16 +88,17 @@ const MarketBettingForm = (props: { market: Market, status: MarketStatus }) => {
   )
 }
 
-
 const MarketBettingDeciding = () => {
   return (
     <>
       <Typography level="title-md" fontWeight={600} sx={{ mb: 2 }}>
         Resolution
       </Typography>
-      <Typography level="body-md">
-        This market is awaiting a decision by the arbitrator, and its outcome hasn't been decided yet.
-      </Typography>
+      <Sheet sx={{ p: 1 }}>
+        <Typography level="body-md">
+          This market is awaiting a decision by the arbitrator, and its outcome hasn't been decided yet.
+        </Typography>
+      </Sheet>
     </>
   )
 }
@@ -109,7 +110,7 @@ const MarketBettingDisconnected = (props: { status: MarketStatus }) => {
     <>
       <Typography level="body-md" sx={{ mb: 0.75 }}>
         {match(status.state)
-          .with(P.union("decided", "deciding"), () => "Connect your wallet to claim your earnings.")
+          .with(P.union("decided", "deciding"), () => "Connect your wallet to view your earnings.")
           .with(P.union("withdrawals", "deposits"), () => "Connect your wallet to make a bet.")
           .exhaustive()
         }

@@ -17,7 +17,7 @@ interface ResponseMarket {
   withdrawal_fee: string,
   deposit_stop_date: string,
   withdrawal_stop_date: string,
-  winner: string | null,
+  winner: number | null,
   total_wallets: number,
   pool_size: string,
 }
@@ -41,7 +41,7 @@ interface Market {
   withdrawalFee: BigNumber,
   depositStopDate: Nanoseconds,
   withdrawalStopDate: Nanoseconds,
-  winnerOutcome: string | undefined,
+  winnerOutcome: MarketOutcome | undefined,
   totalWallets: number,
   poolSize: BigNumber,
 }
@@ -62,18 +62,19 @@ type MarketId = string
 type OutcomeId = string
 
 const marketFromResponse = (response: ResponseMarket): Market => {
+  const outcomes = response.outcomes.map((outcome) => outcomeFromResponse(response, outcome))
   return {
     id: `${response.id}`,
     title: response.title,
     image: lvnLogo, // ToDo: use real image from each market
     description: response.description,
-    possibleOutcomes: response.outcomes.map((outcome) => outcomeFromResponse(response, outcome)),
+    possibleOutcomes: outcomes,
     denom: response.denom,
     depositFee: BigNumber(response.deposit_fee),
     withdrawalFee: BigNumber(response.withdrawal_fee),
     depositStopDate: new Nanoseconds(response.deposit_stop_date),
     withdrawalStopDate: new Nanoseconds(response.withdrawal_stop_date),
-    winnerOutcome: response.winner ?? undefined,
+    winnerOutcome: response.winner ? outcomes.find(outcome => outcome.id === `${response.winner}`) : undefined,
     totalWallets: response.total_wallets,
     poolSize: BigNumber(response.pool_size),
   }

@@ -48,7 +48,7 @@ const Earnings = (props: { market: Market }) => {
       useDeps={() => useSuspenseQuery(positionsQuery(account.bech32Address, market.id)).data}
       renderContent={(positions) => <EarningsContent market={market} positions={positions} />}
       loadingFallback={
-        <Skeleton variant="rectangular" width="max-content">
+        <Skeleton variant="rectangular">
           <EarningsPlaceholder />
         </Skeleton>
       }
@@ -64,45 +64,46 @@ const Earnings = (props: { market: Market }) => {
 const EarningsContent = (props: { market: Market, positions: Positions }) => {
   const { market, positions } = props
   const earnings = market.winnerOutcome
-    ? positions.outcomes.get(market.winnerOutcome)
+    ? positions.outcomes.get(market.winnerOutcome.id)
     : undefined
 
   return (
-    <>
-      <Typography level="title-md" fontWeight={600} sx={{ mb: 2 }}>
-        Earnings
-      </Typography>
-      <Sheet sx={{ p: 1 }}>
-        {positions.claimed
-          ? <Typography level="body-md">You have claimed your earnings for this market.</Typography>
-          : (earnings?.gt(0)
-            ?
-              <Box>
-                <Typography level="title-lg" fontWeight={600}>
-                  {market.winnerOutcome}
-                </Typography>
-                <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
-                  {earnings.toFixed(3)} tokens
-                </Typography>
-              </Box>
-            : <Typography level="body-md">You have no earnings for this market.</Typography>
-          )
-        }
-      </Sheet>
-    </>
+    <Sheet sx={{ p: 2, mb: 1 }}>
+      {positions.claimed
+        ? <Typography level="body-md">You have claimed your earnings for this market.</Typography>
+        : (earnings?.gt(0)
+          ?
+            <Box>
+              <Typography
+                level="title-lg"
+                fontWeight={600}
+                color={market.winnerOutcome?.label === "Yes" ? "success" : market.winnerOutcome?.label === "No" ? "danger" : "neutral"}
+              >
+                {market.winnerOutcome?.label}
+              </Typography>
+              <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
+                {earnings.toFixed(3)} tokens
+              </Typography>
+            </Box>
+          : <Typography level="body-md">You have no earnings for this market.</Typography>
+        )
+      }
+    </Sheet>
   )
 }
 
 const EarningsPlaceholder = () => {
   return (
-    <>
-      <Typography level="title-md" fontWeight={600} sx={{ mb: 2 }}>
-        Earnings
-      </Typography>
-      <Sheet sx={{ p: 1 }}>
-        <Typography level="body-md">Loading your earnings for this market.</Typography>
-      </Sheet>
-    </>
+    <Sheet sx={{ p: 2 }}>
+      <Box>
+        <Typography level="title-lg" fontWeight={600}>
+          Yes
+        </Typography>
+        <Typography level="title-md" fontWeight={500}>
+          0.000 tokens
+        </Typography>
+      </Box>
+    </Sheet>
   )
 }
 
