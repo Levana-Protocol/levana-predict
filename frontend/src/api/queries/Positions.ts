@@ -8,6 +8,7 @@ import { queryOptions } from '@tanstack/react-query'
 
 interface PositionsResponse {
   outcomes: string[],
+  claimed_winnings: boolean,
 }
 
 type Positions = Map<OutcomeId, BigNumber>

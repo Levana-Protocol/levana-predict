@@ -7,6 +7,8 @@ import { Positions, positionsQuery } from '@api/queries/Positions'
 import { StyleProps } from '@utils/styles'
 import { LoadableWidget } from '@lib/Loadable/Widget'
 import { useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
+import { NTRN_CONFIG } from '@config/environment'
+import BigNumber from 'bignumber.js'
 
 const MyPositions = (props: StyleProps) => {
   return (
@@ -48,6 +50,9 @@ const MyPositionsContent = (props: { market: Market, positions: Positions }) => 
                 color={outcome.label === "Yes" ? "success" : outcome.label === "No" ? "danger" : "neutral"}
               >
                 {outcome.label}
+              </Typography>
+              <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
+                Potential winnings: {positions.get(outcome.id)?.times(market.poolSize).div(BigNumber(10).pow(NTRN_CONFIG.exponent)).toFixed(3)} {NTRN_CONFIG.symbol}
               </Typography>
               <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
                 {positions.get(outcome.id)?.toFixed(3)} Tokens
