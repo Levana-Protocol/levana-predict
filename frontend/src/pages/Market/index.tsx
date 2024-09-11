@@ -4,9 +4,10 @@ import { Box } from '@mui/joy'
 import { buildGridAreas } from '@utils/styles'
 import { BasePage } from '@common/BasePage'
 import { useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
-import { MarketDetails } from '@features/MarketDetail/components/MarketDetails'
+import { MarketTitle } from '@features/MarketDetail/components/MarketTitle'
 import { MyPositions } from '@features/MarketDetail/components/MyPositions'
 import { MarketBetting } from '@features/MarketDetail/components/MarketBetting'
+import { MarketOutcomes } from '@features/MarketDetail/components/MarketOutcomes'
 
 const MarketPage = () => {
   useSuspenseCurrentMarket()
@@ -24,18 +25,21 @@ const MarketPage = () => {
           gridTemplateAreas: {
             xs: buildGridAreas([
               "title",
+              "outcomes",
               "positions",
               "betting",
             ]),
             md: buildGridAreas([
               "title betting",
+              "outcomes betting",
               "positions betting",
               "rest betting",
             ]),
           },
         }}
       >
-        <MarketDetails sx={{ gridArea: "title" }} />
+        <MarketTitle sx={{ gridArea: "title" }} />
+        <MarketOutcomes sx={{ gridArea: "outcomes" }} />
         {account.isConnected &&
           <MyPositions sx={{ gridArea: "positions" }} />
         }

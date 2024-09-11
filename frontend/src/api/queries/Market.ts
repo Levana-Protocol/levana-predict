@@ -1,10 +1,12 @@
 import { BigNumber } from 'bignumber.js'
 import { queryOptions } from '@tanstack/react-query'
 
+import lvnLogo from '@assets/brand/logo.png'
 import { NETWORK_ID } from '@config/chain'
 import { CONTRACT_ADDRESS } from '@config/environment'
 import { fetchQuerier } from '@api/querier'
 import { Nanoseconds } from '@utils/time'
+import { USD } from '@utils/tokens'
 
 interface ResponseMarket {
   id: number,
@@ -32,6 +34,7 @@ interface Market {
   id: MarketId,
   title: string,
   description: string,
+  image: string,
   possibleOutcomes: MarketOutcome[],
   denom: string,
   depositFee: BigNumber,
@@ -48,6 +51,7 @@ interface MarketOutcome {
   poolTokens: BigNumber,
   totalTokens: BigNumber,
   wallets: number,
+  price: USD,
 }
 
 type MarketId = string
@@ -57,6 +61,7 @@ const marketFromResponse = (response: ResponseMarket): Market => {
   return {
     id: `${response.id}`,
     title: response.title,
+    image: lvnLogo, // ToDo: use real image from each market
     description: response.description,
     possibleOutcomes: response.outcomes.map(outcomeFromResponse),
     denom: response.denom,
@@ -76,6 +81,7 @@ const outcomeFromResponse = (response: ResponseMarketOutcome): MarketOutcome => 
     poolTokens: BigNumber(response.pool_tokens),
     totalTokens: BigNumber(response.total_tokens),
     wallets: response.wallets,
+    price: new USD(0.45), // ToDo: use real price from each outcome
   }
 }
 
