@@ -27,7 +27,7 @@ const MarketTitleContent = (props: { market: Market }) => {
   const [copied, copy] = useCopyToClipboard()
 
   return (
-    <Stack direction="row" justifyContent="space-between" columnGap={4}>
+    <Stack direction={{ xs: "column", sm: "row" }} justifyContent="space-between" columnGap={4}>
       <Stack direction="row" alignItems="center" columnGap={2}>
         <MarketImage
           market={market}
@@ -45,8 +45,10 @@ const MarketTitleContent = (props: { market: Market }) => {
       <Box>
         <IconButton
           aria-label="Copy market URL to clipboard"
+          size="sm"
           onClick={() => {
-            copy(`${window.location.host}${routes.market(market.id)}`, "Market URL") }}
+            copy(`${window.location.host}${routes.market(market.id)}`, "Market URL") }
+          }
         >
           {copied ? <TickIcon /> : <CopyIcon />}
         </IconButton>

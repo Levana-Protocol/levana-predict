@@ -23,7 +23,7 @@ const LoadableWidget = <T,>(props: LoadableWidgetProps<T>) => {
         <Sheet
           sx={mergeSx(
             {
-              p: 3,
+              p: { xs: 2, sm: 3 },
               height: "100%",
               backgroundColor: theme => theme.palette.background.level4,
             },
