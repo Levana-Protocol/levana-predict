@@ -1,9 +1,11 @@
 import { Box, Stack, Typography } from '@mui/joy'
 
-import { Market } from '@api/queries/Market'
-import { StyleProps } from '@utils/styles'
+import type { Market } from '@api/queries/Market'
+import type { StyleProps } from '@utils/styles'
 import { LoadableWidget } from '@lib/Loadable/Widget'
 import { useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
+import { NTRN_CONFIG } from '@config/environment'
+import BigNumber from 'bignumber.js'
 
 const MarketOutcomes = (props: StyleProps) => {
   return (
@@ -36,7 +38,10 @@ const MarketOutcomesContent = (props: { market: Market }) => {
               fontWeight={600}
               color={outcome.label === "Yes" ? "success" : outcome.label === "No" ? "danger" : "neutral"}
             >
-              {outcome.label} - {outcome.price.toFormat(true)}
+              {outcome.label} - {outcome.price.toFormat(3)}
+            </Typography>
+            <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
+              {outcome.percentage.toFixed(1)}%
             </Typography>
             <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
               {outcome.totalTokens.toFixed(3)} tokens bet
@@ -44,6 +49,11 @@ const MarketOutcomesContent = (props: { market: Market }) => {
           </Box>
         )}
       </Stack>
+      <Box>
+          <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
+            Prize pool size: {market.poolSize.div(BigNumber(10).pow(NTRN_CONFIG.exponent)).toFixed(3)} {NTRN_CONFIG.symbol}
+          </Typography>
+      </Box>
     </>
   )
 }

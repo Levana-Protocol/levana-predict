@@ -6,7 +6,6 @@ import { NETWORK_ID } from '@config/chain'
 import { CONTRACT_ADDRESS } from '@config/environment'
 import { fetchQuerier } from '@api/querier'
 import { Nanoseconds, sleep } from '@utils/time'
-import { USD } from '@utils/tokens'
 
 interface ResponseMarket {
   id: number,
@@ -20,6 +19,7 @@ interface ResponseMarket {
   withdrawal_stop_date: string,
   winner: string | null,
   total_wallets: number,
+  pool_size: string,
 }
 
 interface ResponseMarketOutcome {
@@ -43,15 +43,19 @@ interface Market {
   withdrawalStopDate: Nanoseconds,
   winnerOutcome: string | undefined,
   totalWallets: number,
+  poolSize: BigNumber,
 }
 
 interface MarketOutcome {
   id: OutcomeId,
   label: string,
-  poolTokens: BigNumber,
   totalTokens: BigNumber,
   wallets: number,
-  price: USD,
+  /// This is the amount of collateral you'd have to bet on an outcome
+  /// to receive 1 collateral of winnings.
+  price: BigNumber,
+  /// What percentage of the vote this outcome received
+  percentage: BigNumber,
 }
 
 type MarketId = string
@@ -63,7 +67,7 @@ const marketFromResponse = (response: ResponseMarket): Market => {
     title: response.title,
     image: lvnLogo, // ToDo: use real image from each market
     description: response.description,
-    possibleOutcomes: response.outcomes.map(outcomeFromResponse),
+    possibleOutcomes: response.outcomes.map((outcome) => outcomeFromResponse(response, outcome)),
     denom: response.denom,
     depositFee: BigNumber(response.deposit_fee),
     withdrawalFee: BigNumber(response.withdrawal_fee),
@@ -71,17 +75,23 @@ const marketFromResponse = (response: ResponseMarket): Market => {
     withdrawalStopDate: new Nanoseconds(response.withdrawal_stop_date),
     winnerOutcome: response.winner ?? undefined,
     totalWallets: response.total_wallets,
+    poolSize: BigNumber(response.pool_size),
   }
 }
 
-const outcomeFromResponse = (response: ResponseMarketOutcome): MarketOutcome => {
+const outcomeFromResponse = (market: ResponseMarket, response: ResponseMarketOutcome): MarketOutcome => {
+  let totalTokens = BigNumber(0);
+  for (const outcome of market.outcomes) {
+    totalTokens = totalTokens.plus(outcome.total_tokens)
+  }
+  const outcomeTotalTokens = BigNumber(response.total_tokens);
   return {
     id: `${response.id}`,
     label: response.label,
-    poolTokens: BigNumber(response.pool_tokens),
-    totalTokens: BigNumber(response.total_tokens),
+    totalTokens: outcomeTotalTokens,
     wallets: response.wallets,
-    price: new USD(0.45), // ToDo: use real price from each outcome
+    price: totalTokens.isZero() ? BigNumber(1) : outcomeTotalTokens.div(totalTokens),
+    percentage: totalTokens.isZero() ? BigNumber(0) : outcomeTotalTokens.times(100).div(totalTokens)
   }
 }
 
