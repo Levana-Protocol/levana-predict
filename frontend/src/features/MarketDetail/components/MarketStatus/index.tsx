@@ -20,7 +20,7 @@ const MarketStatus = (props: MarketStatusProps) => {
       {match(status)
         .with({ state: "decided" }, ({ winner }) => `Winner: "${winner}"!`)
         .with({ state: "deciding" }, () => "Awaiting arbitrator decision")
-        .with({ state: "deposits" }, ({ timeLeft }) => `Deposits end in ${timeLeft}`)
+        .with({ state: "deposits" }, ({ timeLeft }) => `Withdrawals ended. Deposits end in ${timeLeft}`)
         .with({ state: "withdrawals" }, ({ timeLeft }) => `Withdrawals end in ${timeLeft}`)
         .exhaustive()
       }

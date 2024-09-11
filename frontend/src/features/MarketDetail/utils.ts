@@ -43,4 +43,4 @@ const useMarketStatus = (market: Market): MarketStatus => {
   }, [market.winnerOutcome, market.depositStopDate, market.withdrawalStopDate])
 }
 
-export { useCurrentMarketQuery, useSuspenseCurrentMarket, useMarketStatus }
+export { useCurrentMarketQuery, useSuspenseCurrentMarket, useMarketStatus, type MarketStatus }

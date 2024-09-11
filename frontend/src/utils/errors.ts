@@ -42,7 +42,7 @@ type UserAction =
   | "connect"
   | "buy"
   | "sell"
-  | "collect"
+  | "claim"
 
 /**
  * @returns user-friendly errors (if possible), based on the action that is being performed.

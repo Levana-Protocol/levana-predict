@@ -5,9 +5,9 @@ import { useCurrentAccount } from '@config/chain'
 import { Market } from '@api/queries/Market'
 import { Positions, positionsQuery } from '@api/queries/Positions'
 import { StyleProps } from '@utils/styles'
+import { NTRN } from '@utils/tokens'
 import { LoadableWidget } from '@lib/Loadable/Widget'
 import { useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
-import { NTRN } from '@utils/tokens'
 
 const MyPositions = (props: StyleProps) => {
   return (
@@ -40,7 +40,7 @@ const MyPositionsContent = (props: { market: Market, positions: Positions }) => 
         gap={4}
       >
         {market.possibleOutcomes
-          .filter(outcome => positions.get(outcome.id)?.gt(0))
+          .filter(outcome => positions.outcomes.get(outcome.id)?.gt(0))
           .map(outcome =>
             <Box key={outcome.id}>
               <Typography
@@ -51,10 +51,10 @@ const MyPositionsContent = (props: { market: Market, positions: Positions }) => 
                 {outcome.label}
               </Typography>
               <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
-                Potential winnings: {NTRN.fromUnits(positions.get(outcome.id)?.times(market.poolSize) ?? 0).toFormat(true)}
+                Potential winnings: {NTRN.fromUnits(positions.outcomes.get(outcome.id)?.times(market.poolSize) ?? 0).toFormat(true)}
               </Typography>
               <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
-                {positions.get(outcome.id)?.toFixed(3)} Tokens
+                {positions.outcomes.get(outcome.id)?.toFixed(3)} Tokens
               </Typography>
             </Box>
           )

@@ -75,10 +75,13 @@ const MarketOutcomesPlaceholder = () => {
               level="title-lg"
               fontWeight={600}
             >
-              {outcome} - 0.00 USD
+              {outcome} - 0.000
             </Typography>
             <Typography level="title-md" fontWeight={500}>
-              0.000000 tokens bet
+              0.0%
+            </Typography>
+            <Typography level="title-md" fontWeight={500}>
+              0.000 tokens bet
             </Typography>
           </Box>
         )}

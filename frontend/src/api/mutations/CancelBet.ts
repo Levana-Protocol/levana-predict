@@ -1,70 +1,68 @@
 import { useCosmWasmSigningClient } from 'graz'
+import BigNumber from 'bignumber.js'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate'
 
 import { useCurrentAccount } from '@config/chain'
-import { NTRN_DENOM } from '@config/environment'
 import { useNotifications } from '@config/notifications'
 import { querierAwaitCacheAnd, querierBroadcastAndWait } from '@api/querier'
 import { MARKET_KEYS, MarketId, OutcomeId } from '@api/queries/Market'
 import { POSITIONS_KEYS } from '@api/queries/Positions'
 import { BALANCE_KEYS } from '@api/queries/NtrnBalance'
-import { NTRN } from '@utils/tokens'
 import { AppError, errorsMiddleware } from '@utils/errors'
 
-interface PlaceBetRequest {
-  deposit: {
+interface CancelBetRequest {
+  withdraw: {
     id: number,
     outcome: number,
+    tokens: string,
   },
 }
 
-interface PlaceBetArgs {
+interface CancelBetArgs {
   outcomeId: OutcomeId,
-  ntrnAmount: NTRN,
+  tokensAmount: BigNumber,
 }
 
-const putPlaceBet = (address: string, signer: SigningCosmWasmClient, marketId: MarketId, args: PlaceBetArgs) => {
-  const msg: PlaceBetRequest = {
-    deposit: {
+const putCancelBet = (address: string, signer: SigningCosmWasmClient, marketId: MarketId, args: CancelBetArgs) => {
+  const msg: CancelBetRequest = {
+    withdraw: {
       id: Number(marketId),
       outcome: Number(args.outcomeId),
+      tokens: args.tokensAmount.toFixed(),
     },
   }
 
   return querierBroadcastAndWait(
     address,
     signer,
-    {
-      payload: msg,
-      funds: [{ denom: NTRN_DENOM, amount: args.ntrnAmount.units.toFixed(0) }],
-    },
+    { payload: msg },
   )
 }
 
-const PLACE_BET_KEYS = {
-  all: ["place_bet"] as const,
-  address: (address: string) => [...PLACE_BET_KEYS.all, address] as const,
-  market: (address: string, marketId: MarketId) => [...PLACE_BET_KEYS.address(address), marketId] as const,
+const CANCEL_BET_KEYS = {
+  all: ["cancel_bet"] as const,
+  address: (address: string) => [...CANCEL_BET_KEYS.all, address] as const,
+  market: (address: string, marketId: MarketId) => [...CANCEL_BET_KEYS.address(address), marketId] as const,
 }
 
-const usePlaceBet = (marketId: MarketId) => {
+const useCancelBet = (marketId: MarketId) => {
   const account = useCurrentAccount()
   const signer = useCosmWasmSigningClient()
   const queryClient = useQueryClient()
   const notifications = useNotifications()
 
   const mutation = useMutation({
-    mutationKey: PLACE_BET_KEYS.market(account.bech32Address, marketId),
-    mutationFn: (args: PlaceBetArgs) => {
+    mutationKey: CANCEL_BET_KEYS.market(account.bech32Address, marketId),
+    mutationFn: (args: CancelBetArgs) => {
       if (signer.data) {
-        return errorsMiddleware("buy", putPlaceBet(account.bech32Address, signer.data, marketId, args))
+        return errorsMiddleware("sell", putCancelBet(account.bech32Address, signer.data, marketId, args))
       } else {
         return Promise.reject()
       }
     },
     onSuccess: (_, args) => {
-      notifications.notifySuccess(`Successfully bet ${args.ntrnAmount.toFormat(true)}.`)
+      notifications.notifySuccess(`Successfully cancelled bet of ${args.tokensAmount.toFixed(3)} tokens.`)
 
       return querierAwaitCacheAnd(
         () => queryClient.invalidateQueries({ queryKey: MARKET_KEYS.market(marketId)}),
@@ -74,7 +72,7 @@ const usePlaceBet = (marketId: MarketId) => {
     },
     onError: (err, args) => {
       notifications.notifyError(
-        AppError.withCause(`Failed to bet ${args.ntrnAmount.toFormat(true)}.`, err)
+        AppError.withCause(`Failed to cancel bet of ${args.tokensAmount.toFixed(3)} tokens.`, err)
       )
     },
   })
@@ -82,4 +80,4 @@ const usePlaceBet = (marketId: MarketId) => {
   return mutation
 }
 
-export { usePlaceBet }
+export { useCancelBet }

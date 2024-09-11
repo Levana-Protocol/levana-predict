@@ -118,4 +118,4 @@ const marketQuery = (marketId: string) => queryOptions({
   queryFn: () => fetchMarket(marketId),
 })
 
-export { marketQuery, type Market, type MarketOutcome, type MarketId, type OutcomeId }
+export { marketQuery, MARKET_KEYS, type Market, type MarketOutcome, type MarketId, type OutcomeId }

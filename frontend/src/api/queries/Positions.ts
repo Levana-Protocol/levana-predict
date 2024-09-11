@@ -1,21 +1,27 @@
 import BigNumber from 'bignumber.js'
+import { queryOptions } from '@tanstack/react-query'
 
 import { NETWORK_ID } from '@config/chain'
 import { CONTRACT_ADDRESS } from '@config/environment'
 import { fetchQuerier } from '@api/querier'
 import { MarketId, OutcomeId } from './Market'
-import { queryOptions } from '@tanstack/react-query'
 
 interface PositionsResponse {
   outcomes: string[],
   claimed_winnings: boolean,
 }
 
-type Positions = Map<OutcomeId, BigNumber>
+interface Positions {
+  outcomes: Map<OutcomeId, BigNumber>,
+  claimed: boolean,
+}
 
 const positionsFromResponse = (response: PositionsResponse): Positions => {
   const entries = response.outcomes.map((amount, index) => [`${index}`, BigNumber(amount)] as const)
-  return new Map(entries)
+  return {
+    outcomes: new Map(entries),
+    claimed: response.claimed_winnings,
+  }
 }
 
 const fetchPositions = (address: string, marketId: MarketId): Promise<Positions> => {
