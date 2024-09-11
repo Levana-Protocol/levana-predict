@@ -184,7 +184,10 @@ impl Predict {
     }
 
     fn query_tokens(&self, better: &Addr, outcome: u8) -> StdResult<Token> {
-        let PositionsResp { outcomes } = self.query(&QueryMsg::Positions {
+        let PositionsResp {
+            outcomes,
+            claimed_winnings: _,
+        } = self.query(&QueryMsg::Positions {
             id: self.id,
             addr: better.to_string(),
         })?;
