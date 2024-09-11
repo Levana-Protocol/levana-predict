@@ -16,7 +16,6 @@ const MarketSellForm = (props: { market: Market }) => {
 
   const { form, canSubmit, onSubmit, outcome } = useMarketSellForm(market)
   const tokensBalance = outcome ? positions.data?.outcomes.get(outcome) : undefined
-  console.log(outcome, tokensBalance?.toFixed())
 
   return (
     <FormProvider {...form}>
