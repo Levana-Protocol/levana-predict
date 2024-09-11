@@ -2,7 +2,6 @@ import { Box, Typography } from '@mui/joy'
 
 import { Market } from '@api/queries/Market'
 import { StyleProps } from '@utils/styles'
-import { formatDate } from '@utils/time'
 import { LoadableWidget } from '@lib/Loadable/Widget'
 import { useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
 
