@@ -1,11 +1,10 @@
 import { Box, Stack, Typography } from '@mui/joy'
 
-import type { Market } from '@api/queries/Market'
-import type { StyleProps } from '@utils/styles'
+import { Market } from '@api/queries/Market'
+import { StyleProps } from '@utils/styles'
+import { NTRN } from '@utils/tokens'
 import { LoadableWidget } from '@lib/Loadable/Widget'
 import { useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
-import { NTRN_CONFIG } from '@config/environment'
-import BigNumber from 'bignumber.js'
 
 const MarketOutcomes = (props: StyleProps) => {
   return (
@@ -49,10 +48,10 @@ const MarketOutcomesContent = (props: { market: Market }) => {
           </Box>
         )}
       </Stack>
-      <Box>
-          <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
-            Prize pool size: {market.poolSize.div(BigNumber(10).pow(NTRN_CONFIG.exponent)).toFixed(3)} {NTRN_CONFIG.symbol}
-          </Typography>
+      <Box sx={{ mt: 2 }}>
+        <Typography level="body-md" textColor="text.secondary" fontWeight={600}>
+          Prize pool size: {NTRN.fromUnits(market.poolSize).toFormat(true)}
+        </Typography>
       </Box>
     </>
   )
@@ -78,12 +77,17 @@ const MarketOutcomesPlaceholder = () => {
             >
               {outcome} - 0.00 USD
             </Typography>
-            <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
+            <Typography level="title-md" fontWeight={500}>
               0.000000 tokens bet
             </Typography>
           </Box>
         )}
       </Stack>
+      <Box sx={{ mt: 2 }}>
+        <Typography level="body-md" fontWeight={600}>
+          Prize pool size: 0.000000 NTRN
+        </Typography>
+      </Box>
     </>
   )
 }

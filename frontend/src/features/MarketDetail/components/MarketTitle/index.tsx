@@ -1,4 +1,4 @@
-import { Box, IconButton, Stack, Typography } from '@mui/joy'
+import { Box, Chip, IconButton, Stack, Typography } from '@mui/joy'
 
 import { CopyIcon } from '@assets/icons/Copy'
 import { TickIcon } from '@assets/icons/Tick'
@@ -9,6 +9,7 @@ import { useCopyToClipboard } from '@utils/hooks'
 import { LoadableWidget } from '@lib/Loadable/Widget'
 import { useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
 import { MarketImage } from '../MarketImage'
+import { MarketStatus } from '../MarketStatus'
 
 const MarketTitle = (props: StyleProps) => {
   return (
@@ -37,6 +38,7 @@ const MarketTitleContent = (props: { market: Market }) => {
           <Typography level="h3">
             {market.title}
           </Typography>
+          <MarketStatus market={market} sx={{ mt: 1 }} />
         </Box>
       </Stack>
 
@@ -67,6 +69,9 @@ const MarketTitlePlaceholder = () => {
         <Typography level="h3">
           Loading market's title...
         </Typography>
+        <Chip size="md" sx={{ mt: 1 }}>
+          Loading market's status...
+        </Chip>
       </Box>
     </Stack>
   )

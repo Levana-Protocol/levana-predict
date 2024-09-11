@@ -7,8 +7,7 @@ import { Positions, positionsQuery } from '@api/queries/Positions'
 import { StyleProps } from '@utils/styles'
 import { LoadableWidget } from '@lib/Loadable/Widget'
 import { useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
-import { NTRN_CONFIG } from '@config/environment'
-import BigNumber from 'bignumber.js'
+import { NTRN } from '@utils/tokens'
 
 const MyPositions = (props: StyleProps) => {
   return (
@@ -52,7 +51,7 @@ const MyPositionsContent = (props: { market: Market, positions: Positions }) => 
                 {outcome.label}
               </Typography>
               <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
-                Potential winnings: {positions.get(outcome.id)?.times(market.poolSize).div(BigNumber(10).pow(NTRN_CONFIG.exponent)).toFixed(3)} {NTRN_CONFIG.symbol}
+                Potential winnings: {NTRN.fromUnits(positions.get(outcome.id)?.times(market.poolSize) ?? 0).toFormat(true)}
               </Typography>
               <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
                 {positions.get(outcome.id)?.toFixed(3)} Tokens
@@ -76,11 +75,14 @@ const MyPositionsPlaceholder = () => {
       >
         {[0, 1, 2].map(index =>
           <Box key={index}>
-            <Typography level="body-md" fontWeight={600}>
-              0.00% Yes
+            <Typography level="title-lg" fontWeight={600}>
+              Yes
             </Typography>
-            <Typography level="body-sm" fontWeight={500}>
-              10000 TOKENS
+            <Typography level="title-md" fontWeight={500}>
+              0 Tokens
+            </Typography>
+            <Typography level="title-md" fontWeight={500}>
+              Potential winnings: 0.000000 NTRN
             </Typography>
           </Box>
         )}
