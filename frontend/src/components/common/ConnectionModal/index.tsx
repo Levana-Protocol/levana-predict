@@ -1,4 +1,3 @@
-import { ReactNode } from 'react'
 import { WalletType, checkWallet, useAccount } from 'graz'
 import { Box, Button, DialogContent, DialogTitle, ModalClose, ModalDialog, Sheet } from '@mui/joy'
 
