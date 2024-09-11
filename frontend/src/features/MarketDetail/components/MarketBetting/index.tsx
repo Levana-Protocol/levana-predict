@@ -111,10 +111,10 @@ const MarketBettingForm = (props: { market: Market }) => {
 const MarketBettingDisconnected = () => {
   return (
     <>
-      <Typography level="body-md">
+      <Typography level="body-md" sx={{ mb: 0.75}}>
         Connect your wallet to place a bet.
       </Typography>
-      <ConnectButton sx={{borderRadius: "sm"}} fullWidth />
+      <ConnectButton sx={{ borderRadius: "sm" }} fullWidth />
     </>
   )
 }

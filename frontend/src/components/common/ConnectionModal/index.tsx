@@ -1,8 +1,8 @@
 import { ReactNode } from 'react'
-import { WalletType, checkWallet, useConnect } from 'graz'
+import { WalletType, checkWallet, useAccount } from 'graz'
 import { Button, DialogContent, DialogTitle, ModalClose, ModalDialog, Sheet } from '@mui/joy'
 
-import { CHAIN_INFO } from '@config/chain'
+import { useConnectWallet } from '@config/chain'
 import { useNotifications } from '@config/notifications'
 import { dismiss, present } from '@state/modals'
 import { AppError } from '@utils/errors'
@@ -42,7 +42,8 @@ const supportedWallets: WalletOption[] = [
 ]
 
 const ConnectionModal = () => {
-  const { connectAsync } = useConnect()
+  const account = useAccount()
+  const connectWallet = useConnectWallet()
   const notifications = useNotifications()
 
   return (
@@ -58,17 +59,16 @@ const ConnectionModal = () => {
           <Sheet key={wallet.type} sx={{ display: "flex", alignItems: "center", justifyContent: "center", p: 1 }}>
             <Button
               color="primary"
+              disabled={account.isConnecting}
               onClick={() => {
                 if (wallet.type === WalletType.WALLETCONNECT) {
                   dismissConnectionModal()
                 }
 
-                connectAsync({ chainId: CHAIN_INFO.chainId, walletType: wallet.type })
+                connectWallet(wallet.type)
                   .then(() => { dismissConnectionModal() })
                   .catch(err => {
-                    if (!(err instanceof Error && err.message === "Request rejected") && !(err instanceof Error && err.message === "User closed wallet connect")) {
-                      notifications.notifyError(AppError.withCause(`Failed to connect with ${wallet.name}`, err))
-                    }
+                    notifications.notifyError(AppError.withCause(`Failed to connect with ${wallet.name}.`, err))
 
                     if (wallet.type === WalletType.WALLETCONNECT) {
                       presentConnectionModal()

@@ -1,11 +1,11 @@
+import BigNumber from 'bignumber.js'
 import { Box, Stack, Typography } from '@mui/joy'
 
 import { Market } from '@api/queries/Market'
 import { StyleProps } from '@utils/styles'
+import { getPercentage } from '@utils/number'
 import { LoadableWidget } from '@lib/Loadable/Widget'
 import { useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
-import { getPercentage } from '@utils/number'
-import BigNumber from 'bignumber.js'
 
 const MarketDetails = (props: StyleProps) => {
   return (
