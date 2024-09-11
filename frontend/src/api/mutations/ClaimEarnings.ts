@@ -7,8 +7,8 @@ import { useNotifications } from '@config/notifications'
 import { querierAwaitCacheAnd, querierBroadcastAndWait } from '@api/querier'
 import { MarketId } from '@api/queries/Market'
 import { POSITIONS_KEYS } from '@api/queries/Positions'
+import { BALANCES_KEYS } from '@api/queries/Balances'
 import { AppError, errorsMiddleware } from '@utils/errors'
-import { BALANCE_KEYS } from '@api/queries/NtrnBalance'
 
 interface ClaimEarningsRequest {
   collect: {
@@ -56,7 +56,7 @@ const useClaimEarnings = (marketId: MarketId) => {
 
       return querierAwaitCacheAnd(
         () => queryClient.invalidateQueries({ queryKey: POSITIONS_KEYS.market(account.bech32Address, marketId)}),
-        () => queryClient.invalidateQueries({ queryKey: BALANCE_KEYS.address(account.bech32Address)}),
+        () => queryClient.invalidateQueries({ queryKey: BALANCES_KEYS.address(account.bech32Address)}),
       )
     },
     onError: (err) => {

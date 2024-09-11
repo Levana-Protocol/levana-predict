@@ -8,7 +8,7 @@ import { mergeSx } from '@utils/styles'
 import { matchesRegex } from '@utils/string'
 import { AssetInput } from '@lib/AssetInput'
 
-interface BetTokensAmountFieldProps extends Omit<SheetProps, "children">{
+interface BetTokensFieldProps extends Omit<SheetProps, "children">{
   name: string,
   tokensBalance: BigNumber | undefined,
 }
@@ -23,7 +23,7 @@ interface BetTokensAmountFieldProps extends Omit<SheetProps, "children">{
  * @param name The name of the field.
  * @param tokensBalance The bet tokens amount to use for validations, the "max" button, and the slider.
  */
-const BetTokensAmountField = (props: BetTokensAmountFieldProps) => {
+const BetTokensField = (props: BetTokensFieldProps) => {
   const { name, tokensBalance, ...sheetProps } = props
 
   const form = useFormContext()
@@ -192,4 +192,4 @@ const BetTokensAmountField = (props: BetTokensAmountFieldProps) => {
   )
 }
 
-export { BetTokensAmountField, type BetTokensAmountFieldProps }
+export { BetTokensField, type BetTokensFieldProps }

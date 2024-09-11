@@ -5,7 +5,7 @@ import { useCurrentAccount } from '@config/chain'
 import { Market } from '@api/queries/Market'
 import { Positions, positionsQuery } from '@api/queries/Positions'
 import { StyleProps } from '@utils/styles'
-import { NTRN } from '@utils/tokens'
+import { Tokens } from '@utils/tokens'
 import { LoadableWidget } from '@lib/Loadable/Widget'
 import { useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
 
@@ -51,7 +51,7 @@ const MyPositionsContent = (props: { market: Market, positions: Positions }) => 
                 {outcome.label}
               </Typography>
               <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
-                Potential winnings: {NTRN.fromUnits(positions.outcomes.get(outcome.id)?.times(market.poolSize) ?? 0).toFormat(true)}
+                Potential winnings: {Tokens.fromUnits(market.denom, positions.outcomes.get(outcome.id)?.times(market.poolSize) ?? 0).toFormat(true)}
               </Typography>
               <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
                 {positions.outcomes.get(outcome.id)?.toFixed(3)} Tokens

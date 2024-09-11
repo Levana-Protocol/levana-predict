@@ -7,29 +7,31 @@ import { SwapArrowsIcon } from '@assets/icons/SwapArrows'
 import { VALID_DECIMAL_REGEX, getProportion } from '@utils/number'
 import { buildGridAreas, mergeSx } from '@utils/styles'
 import { matchesRegex } from '@utils/string'
-import { NTRN, USD } from '@utils/tokens'
+import { Denom, Tokens, USD, getTokenConfig } from '@utils/tokens'
 import { AssetInput } from '@lib/AssetInput'
 
-interface NtrnAmountFieldProps extends Omit<SheetProps, "children">{
+interface TokensAmountFieldProps extends Omit<SheetProps, "children">{
   name: string,
-  ntrnPrice: BigNumber | undefined,
-  ntrnBalance: NTRN | undefined,
+  denom: Denom,
+  price: BigNumber | undefined,
+  balance: Tokens | undefined,
 }
 
 /**
- * An input field for an NTRN amount that can be toggled between NTRN and USD.
+ * An input field for a Tokens amount that can be toggled between Token and USD.
  *
  * Registers `${name}.value` and `${name}.toggled` into the containing form.
- * If `toggled` is true, the `amount` is in USD. If `toggled` is false, the `amount` is in NTRN.
+ * If `toggled` is true, the `amount` is in USD. If `toggled` is false, the `amount` is in Token.
  *
  * Must be placed inside a `FormContext`.
  *
  * @param name The base name of the field.
- * @param ntrnPrice The price to use for NTRN <=> USD conversions.
- * @param ntrnBalance The NTRN amount to use for validations, the "max" button, and the slider.
+ * @param price The price to use for Token <=> USD conversions.
+ * @param balance The Token amount to use for validations, the "max" button, and the slider.
  */
-const NtrnAmountField = (props: NtrnAmountFieldProps) => {
-  const { name, ntrnPrice, ntrnBalance, ...sheetProps } = props
+const TokensAmountField = (props: TokensAmountFieldProps) => {
+  const { name, denom, price, balance, ...sheetProps } = props
+  const tokenConfig = getTokenConfig(denom)
 
   const form = useFormContext()
   const valueFieldName = `${name}.value`
@@ -46,60 +48,60 @@ const NtrnAmountField = (props: NtrnAmountFieldProps) => {
     form.setValue(toggledFieldName, value)
   }
 
-  const isDisabled = !ntrnPrice || !ntrnBalance || form.formState.isSubmitting
+  const isDisabled = !price || !balance || form.formState.isSubmitting
 
   const bottomValue = useMemo(() => {
-    if (!ntrnPrice || !formValue) {
+    if (!price || !formValue) {
       return null
     } else {
-      return toggled ? new USD(formValue).toNtrn(ntrnPrice) : NTRN.fromValue(formValue).toUsd(ntrnPrice)
+      return toggled ? new USD(formValue).toTokens(denom, price) : Tokens.fromValue(denom, formValue).toUsd(price)
     }
-  }, [formValue, ntrnPrice])
+  }, [formValue, price])
 
   const percentage = useMemo(() => {
-    if (!ntrnPrice || !ntrnBalance || !formValue || !bottomValue) {
+    if (!price || !balance || !formValue || !bottomValue) {
       return 0
     } else {
       const proportion = toggled
-        ? getProportion(new BigNumber(formValue), ntrnBalance.toUsd(ntrnPrice).getValue())
-        : getProportion(new BigNumber(formValue), ntrnBalance.getValue())
+        ? getProportion(new BigNumber(formValue), balance.toUsd(price).getValue())
+        : getProportion(new BigNumber(formValue), balance.getValue())
       return proportion * 100
     }
-  }, [bottomValue, toggled, ntrnPrice, ntrnBalance])
+  }, [bottomValue, toggled, price, balance])
 
   /**
-   * Updates the containing form's value, converting the given NTRN value to USD depending on if the field is toggled or not
+   * Updates the containing form's value, converting the given Token value to USD depending on if the field is toggled or not
    */
-  const updateValueFromNtrn = useCallback((newNtrnValue: NTRN) => {
-    if (ntrnPrice) {
+  const updateValueFromTokens = useCallback((newTokensValue: Tokens) => {
+    if (price) {
       if (toggled) {
-        setFormValue(newNtrnValue.toUsd(ntrnPrice).toInput())
+        setFormValue(newTokensValue.toUsd(price).toInput())
       } else {
-        setFormValue(newNtrnValue.toInput())
+        setFormValue(newTokensValue.toInput())
       }
     }
-  }, [toggled, ntrnPrice])
+  }, [toggled, price])
 
   /**
-   * Updates the containing form's value, getting the given percentage of the current NTRN balance and converting it to USD depending on if the field is toggled or not
+   * Updates the containing form's value, getting the given percentage of the current Token balance and converting it to USD depending on if the field is toggled or not
    */
   const updateValueFromPercentage = useCallback((newPercentage: number) => {
-    if (ntrnBalance) {
-      const ntrnUnits = ntrnBalance.units.dividedBy(100).times(newPercentage)
-      updateValueFromNtrn(NTRN.fromUnits(ntrnUnits))
+    if (balance) {
+      const tokenUnits = balance.units.dividedBy(100).times(newPercentage)
+      updateValueFromTokens(Tokens.fromUnits(denom, tokenUnits))
     }
-  }, [updateValueFromNtrn, ntrnBalance])
+  }, [updateValueFromTokens, balance])
 
   /**
    * A wrapper for the field's `onChange` that checks a regex before allowing an update
    */
   const onChange = useCallback((newAmount: string) => {
-    const regex = VALID_DECIMAL_REGEX(toggled ? USD.maxDecimalPlaces : NTRN.exponent)
+    const regex = VALID_DECIMAL_REGEX(toggled ? USD.maxDecimalPlaces : tokenConfig.exponent)
 
-    if (ntrnPrice && ntrnBalance && matchesRegex(newAmount, regex)) {
+    if (price && balance && matchesRegex(newAmount, regex)) {
       setFormValue(newAmount === "." ? "0." : newAmount)
     }
-  }, [toggled, ntrnPrice, ntrnBalance])
+  }, [toggled, price, balance])
 
   return (
     <Controller
@@ -111,9 +113,9 @@ const NtrnAmountField = (props: NtrnAmountFieldProps) => {
           if (fieldValue) {
             const value = new BigNumber(fieldValue)
             if (value.isZero()) {
-              return "NTRN amount has to be greater than 0"
-            } else if (ntrnBalance && value.gt(ntrnBalance.getValue())) {
-              return "NTRN amount is too large"
+              return `${tokenConfig.symbol} amount has to be greater than 0`
+            } else if (balance && value.gt(balance.getValue())) {
+              return `${tokenConfig.symbol} amount is too large`
             }
           }
         }
@@ -158,21 +160,21 @@ const NtrnAmountField = (props: NtrnAmountFieldProps) => {
                   variant="plain"
                   color="success"
                   sx={{ p: 0, minHeight: 0, textAlign: { xs: "start", sm: "end" } }}
-                  aria-label="Set field to max NTRN"
+                  aria-label={`Set field to max ${tokenConfig.symbol}`}
                   disabled={isDisabled}
                   onClick={() => {
-                    if (ntrnBalance) {
-                      updateValueFromNtrn(ntrnBalance)
+                    if (balance) {
+                      updateValueFromTokens(balance)
                     }
                   }}
                 >
-                  Max: {ntrnBalance ? ntrnBalance.toFullPrecision(true) : "-"}
+                  Max: {balance ? balance.toFullPrecision(true) : "-"}
                 </Button>
               </Stack>
 
               <AssetInput
                 {...field}
-                assetSymbol={toggled ? USD.symbol : NTRN.symbol}
+                assetSymbol={toggled ? USD.symbol : tokenConfig.symbol}
                 slotProps={{ container: { sx: { gridArea: "field" } } }}
                 value={formValue}
                 placeholder="0.00"
@@ -184,7 +186,7 @@ const NtrnAmountField = (props: NtrnAmountFieldProps) => {
               />
 
               <Typography level="body-sm" textColor="text.primary" fontWeight={500} sx={{ wordBreak: "break-all", gridArea: "bottom" }}>
-                {(bottomValue ?? (toggled ? NTRN.fromUnits(0) : new USD(0))).toInput()} <Typography textColor="text.secondary">{toggled ? NTRN.symbol : USD.symbol}</Typography>
+                {(bottomValue ?? (toggled ? Tokens.fromUnits(denom, 0) : new USD(0))).toInput()} <Typography textColor="text.secondary">{toggled ? tokenConfig.symbol : USD.symbol}</Typography>
               </Typography>
 
               <IconButton
@@ -199,12 +201,11 @@ const NtrnAmountField = (props: NtrnAmountFieldProps) => {
                   height: "max-content",
                 }}
                 onClick={() => {
-                  // There's a 99.99% chance this causes a race condition... right?
                   setToggled(!toggled)
                   setFormValue(bottomValue ? bottomValue.toInput() : "", !!bottomValue)
                 }}
                 size="sm"
-                aria-label={`Switch input to ${toggled ? NTRN.symbol : USD.symbol}`}
+                aria-label={`Switch input to ${toggled ? tokenConfig.symbol : USD.symbol}`}
               >
                 <SwapArrowsIcon />
               </IconButton>
@@ -218,7 +219,7 @@ const NtrnAmountField = (props: NtrnAmountFieldProps) => {
                   onChange={(_, value) => updateValueFromPercentage(value as number)}
                   slotProps={{
                     thumb: {
-                      "aria-label": "Percentage of max NTRN",
+                      "aria-label": `Percentage of max ${tokenConfig.symbol}`,
                     }
                   }}
                 />
@@ -239,7 +240,7 @@ const NtrnAmountField = (props: NtrnAmountFieldProps) => {
                   {[25, 50, 100].map(buttonPercentage =>
                     <Button
                       key={buttonPercentage}
-                      aria-label={`Set field to ${buttonPercentage}% of max NTRN`}
+                      aria-label={`Set field to ${buttonPercentage}% of max ${tokenConfig.symbol}`}
                       sx={{ fontSize: theme => theme.fontSize.xs, py: 0 }}
                       onClick={() => { updateValueFromPercentage(buttonPercentage) }}
                     >
@@ -260,4 +261,4 @@ const NtrnAmountField = (props: NtrnAmountFieldProps) => {
   )
 }
 
-export { NtrnAmountField, type NtrnAmountFieldProps }
+export { TokensAmountField, type TokensAmountFieldProps }
