@@ -1,12 +1,12 @@
 import { useForm } from 'react-hook-form'
 import { useQuery } from '@tanstack/react-query'
 
-import { MarketId } from '@api/queries/Market'
+import { Market } from '@api/queries/Market'
 import { ntrnPriceQuery } from '@api/queries/NtrnPrice'
 import { usePlaceBet } from '@api/mutations/PlaceBet'
 import { NTRN, USD } from '@utils/tokens'
 
-interface BetFormValues {
+interface BuyFormValues {
   betAmount: {
     value: string,
     toggled: boolean,
@@ -14,8 +14,8 @@ interface BetFormValues {
   betOutcome: string | null,
 }
 
-const useMarketBettingForm = (marketId: MarketId) => {
-  const form = useForm<BetFormValues>({
+const useMarketBuyForm = (market: Market) => {
+  const form = useForm<BuyFormValues>({
     defaultValues: {
       betAmount: {
         value: "",
@@ -25,11 +25,11 @@ const useMarketBettingForm = (marketId: MarketId) => {
     },
   })
 
-  const placeBet = usePlaceBet(marketId)
+  const placeBet = usePlaceBet(market.id)
 
   const ntrnPrice = useQuery(ntrnPriceQuery)
 
-  const onSubmit = (formValues: BetFormValues) => {
+  const onSubmit = (formValues: BuyFormValues) => {
     const isToggled = formValues.betAmount.toggled
     const betAmount = formValues.betAmount.value
     const betOutcome = formValues.betOutcome
@@ -43,9 +43,9 @@ const useMarketBettingForm = (marketId: MarketId) => {
     }
   }
 
-  const canSubmit = form.formState.isValid && !form.formState.isSubmitting
+  const canSubmit = form.formState.isValid && !form.formState.isSubmitting && ntrnPrice.data?.price
 
   return { form, canSubmit, onSubmit }
 }
 
-export { useMarketBettingForm }
+export { useMarketBuyForm }

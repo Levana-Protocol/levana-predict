@@ -1,19 +1,16 @@
+import { useState } from 'react'
 import { useAccount } from 'graz'
-import { Button, Stack, Typography } from '@mui/joy'
-import { FormProvider } from 'react-hook-form'
-import { useQuery } from '@tanstack/react-query'
+import { P, match } from 'ts-pattern'
+import { Button, Sheet, Stack, Typography } from '@mui/joy'
 
-import { useCurrentAccount } from '@config/chain'
-import { ntrnBalanceQuery } from '@api/queries/NtrnBalance'
-import { ntrnPriceQuery } from '@api/queries/NtrnPrice'
 import { Market } from '@api/queries/Market'
 import { StyleProps, mergeSx } from '@utils/styles'
 import { LoadableWidget } from '@lib/Loadable/Widget'
 import { ConnectButton } from '@common/ConnectButton'
-import { useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
-import { useMarketBettingForm } from './form'
-import { NtrnAmountField } from './NtrnAmountField'
-import { OutcomeField } from './OutcomeField'
+import { MarketStatus, useMarketStatus, useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
+import { MarketClaimForm } from './Claim'
+import { MarketBuyForm } from './Buy'
+import { MarketSellForm } from './Sell'
 
 const MarketBetting = (props: StyleProps) => {
   return (
@@ -29,97 +26,102 @@ const MarketBetting = (props: StyleProps) => {
 const MarketBettingContent = (props: { market: Market }) => {
   const { market } = props
   const { isConnected } = useAccount()
+  const marketStatus = useMarketStatus(market)
 
   return (
     isConnected
-      ? <MarketBettingForm market={market} />
-      : <MarketBettingDisconnected />
+      ?
+        match(marketStatus)
+        .with({ state : "decided"}, () => <MarketClaimForm market={market} />)
+          .with({ state: "deciding" }, () => <MarketBettingDeciding />)
+          .otherwise((status) => <MarketBettingForm market={market} status={status} />)
+      : <MarketBettingDisconnected status={marketStatus} />
   )
 }
 
-const MarketBettingForm = (props: { market: Market }) => {
-  const { market } = props
-  const account = useCurrentAccount()
-  const balance = useQuery(ntrnBalanceQuery(account.bech32Address))
-  const price = useQuery(ntrnPriceQuery)
+const MarketBettingForm = (props: { market: Market, status: MarketStatus }) => {
+  const { market, status } = props
+  const [action, setAction] = useState<"buy" | "sell">("buy")
 
-  const { form, canSubmit, onSubmit } = useMarketBettingForm(market.id)
-
-  return (
-    <FormProvider {...form}>
-      <Stack
-        component="form"
-        onSubmit={form.handleSubmit(onSubmit)}
-        direction="column"
-        rowGap={1.5}
-      >
-        <Stack direction="row" columnGap={2}>
-          <Button
-            color="neutral"
-            variant="plain"
-            size="lg"
-            sx={{
-              px: 2,
-              py: 1,
-              width: "max-content",
-              borderRadius: 0,
-              borderBottom: "2px solid white"
-            }}
-          >
-            Buy
-          </Button>
-          <Button
-            color="neutral"
-            variant="plain"
-            size="lg"
-            sx={{
-              px: 2,
-              py: 1,
-              width: "max-content",
-            }}
-            disabled
-          >
-            Sell
-          </Button>
-        </Stack>
-
-        <OutcomeField
-          name="betOutcome"
-          market={market}
-        />
-
-        <NtrnAmountField
-          name="betAmount"
-          ntrnBalance={balance.data}
-          ntrnPrice={price.data?.price}
-        />
-
-        <Button
-          aria-label="Place bet"
-          type="submit"
-          size="lg"
-          disabled={!canSubmit}
-          fullWidth
-        >
-          {form.formState.isSubmitting ? "Placing bet..." : "Place bet"}
-        </Button>
-      </Stack>
-    </FormProvider>
-  )
-}
-
-const MarketBettingDisconnected = () => {
   return (
     <>
-      <Typography level="body-md">
-        Connect your wallet to place a bet.
+      <Stack direction="row" columnGap={2} sx={{ mb: 2}}>
+        <Button
+          color="neutral"
+          variant="plain"
+          size="lg"
+          sx={{
+            px: 2,
+            py: 1,
+            width: "max-content",
+            borderRadius: 0,
+            borderBottom: action === "buy" ? "2px solid white" : undefined,
+          }}
+          onClick={() => { setAction("buy") }}
+        >
+          Buy
+        </Button>
+        <Button
+          color="neutral"
+          variant="plain"
+          size="lg"
+          sx={{
+            px: 2,
+            py: 1,
+            width: "max-content",
+            borderRadius: 0,
+            borderBottom: action === "sell" ? "2px solid white" : undefined,
+          }}
+          onClick={() => { setAction("sell") }}
+          disabled={status.state !== "withdrawals"}
+        >
+          Sell
+        </Button>
+      </Stack>
+
+      {match(action)
+        .with("buy", () => <MarketBuyForm market={market} />)
+        .with("sell", () => <MarketSellForm market={market} />)
+        .exhaustive()
+      }
+    </>
+  )
+}
+
+const MarketBettingDeciding = () => {
+  return (
+    <>
+      <Typography level="title-md" fontWeight={600} sx={{ mb: 2 }}>
+        Resolution
       </Typography>
-      <ConnectButton sx={{borderRadius: "sm"}} fullWidth />
+      <Sheet sx={{ p: 1 }}>
+        <Typography level="body-md">
+          This market is awaiting a decision by the arbitrator, and its outcome hasn't been decided yet.
+        </Typography>
+      </Sheet>
+    </>
+  )
+}
+
+const MarketBettingDisconnected = (props: { status: MarketStatus }) => {
+  const { status } = props
+
+  return (
+    <>
+      <Typography level="body-md" sx={{ mb: 0.75 }}>
+        {match(status.state)
+          .with(P.union("decided", "deciding"), () => "Connect your wallet to view your earnings.")
+          .with(P.union("withdrawals", "deposits"), () => "Connect your wallet to make a bet.")
+          .exhaustive()
+        }
+      </Typography>
+      <ConnectButton sx={{ borderRadius: "sm" }} fullWidth />
     </>
   )
 }
 
 const MarketBettingPlaceholder = () => {
+  // TODO: better placeholder
   return (
     <>
       <Typography level="h3">

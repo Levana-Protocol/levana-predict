@@ -20,9 +20,9 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> Result<Response> {
         .into());
     }
 
-    if current >= new {
+    if current > new {
         return Err(StdError::generic_err(format!(
-            "Current contract version is older or equivalent to the new one. Current: {}, New: {}",
+            "Current contract version is newer than the new one. Current: {}, New: {}",
             current, new
         ))
         .into());

@@ -36,7 +36,7 @@ const dismiss = (key: string) => {
   })
 }
 
-const ModalsProvider = (props: PropsWithChildren) => {
+const ModalsHandler = (props: PropsWithChildren) => {
   const { children } = props
   const modals = useStore(modalsStore)
 
@@ -57,4 +57,4 @@ const ModalsProvider = (props: PropsWithChildren) => {
   )
 }
 
-export { ModalsProvider, present, dismiss }
+export { ModalsHandler, present, dismiss }

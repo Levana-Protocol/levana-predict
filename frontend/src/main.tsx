@@ -9,18 +9,21 @@ import { NotificationsProvider } from '@config/notifications'
 import { QueryClientProvider } from '@config/queries'
 import { RouterProvider } from '@config/router'
 import { ThemeProvider } from '@config/theme'
-import { ModalsProvider } from '@state/modals'
+import { ModalsHandler } from '@state/modals'
+import { TimestampsHandler } from '@state/timestamps'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ThemeProvider>
       <NotificationsProvider>
         <ChainProvider>
-          <QueryClientProvider>
-            <ModalsProvider>
-              <RouterProvider />
-            </ModalsProvider>
-          </QueryClientProvider>
+          <TimestampsHandler>
+            <QueryClientProvider>
+              <ModalsHandler>
+                <RouterProvider />
+              </ModalsHandler>
+            </QueryClientProvider>
+          </TimestampsHandler>
         </ChainProvider>
       </NotificationsProvider>
     </ThemeProvider>

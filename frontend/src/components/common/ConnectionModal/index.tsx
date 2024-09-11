@@ -1,8 +1,10 @@
-import { ReactNode } from 'react'
-import { WalletType, checkWallet, useConnect } from 'graz'
-import { Button, DialogContent, DialogTitle, ModalClose, ModalDialog, Sheet } from '@mui/joy'
+import { WalletType, checkWallet, useAccount } from 'graz'
+import { Box, Button, DialogContent, DialogTitle, ModalClose, ModalDialog, Sheet } from '@mui/joy'
 
-import { CHAIN_INFO } from '@config/chain'
+import keplrLogo from '@assets/logos/keplr.svg'
+import leapLogo from '@assets/logos/leap.svg'
+import walletconnectLogo from '@assets/logos/walletconnect.svg'
+import { useConnectWallet } from '@config/chain'
 import { useNotifications } from '@config/notifications'
 import { dismiss, present } from '@state/modals'
 import { AppError } from '@utils/errors'
@@ -15,34 +17,40 @@ const dismissConnectionModal = () => { dismiss(CONNECTION_MODAL_KEY) }
 interface WalletOption {
   type: WalletType,
   name: string,
-  icon?: ReactNode,
+  logo: string,
 }
 
 const supportedWallets: WalletOption[] = [
   {
     type: WalletType.KEPLR,
     name: "Keplr Extension",
+    logo: keplrLogo,
   },
   {
     type: WalletType.LEAP,
     name: "Leap Extension",
+    logo: leapLogo,
   },
   {
     type: WalletType.WC_KEPLR_MOBILE,
     name: "Keplr App",
+    logo: keplrLogo,
   },
   {
     type: WalletType.WC_LEAP_MOBILE,
     name: "Leap App",
+    logo: leapLogo,
   },
   {
     type: WalletType.WALLETCONNECT,
     name: "WalletConnect",
+    logo: walletconnectLogo,
   },
 ]
 
 const ConnectionModal = () => {
-  const { connectAsync } = useConnect()
+  const account = useAccount()
+  const connectWallet = useConnectWallet()
   const notifications = useNotifications()
 
   return (
@@ -55,20 +63,30 @@ const ConnectionModal = () => {
 
       <DialogContent>
         {supportedWallets.filter(wallet => checkWallet(wallet.type)).map((wallet) =>
-          <Sheet key={wallet.type} sx={{ display: "flex", alignItems: "center", justifyContent: "center", p: 1 }}>
+          <Sheet key={wallet.type} sx={{ p: 1 }}>
             <Button
-              color="primary"
+              color="neutral"
+              variant="plain"
+              disabled={account.isConnecting}
+              sx={{ "--Button-gap": theme => theme.spacing(2) }}
+              startDecorator={
+                <Box
+                  component="img"
+                  alt={`${wallet.name} logo`}
+                  src={wallet.logo}
+                  width={theme => theme.spacing(7)}
+                  sx={{ borderRadius: 14 }}
+                />
+              }
               onClick={() => {
                 if (wallet.type === WalletType.WALLETCONNECT) {
                   dismissConnectionModal()
                 }
 
-                connectAsync({ chainId: CHAIN_INFO.chainId, walletType: wallet.type })
+                connectWallet(wallet.type)
                   .then(() => { dismissConnectionModal() })
                   .catch(err => {
-                    if (!(err instanceof Error && err.message === "Request rejected") && !(err instanceof Error && err.message === "User closed wallet connect")) {
-                      notifications.notifyError(AppError.withCause(`Failed to connect with ${wallet.name}`, err))
-                    }
+                    notifications.notifyError(AppError.withCause(`Failed to connect with ${wallet.name}.`, err))
 
                     if (wallet.type === WalletType.WALLETCONNECT) {
                       presentConnectionModal()

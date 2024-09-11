@@ -39,14 +39,36 @@ class AppError extends Error {
 }
 
 type UserAction =
+  | "connect"
   | "buy"
   | "sell"
-  | "collect"
+  | "claim"
 
 /**
  * @returns user-friendly errors (if possible), based on the action that is being performed.
  */
-const errorForAction = <T>(err: T, actionType?: UserAction): AppError | T => {
+const errorForAction = (err: any, actionType?: UserAction): AppError | any => {
+
+  if (actionType === "connect") {
+    return match(err)
+      .with(
+        { message: P.string.regex("Request rejected") },
+        () => new AppError("User rejected the connection.", { cause: err, level: "suppress" }),
+      )
+      .with(
+        { message: P.string.regex("User closed wallet connect") },
+        () => new AppError("User rejected the connection.", { cause: err, level: "suppress" }),
+      )
+      .with(
+        { message: P.string.regex("There is no chain info for .+") },
+        () => AppError.withCause(
+          `Your app or extension doesn't have the necessary chain info for ${CHAIN_ID}. Please add the necessary chain and try again.`,
+          err,
+        ),
+      )
+      .otherwise(() => err )
+  }
+
   if (err instanceof AxiosError) {
     const message = match(err.response?.data)
       .with(P.string, (msg) => msg)

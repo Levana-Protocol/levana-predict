@@ -1,7 +1,9 @@
 import { useParams } from 'react-router-dom'
 import { useSuspenseQuery } from '@tanstack/react-query'
 
-import { Market, marketQuery } from '@api/queries/Market'
+import { useTimedMemo } from '@state/timestamps'
+import { Market, MarketOutcome, marketQuery } from '@api/queries/Market'
+import { getTimeBetween } from '@utils/time'
 
 const useCurrentMarketQuery = () => {
   const { marketId } = useParams()
@@ -17,4 +19,28 @@ const useSuspenseCurrentMarket = (): Market => {
   return useSuspenseQuery(query).data
 }
 
-export { useCurrentMarketQuery, useSuspenseCurrentMarket }
+type MarketStatus =
+  | { state: "withdrawals", timeLeft: string }
+  | { state: "deposits", timeLeft: string }
+  | { state: "deciding" }
+  | { state: "decided", winner: MarketOutcome }
+
+const useMarketStatus = (market: Market): MarketStatus => {
+  return useTimedMemo("marketsStatus", (timestamp) => {
+    if (market.winnerOutcome) {
+      return { state: "decided", winner: market.winnerOutcome }
+    }
+
+    if (timestamp.gte(market.depositStopDate)) {
+      return { state: "deciding" }
+    }
+
+    if (timestamp.gte(market.withdrawalStopDate)) {
+      return { state: "deposits", timeLeft: getTimeBetween(timestamp, market.depositStopDate) }
+    }
+
+    return { state: "withdrawals", timeLeft: getTimeBetween(timestamp, market.withdrawalStopDate) }
+  }, [market.winnerOutcome, market.depositStopDate, market.withdrawalStopDate])
+}
+
+export { useCurrentMarketQuery, useSuspenseCurrentMarket, useMarketStatus, type MarketStatus }

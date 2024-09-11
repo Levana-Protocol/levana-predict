@@ -5,6 +5,7 @@ import { useCurrentAccount } from '@config/chain'
 import { Market } from '@api/queries/Market'
 import { Positions, positionsQuery } from '@api/queries/Positions'
 import { StyleProps } from '@utils/styles'
+import { NTRN } from '@utils/tokens'
 import { LoadableWidget } from '@lib/Loadable/Widget'
 import { useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
 
@@ -39,7 +40,7 @@ const MyPositionsContent = (props: { market: Market, positions: Positions }) => 
         gap={4}
       >
         {market.possibleOutcomes
-          .filter(outcome => positions.get(outcome.id)?.gt(0))
+          .filter(outcome => positions.outcomes.get(outcome.id)?.gt(0))
           .map(outcome =>
             <Box key={outcome.id}>
               <Typography
@@ -50,7 +51,10 @@ const MyPositionsContent = (props: { market: Market, positions: Positions }) => 
                 {outcome.label}
               </Typography>
               <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
-                {positions.get(outcome.id)?.toFixed(3)} Tokens
+                Potential winnings: {NTRN.fromUnits(positions.outcomes.get(outcome.id)?.times(market.poolSize) ?? 0).toFormat(true)}
+              </Typography>
+              <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
+                {positions.outcomes.get(outcome.id)?.toFixed(3)} Tokens
               </Typography>
             </Box>
           )
@@ -71,11 +75,14 @@ const MyPositionsPlaceholder = () => {
       >
         {[0, 1, 2].map(index =>
           <Box key={index}>
-            <Typography level="body-md" fontWeight={600}>
-              0.00% Yes
+            <Typography level="title-lg" fontWeight={600}>
+              Yes
             </Typography>
-            <Typography level="body-sm" fontWeight={500}>
-              10000 TOKENS
+            <Typography level="title-md" fontWeight={500}>
+              0 Tokens
+            </Typography>
+            <Typography level="title-md" fontWeight={500}>
+              Potential winnings: 0.000000 NTRN
             </Typography>
           </Box>
         )}

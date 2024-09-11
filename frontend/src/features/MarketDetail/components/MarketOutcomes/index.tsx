@@ -2,40 +2,33 @@ import { Box, Stack, Typography } from '@mui/joy'
 
 import { Market } from '@api/queries/Market'
 import { StyleProps } from '@utils/styles'
+import { NTRN } from '@utils/tokens'
 import { LoadableWidget } from '@lib/Loadable/Widget'
 import { useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
-import { getPercentage } from '@utils/number'
-import BigNumber from 'bignumber.js'
 
-const MarketDetails = (props: StyleProps) => {
+const MarketOutcomes = (props: StyleProps) => {
   return (
     <LoadableWidget
       useDeps={useSuspenseCurrentMarket}
-      renderContent={(market) => <MarketDetailsContent market={market} />}
-      placeholderContent={<MarketDetailsPlaceholder />}
+      renderContent={(market) => <MarketOutcomesContent market={market} />}
+      placeholderContent={<MarketOutcomesPlaceholder />}
       sx={props.sx}
     />
   )
 }
 
-const MarketDetailsContent = (props: { market: Market }) => {
+const MarketOutcomesContent = (props: { market: Market }) => {
   const { market } = props
-  const marketSum = market.possibleOutcomes.reduce((sum, outcome) => sum.plus(outcome.totalTokens), BigNumber(0))
 
   return (
     <>
-      <Typography level="h3">
-        {market.title}
+      <Typography level="title-md" fontWeight={600} sx={{ mb: 2 }}>
+        Outcomes
       </Typography>
-      <Typography level="body-lg">
-        {market.description}
-      </Typography>
-
       <Stack
         direction="row"
         alignItems="center"
         gap={4}
-        sx={{ mt: 2 }}
       >
         {market.possibleOutcomes.map(outcome =>
           <Box key={outcome.id}>
@@ -44,26 +37,31 @@ const MarketDetailsContent = (props: { market: Market }) => {
               fontWeight={600}
               color={outcome.label === "Yes" ? "success" : outcome.label === "No" ? "danger" : "neutral"}
             >
-              {getPercentage(outcome.totalTokens, marketSum)}% {outcome.label}
+              {outcome.label} - {outcome.price.toFormat(3)}
             </Typography>
             <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
-              {outcome.totalTokens.toFixed(3)} Tokens
+              {outcome.percentage.toFixed(1)}%
+            </Typography>
+            <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
+              {outcome.totalTokens.toFixed(3)} tokens bet
             </Typography>
           </Box>
         )}
       </Stack>
+      <Box sx={{ mt: 2 }}>
+        <Typography level="body-md" textColor="text.secondary" fontWeight={600}>
+          Prize pool size: {NTRN.fromUnits(market.poolSize).toFormat(true)}
+        </Typography>
+      </Box>
     </>
   )
 }
 
-const MarketDetailsPlaceholder = () => {
+const MarketOutcomesPlaceholder = () => {
   return (
     <>
-      <Typography level="h3">
-        Loading this market's title...
-      </Typography>
-      <Typography level="body-lg">
-        Loading this market's description...
+      <Typography level="title-md" fontWeight={600} sx={{ mb: 2 }}>
+        Outcomes
       </Typography>
       <Stack
         direction="row"
@@ -77,16 +75,24 @@ const MarketDetailsPlaceholder = () => {
               level="title-lg"
               fontWeight={600}
             >
-              0.00% {outcome}
+              {outcome} - 0.000
             </Typography>
-            <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
-              0.000000 Tokens
+            <Typography level="title-md" fontWeight={500}>
+              0.0%
+            </Typography>
+            <Typography level="title-md" fontWeight={500}>
+              0.000 tokens bet
             </Typography>
           </Box>
         )}
       </Stack>
+      <Box sx={{ mt: 2 }}>
+        <Typography level="body-md" fontWeight={600}>
+          Prize pool size: 0.000000 NTRN
+        </Typography>
+      </Box>
     </>
   )
 }
 
-export { MarketDetails }
+export { MarketOutcomes }

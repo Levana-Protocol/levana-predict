@@ -96,11 +96,7 @@ pub struct OutcomeInfo {
     pub wallet_count: u32,
 }
 
-#[derive(Clone, Serialize, Deserialize, JsonSchema, Debug)]
-#[serde(rename_all = "snake_case")]
-pub struct PositionsResp {
-    pub outcomes: Vec<Token>,
-}
+pub type PositionsResp = ShareInfo;
 
 #[derive(Serialize, Deserialize, JsonSchema, Debug)]
 pub struct MigrateMsg {}
