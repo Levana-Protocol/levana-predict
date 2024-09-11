@@ -29,13 +29,6 @@ const MarketDescriptionContent = (props: { market: Market }) => {
       <Typography level="body-md">
         {market.description}
       </Typography>
-
-      <Typography level="body-sm" sx={{ mt: 4 }}>
-        Expected resolution date: {formatDate(new Date())}.
-      </Typography>
-      <Typography level="body-sm" sx={{ mt: 1 }}>
-        Deposits are valid until: {formatDate(market.depositStopDate.toDate()) /* TODO: use real date, if any */}.
-      </Typography>
     </>
   )
 }
@@ -51,13 +44,6 @@ const MarketDescriptionPlaceholder = () => {
         width={theme => theme.spacing(1)}
         height={theme => theme.spacing(10)}
       />
-
-      <Typography level="body-sm" sx={{ mt: 4 }}>
-        Expected resolution date: {formatDate(new Date())}.
-      </Typography>
-      <Typography level="body-sm" sx={{ mt: 1 }}>
-        Deposits are valid until: {formatDate(new Date())}.
-      </Typography>
     </>
   )
 }
