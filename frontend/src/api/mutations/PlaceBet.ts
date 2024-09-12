@@ -3,13 +3,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate'
 
 import { useCurrentAccount } from '@config/chain'
-import { NTRN_DENOM } from '@config/environment'
 import { useNotifications } from '@config/notifications'
 import { querierAwaitCacheAnd, querierBroadcastAndWait } from '@api/querier'
 import { MARKET_KEYS, MarketId, OutcomeId } from '@api/queries/Market'
 import { POSITIONS_KEYS } from '@api/queries/Positions'
-import { BALANCE_KEYS } from '@api/queries/NtrnBalance'
-import { NTRN } from '@utils/tokens'
+import { BALANCES_KEYS } from '@api/queries/Balances'
+import { Tokens } from '@utils/tokens'
 import { AppError, errorsMiddleware } from '@utils/errors'
 
 interface PlaceBetRequest {
@@ -21,7 +20,7 @@ interface PlaceBetRequest {
 
 interface PlaceBetArgs {
   outcomeId: OutcomeId,
-  ntrnAmount: NTRN,
+  tokensAmount: Tokens,
 }
 
 const putPlaceBet = (address: string, signer: SigningCosmWasmClient, marketId: MarketId, args: PlaceBetArgs) => {
@@ -37,7 +36,7 @@ const putPlaceBet = (address: string, signer: SigningCosmWasmClient, marketId: M
     signer,
     {
       payload: msg,
-      funds: [{ denom: NTRN_DENOM, amount: args.ntrnAmount.units.toFixed(0) }],
+      funds: [{ denom: args.tokensAmount.denom, amount: args.tokensAmount.units.toFixed(0) }],
     },
   )
 }
@@ -64,17 +63,17 @@ const usePlaceBet = (marketId: MarketId) => {
       }
     },
     onSuccess: (_, args) => {
-      notifications.notifySuccess(`Successfully bet ${args.ntrnAmount.toFormat(true)}.`)
+      notifications.notifySuccess(`Successfully bet ${args.tokensAmount.toFormat(true)}.`)
 
       return querierAwaitCacheAnd(
         () => queryClient.invalidateQueries({ queryKey: MARKET_KEYS.market(marketId)}),
         () => queryClient.invalidateQueries({ queryKey: POSITIONS_KEYS.market(account.bech32Address, marketId)}),
-        () => queryClient.invalidateQueries({ queryKey: BALANCE_KEYS.address(account.bech32Address)}),
+        () => queryClient.invalidateQueries({ queryKey: BALANCES_KEYS.address(account.bech32Address)}),
       )
     },
     onError: (err, args) => {
       notifications.notifyError(
-        AppError.withCause(`Failed to bet ${args.ntrnAmount.toFormat(true)}.`, err)
+        AppError.withCause(`Failed to bet ${args.tokensAmount.toFormat(true)}.`, err)
       )
     },
   })

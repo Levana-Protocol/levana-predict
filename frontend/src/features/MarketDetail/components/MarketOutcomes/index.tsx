@@ -2,7 +2,7 @@ import { Box, Stack, Typography } from '@mui/joy'
 
 import { Market } from '@api/queries/Market'
 import { StyleProps } from '@utils/styles'
-import { NTRN } from '@utils/tokens'
+import { Tokens } from '@utils/tokens'
 import { LoadableWidget } from '@lib/Loadable/Widget'
 import { useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
 
@@ -50,7 +50,7 @@ const MarketOutcomesContent = (props: { market: Market }) => {
       </Stack>
       <Box sx={{ mt: 2 }}>
         <Typography level="body-md" textColor="text.secondary" fontWeight={600}>
-          Prize pool size: {NTRN.fromUnits(market.poolSize).toFormat(true)}
+          Prize pool size: {Tokens.fromUnits(market.denom, market.poolSize).toFormat(true)}
         </Typography>
       </Box>
     </>

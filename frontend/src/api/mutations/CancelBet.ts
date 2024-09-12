@@ -8,7 +8,7 @@ import { useNotifications } from '@config/notifications'
 import { querierAwaitCacheAnd, querierBroadcastAndWait } from '@api/querier'
 import { MARKET_KEYS, MarketId, OutcomeId } from '@api/queries/Market'
 import { POSITIONS_KEYS } from '@api/queries/Positions'
-import { BALANCE_KEYS } from '@api/queries/NtrnBalance'
+import { BALANCES_KEYS } from '@api/queries/Balances'
 import { AppError, errorsMiddleware } from '@utils/errors'
 
 interface CancelBetRequest {
@@ -67,7 +67,7 @@ const useCancelBet = (marketId: MarketId) => {
       return querierAwaitCacheAnd(
         () => queryClient.invalidateQueries({ queryKey: MARKET_KEYS.market(marketId)}),
         () => queryClient.invalidateQueries({ queryKey: POSITIONS_KEYS.market(account.bech32Address, marketId)}),
-        () => queryClient.invalidateQueries({ queryKey: BALANCE_KEYS.address(account.bech32Address)}),
+        () => queryClient.invalidateQueries({ queryKey: BALANCES_KEYS.address(account.bech32Address)}),
       )
     },
     onError: (err, args) => {

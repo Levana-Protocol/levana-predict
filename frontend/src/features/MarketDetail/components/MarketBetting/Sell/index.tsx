@@ -7,7 +7,7 @@ import { Market } from '@api/queries/Market'
 import { positionsQuery } from '@api/queries/Positions'
 import { useMarketSellForm } from './form'
 import { OutcomeField } from '../OutcomeField'
-import { BetTokensAmountField } from '../BetTokensAmountField'
+import { BetTokensField } from '../BetTokensField'
 
 const MarketSellForm = (props: { market: Market }) => {
   const { market } = props
@@ -16,7 +16,6 @@ const MarketSellForm = (props: { market: Market }) => {
 
   const { form, canSubmit, onSubmit, outcome } = useMarketSellForm(market)
   const tokensBalance = outcome ? positions.data?.outcomes.get(outcome) : undefined
-  console.log(outcome, tokensBalance?.toFixed())
 
   return (
     <FormProvider {...form}>
@@ -31,7 +30,7 @@ const MarketSellForm = (props: { market: Market }) => {
           market={market}
         />
 
-        <BetTokensAmountField
+        <BetTokensField
           name="sellAmount"
           tokensBalance={tokensBalance}
         />

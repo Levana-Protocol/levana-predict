@@ -4,17 +4,17 @@ import { useQuery } from '@tanstack/react-query'
 
 import { useCurrentAccount } from '@config/chain'
 import { Market } from '@api/queries/Market'
-import { ntrnBalanceQuery } from '@api/queries/NtrnBalance'
-import { ntrnPriceQuery } from '@api/queries/NtrnPrice'
+import { balancesQuery } from '@api/queries/Balances'
+import { tokenPricesQuery } from '@api/queries/Prices'
 import { OutcomeField } from '../OutcomeField'
-import { NtrnAmountField } from '../NtrnAmountField'
+import { TokensAmountField } from '../TokensAmountField'
 import { useMarketBuyForm } from './form'
 
 const MarketBuyForm = (props: { market: Market }) => {
   const { market } = props
   const account = useCurrentAccount()
-  const balance = useQuery(ntrnBalanceQuery(account.bech32Address))
-  const price = useQuery(ntrnPriceQuery)
+  const balance = useQuery(balancesQuery(account.bech32Address))
+  const price = useQuery(tokenPricesQuery)
 
   const { form, canSubmit, onSubmit } = useMarketBuyForm(market)
 
@@ -31,10 +31,11 @@ const MarketBuyForm = (props: { market: Market }) => {
           market={market}
         />
 
-        <NtrnAmountField
+        <TokensAmountField
           name="betAmount"
-          ntrnBalance={balance.data}
-          ntrnPrice={price.data?.price}
+          denom={market.denom}
+          balance={balance.data?.get(market.denom)}
+          price={price.data?.get(market.denom)}
         />
 
         <Button
