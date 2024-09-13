@@ -23,6 +23,7 @@ import usdcLogo from '@assets/tokens/usdc-logo.svg'
 
 import { formatToSignificantDigits, unitsToValue, valueToUnits } from '@utils/number'
 
+BigNumber.config({ ROUNDING_MODE: BigNumber.ROUND_DOWN })
 export const SIGNIFICANT_DIGITS = 5
 
 export interface TokenConfig {
