@@ -10,8 +10,6 @@ use types::{Collateral, Token};
 struct Pool {
     /// Funds up for grabs
     funds: Collateral,
-    /// Pool tokens per outcome
-    pool_tokens: Vec<Token>,
     /// Total tokens per outcome
     total_tokens: Vec<Token>,
     /// Tokens per holder
@@ -19,14 +17,6 @@ struct Pool {
 }
 
 impl Pool {
-    fn calc_invariant(&self) -> Decimal256 {
-        let mut invariant = Decimal256::one();
-        for token in &self.pool_tokens {
-            invariant *= token.0;
-        }
-        invariant
-    }
-
     fn new(deposits: &[Decimal256]) -> Self {
         println!("Starting new scenario, initial deposits: {deposits:?}");
         let mut funds = Collateral(Decimal256::zero());
@@ -37,26 +27,36 @@ impl Pool {
             tokens.push(Token(*deposit));
             invariant *= deposit;
         }
+        let mut tokens_per_holder = HashMap::new();
+        tokens_per_holder.insert("House".to_owned(), tokens.clone());
         let pool = Pool {
             funds,
-            pool_tokens: tokens.clone(),
             total_tokens: tokens,
-            tokens_per_holder: HashMap::new(),
+            tokens_per_holder,
         };
         pool.print_outcomes();
         pool
     }
 
     fn buy(&mut self, owner: impl Into<String>, funds: Collateral, outcome: usize) -> Token {
+        // We want to pretend as if all the tokens are in the liquidity pool, even though
+        // they aren't. Since we won't be able to change the number of tokens held by others,
+        // we instead determine what portion of the tokens this owner would have acquired
+        // under those circumstances, and then make sure they end up with that proportion.
         let owner = owner.into();
 
-        let invariant_before = self.calc_invariant();
-        self.add_liquidity_inner(funds);
-        let invariant_after = self.calc_invariant();
+        let old_funds = self.funds;
+        self.funds += funds;
+        let scale = if self.total_tokens.len() == 2 {
+            (self.funds / old_funds).sqrt()
+        } else {
+            unimplemented!("Only support 2 outcomes")
+        };
 
-        let portion_returned = Decimal256::one() - invariant_before / invariant_after;
-        let returned = self.pool_tokens[outcome] * portion_returned;
-        self.pool_tokens[outcome] -= returned;
+        let old_tokens = self.total_tokens[outcome];
+        self.total_tokens[outcome] *= scale;
+        let returned = self.total_tokens[outcome] - old_tokens;
+
         println!("{owner} purchased {returned} on {outcome} with {funds}");
         *self.get_better_mut(owner, outcome) += returned;
         self.print_outcomes();
@@ -68,7 +68,7 @@ impl Pool {
             .entry(owner.into())
             .or_insert_with(|| {
                 std::iter::repeat(Token::zero())
-                    .take(self.pool_tokens.len())
+                    .take(self.total_tokens.len())
                     .collect()
             })
             .get_mut(outcome)
@@ -78,46 +78,23 @@ impl Pool {
     fn sell(&mut self, owner: impl Into<String>, tokens: Token, outcome: usize) -> Collateral {
         let owner = owner.into();
 
-        let invariant_before = self.calc_invariant();
         *self.get_better_mut(&owner, outcome) -= tokens;
-        self.pool_tokens[outcome] += tokens;
-        let invariant_after = self.calc_invariant();
 
-        let scale = if self.pool_tokens.len() == 2 {
-            (invariant_before / invariant_after).sqrt()
+        let old_tokens = self.total_tokens[outcome];
+        self.total_tokens[outcome] -= tokens;
+        let scale = if self.total_tokens.len() == 2 {
+            (self.total_tokens[outcome] / old_tokens).sqrt()
         } else {
-            unimplemented!("Don't support other than 2 outcomes");
+            unimplemented!("Only support 2 outcomes");
         };
 
-        let total_before = self.total_tokens[outcome];
-        for (outcome, pool_tokens) in self.pool_tokens.iter_mut().enumerate() {
-            let pool_before = *pool_tokens;
-            *pool_tokens *= scale;
-            self.total_tokens[outcome] = pool_before - *pool_tokens;
-        }
-        let total_after = self.total_tokens[outcome];
-        let returned = self.funds * ((total_before - total_after) / total_before);
-        self.funds -= returned;
+        let old_funds = self.funds;
+        self.funds *= scale;
+        let returned = old_funds - self.funds;
+
         println!("{owner} sold {tokens} on {outcome} and received {returned}");
         self.print_outcomes();
         returned
-    }
-
-    fn add_liquidity_inner(&mut self, funds: Collateral) {
-        let old_funds = self.funds;
-        self.funds += funds;
-        let scale = self.funds / old_funds;
-        for (outcome, total) in self.total_tokens.iter_mut().enumerate() {
-            let old_total = *total;
-            *total *= scale;
-            self.pool_tokens[outcome] += *total - old_total;
-        }
-    }
-
-    fn add_liquidity(&mut self, funds: Collateral) {
-        println!("Added {funds} to the liquidity pool");
-        self.add_liquidity_inner(funds);
-        self.print_outcomes();
     }
 
     fn winnings_for(&self, outcome: usize, tokens: Token) -> Collateral {
@@ -126,11 +103,8 @@ impl Pool {
 
     fn print_outcomes(&self) {
         println!("{self}");
-        for outcome in 0..self.pool_tokens.len() {
+        for outcome in 0..self.total_tokens.len() {
             println!("Results for outcome {outcome}");
-            let pool = self.pool_tokens[outcome];
-            let collateral = self.winnings_for(outcome, pool);
-            println!("Liquidity pool wins {collateral} from {pool}");
             for (better, tokens) in &self.tokens_per_holder {
                 let tokens = tokens[outcome];
                 let collateral = self.winnings_for(outcome, tokens);
@@ -149,10 +123,6 @@ impl Display for Pool {
         for tokens in &self.total_tokens {
             write!(f, "{tokens}, ")?;
         }
-        write!(f, "\nLiquidity pool: ")?;
-        for tokens in &self.pool_tokens {
-            write!(f, "{tokens}, ")?;
-        }
         for (better, tokens) in &self.tokens_per_holder {
             write!(f, "\n{better}: ")?;
             for tokens in tokens {
@@ -165,8 +135,7 @@ impl Display for Pool {
 }
 
 fn main() {
-    let mut pool = Pool::new(&["2.5".parse().unwrap(), "2.5".parse().unwrap()]);
-    pool.add_liquidity(Collateral("5".parse().unwrap()));
+    let mut pool = Pool::new(&["5".parse().unwrap(), "5".parse().unwrap()]);
     let received_yes = pool.buy("Alice", Collateral("10".parse().unwrap()), 0);
     pool.buy("Bob", Collateral("10".parse().unwrap()), 0);
     pool.sell("Alice", received_yes, 0);

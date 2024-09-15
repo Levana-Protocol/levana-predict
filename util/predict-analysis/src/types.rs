@@ -44,6 +44,12 @@ impl Display for Token {
     }
 }
 
+impl std::ops::MulAssign<Decimal256> for Collateral {
+    fn mul_assign(&mut self, rhs: Decimal256) {
+        self.0 *= rhs;
+    }
+}
+
 impl std::ops::Div for Collateral {
     type Output = Decimal256;
 
