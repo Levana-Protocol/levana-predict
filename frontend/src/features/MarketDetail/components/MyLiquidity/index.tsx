@@ -2,10 +2,9 @@ import { Box, Link, Stack, Typography } from "@mui/joy"
 import { useSuspenseQuery } from "@tanstack/react-query"
 
 import { useCurrentAccount } from "@config/chain"
-import { Market } from "@api/queries/Market"
-import { Positions, positionsQuery } from "@api/queries/Positions"
-import { StyleProps } from "@utils/styles"
-import { Tokens } from "@utils/tokens"
+import type { Market } from "@api/queries/Market"
+import { type Positions, positionsQuery } from "@api/queries/Positions"
+import type { StyleProps } from "@utils/styles"
 import { LoadableWidget } from "@lib/Loadable/Widget"
 import { useSuspenseCurrentMarket } from "@features/MarketDetail/utils"
 
