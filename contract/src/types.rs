@@ -92,6 +92,14 @@ impl SubAssign for Token {
     }
 }
 
+impl Mul<Decimal256> for Token {
+    type Output = Token;
+
+    fn mul(self, rhs: Decimal256) -> Self::Output {
+        Token(self.0 * rhs)
+    }
+}
+
 impl MulAssign<Decimal256> for Token {
     fn mul_assign(&mut self, rhs: Decimal256) {
         self.0 *= rhs;
@@ -211,5 +219,21 @@ impl TryFrom<usize> for OutcomeId {
                 idx: idx.to_string(),
                 source,
             })
+    }
+}
+
+#[derive(Clone, Serialize, Deserialize, JsonSchema, Debug, Copy, PartialEq, Eq)]
+pub struct LpShare(pub Decimal256);
+impl LpShare {
+    pub(crate) fn zero() -> LpShare {
+        LpShare(Decimal256::zero())
+    }
+}
+
+impl Div for LpShare {
+    type Output = Decimal256;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        self.0 / rhs.0
     }
 }

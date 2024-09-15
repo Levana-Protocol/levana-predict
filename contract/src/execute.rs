@@ -122,26 +122,36 @@ fn add_market(
             specified: total,
         });
     }
-    MARKETS.save(
-        deps.storage,
+
+    let lp_shares = LpShare(Decimal256::from_ratio(funds.0, 1u8));
+
+    let market = StoredMarket {
         id,
-        &StoredMarket {
-            id,
-            title,
-            description,
-            arbitrator,
-            outcomes,
-            denom,
-            deposit_fee,
-            withdrawal_fee,
-            pool_size: total,
-            deposit_stop_date,
-            withdrawal_stop_date,
-            winner: None,
-            house: deps.api.addr_validate(&house)?,
-            total_wallets: 0,
-        },
-    )?;
+        title,
+        description,
+        arbitrator,
+        outcomes,
+        denom,
+        deposit_fee,
+        withdrawal_fee,
+        pool_size: total,
+        deposit_stop_date,
+        withdrawal_stop_date,
+        winner: None,
+        total_wallets: 0,
+        lp_shares,
+    };
+    MARKETS.save(deps.storage, id, &market)?;
+
+    let house = deps.api.addr_validate(&house)?;
+    ShareInfo {
+        outcomes: std::iter::repeat(Token::zero())
+            .take(total_outcomes)
+            .collect(),
+        shares: lp_shares,
+        claimed_winnings: false,
+    }
+    .save(deps.storage, &market, &house)?;
 
     Ok(Response::new()
         .add_event(Event::new("add-market").add_attribute("market-id", id.0.to_string())))
@@ -303,21 +313,14 @@ fn set_winner(
     market.winner = Some(outcome);
     MARKETS.save(deps.storage, id, &market)?;
 
-    let house_winnings = market.winnings_for(outcome, market.get_outcome(outcome)?.pool_tokens)?;
+    // Force a check that it's a valid outcome
+    market.get_outcome(outcome)?;
 
-    Ok(Response::new()
-        .add_event(
-            Event::new("set-winner")
-                .add_attribute("market-id", id.to_string())
-                .add_attribute("outcome-id", outcome.to_string()),
-        )
-        .add_message(CosmosMsg::Bank(BankMsg::Send {
-            to_address: market.house.into_string(),
-            amount: vec![Coin {
-                denom: market.denom,
-                amount: house_winnings.0,
-            }],
-        })))
+    Ok(Response::new().add_event(
+        Event::new("set-winner")
+            .add_attribute("market-id", id.to_string())
+            .add_attribute("outcome-id", outcome.to_string()),
+    ))
 }
 
 fn collect(deps: DepsMut, info: MessageInfo, id: MarketId) -> Result<Response> {
@@ -329,7 +332,7 @@ fn collect(deps: DepsMut, info: MessageInfo, id: MarketId) -> Result<Response> {
         return Err(Error::AlreadyClaimedWinnings { id });
     }
     share_info.claimed_winnings = true;
-    let tokens = share_info.get_outcome(id, winner)?;
+    let tokens = share_info.get_outcome(&market, winner)?;
     if tokens.is_zero() {
         return Err(Error::NoTokensFound {
             id,

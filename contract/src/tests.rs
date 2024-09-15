@@ -187,6 +187,7 @@ impl Predict {
         let PositionsResp {
             outcomes,
             claimed_winnings: _,
+            shares: _,
         } = self.query(&QueryMsg::Positions {
             id: self.id,
             addr: better.to_string(),
@@ -292,6 +293,10 @@ fn sanity() {
     // Arbitrator can set the winner
     app.set_winner(&app.arbitrator, 0).unwrap();
 
+    // House can claim its winnings
+    app.collect(&app.house).unwrap();
+    app.collect(&app.house).unwrap_err();
+
     let amount_after = app.query_balance(&app.house).unwrap();
     assert_eq!(Uint128::from(1000u16), amount_after);
 }
@@ -315,6 +320,7 @@ fn losing_bet() {
     let better_after = app.query_balance(&app.better).unwrap();
     assert_eq!(better_before, better_after);
 
+    app.collect(&app.house).unwrap();
     let house_after = app.query_balance(&app.house).unwrap();
     assert_eq!(Uint128::from(2000u16), house_after);
 }
@@ -354,6 +360,7 @@ fn withdrawal_leaves_money() {
     // outcome tokens
     app.collect(&app.better).unwrap_err();
 
+    app.collect(&app.house).unwrap();
     let house_after = app.query_balance(&app.house).unwrap();
     assert_eq!(
         Uint128::from(1000u16) + better_before - better_after,
@@ -550,6 +557,7 @@ fn house_always_wins() {
 
     app.collect(&app.better).unwrap();
     app.collect(&app.admin).unwrap();
+    app.collect(&app.house).unwrap();
     let house_balance = app.query_balance(&app.house).unwrap();
     assert!(house_balance > Uint128::zero());
 }
@@ -643,8 +651,8 @@ fn test_cpmm_buy_sell(pool_one in 1..1000u32, pool_two in 1..1000u32, buy in 2..
         deposit_stop_date: ts.plus_days(2),
         withdrawal_stop_date: ts.plus_days(1),
         winner: None,
-        house: Addr::unchecked("house"),
-        total_wallets: 0
+        total_wallets: 0,
+        lp_shares:LpShare::zero()
     };
     let yes_id = OutcomeId::from(0);
     let yes_tokens = stored.buy(yes_id, buy).unwrap();
