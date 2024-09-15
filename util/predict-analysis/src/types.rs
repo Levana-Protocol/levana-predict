@@ -86,6 +86,14 @@ impl std::ops::Sub for Token {
     }
 }
 
+impl std::ops::Add for Token {
+    type Output = Token;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Token(self.0 + rhs.0)
+    }
+}
+
 impl std::ops::AddAssign for Token {
     fn add_assign(&mut self, rhs: Self) {
         self.0 += rhs.0;
@@ -97,6 +105,14 @@ impl std::ops::Div for Token {
 
     fn div(self, rhs: Self) -> Self::Output {
         self.0 / rhs.0
+    }
+}
+
+impl std::ops::Div<Decimal256> for Token {
+    type Output = Token;
+
+    fn div(self, rhs: Decimal256) -> Self::Output {
+        Token(self.0 / rhs)
     }
 }
 
