@@ -230,6 +230,40 @@ impl LpShare {
     }
 }
 
+impl Display for LpShare {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl AddAssign for LpShare {
+    fn add_assign(&mut self, rhs: Self) {
+        self.0 += rhs.0;
+    }
+}
+
+impl Sub for LpShare {
+    type Output = LpShare;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        LpShare(self.0 - rhs.0)
+    }
+}
+
+impl Mul<Decimal256> for LpShare {
+    type Output = LpShare;
+
+    fn mul(self, rhs: Decimal256) -> Self::Output {
+        LpShare(self.0 * rhs)
+    }
+}
+
+impl MulAssign<Decimal256> for LpShare {
+    fn mul_assign(&mut self, rhs: Decimal256) {
+        self.0 *= rhs;
+    }
+}
+
 impl Div for LpShare {
     type Output = Decimal256;
 

@@ -157,6 +157,10 @@ impl Predict {
         Ok(amount)
     }
 
+    fn provide(&self, sender: &Addr, funds: u64) -> AnyResult<AppResponse> {
+        self.execute(sender, &ExecuteMsg::Provide { id: self.id }, Some(funds))
+    }
+
     fn place_bet(&self, sender: &Addr, outcome: u8, funds: u64) -> AnyResult<AppResponse> {
         self.execute(
             sender,
@@ -563,6 +567,25 @@ fn house_always_wins() {
 }
 
 #[test]
+fn provide_liquidity() {
+    for winner in 0..=1 {
+        let app = Predict::new();
+
+        app.provide(&app.better, 1_000).unwrap();
+
+        let better_before = app.query_balance(&app.better).unwrap();
+
+        app.jump_days(3);
+        app.set_winner(&app.arbitrator, winner).unwrap();
+
+        app.collect(&app.better).unwrap();
+        app.collect(&app.better).unwrap_err();
+        let better_after = app.query_balance(&app.better).unwrap();
+        assert!(better_after > better_before);
+    }
+}
+
+#[test]
 fn market_with_only_one_outcome() {
     let app = Predict::new();
     let params = AddMarketParams {
@@ -651,8 +674,9 @@ fn test_cpmm_buy_sell(pool_one in 1..1000u32, pool_two in 1..1000u32, buy in 2..
         deposit_stop_date: ts.plus_days(2),
         withdrawal_stop_date: ts.plus_days(1),
         winner: None,
+        house: Addr::unchecked("house"),
         total_wallets: 0,
-        lp_shares:LpShare::zero()
+        lp_shares: LpShare::zero(),
     };
     let yes_id = OutcomeId::from(0);
     let yes_tokens = stored.buy(yes_id, buy).unwrap();

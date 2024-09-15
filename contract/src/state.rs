@@ -96,6 +96,7 @@ pub struct StoredMarket {
     pub deposit_stop_date: Timestamp,
     pub withdrawal_stop_date: Timestamp,
     pub winner: Option<OutcomeId>,
+    pub house: Addr,
     pub total_wallets: u32,
     /// Total shares across all wallets
     pub lp_shares: LpShare,

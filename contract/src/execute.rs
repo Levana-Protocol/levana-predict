@@ -14,6 +14,7 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> R
             assert_is_admin(deps.storage, &info)?;
             add_market(deps, env, *params, funds)
         }
+        ExecuteMsg::Provide { id } => provide(deps, env, info, id, funds),
         ExecuteMsg::Deposit { id, outcome } => deposit(deps, env, info, id, outcome, funds),
         ExecuteMsg::Withdraw {
             id,
@@ -124,6 +125,7 @@ fn add_market(
     }
 
     let lp_shares = LpShare(Decimal256::from_ratio(funds.0, 1u8));
+    let house = deps.api.addr_validate(&house)?;
 
     let market = StoredMarket {
         id,
@@ -138,12 +140,12 @@ fn add_market(
         deposit_stop_date,
         withdrawal_stop_date,
         winner: None,
+        house,
         total_wallets: 0,
         lp_shares,
     };
     MARKETS.save(deps.storage, id, &market)?;
 
-    let house = deps.api.addr_validate(&house)?;
     ShareInfo {
         outcomes: std::iter::repeat(Token::zero())
             .take(total_outcomes)
@@ -151,7 +153,7 @@ fn add_market(
         shares: lp_shares,
         claimed_winnings: false,
     }
-    .save(deps.storage, &market, &house)?;
+    .save(deps.storage, &market, &market.house)?;
 
     Ok(Response::new()
         .add_event(Event::new("add-market").add_attribute("market-id", id.0.to_string())))
@@ -178,7 +180,9 @@ fn deposit(
     let deposit_amount = funds.require_funds(&market.denom)?;
     let fee = Decimal256::from_ratio(deposit_amount.0, 1u8) * market.deposit_fee;
     let fee = Collateral(Uint128::try_from(fee.to_uint_ceil())?);
-    market.add_liquidity(fee);
+    market
+        .add_liquidity(fee)
+        .assign_to(deps.storage, &market, &market.house)?;
     let funds = deposit_amount.checked_sub(fee)?;
     let tokens = market.buy(outcome, funds)?;
     let mut share_info = ShareInfo::load(deps.storage, &market, &info.sender)?
@@ -211,6 +215,36 @@ fn deposit(
             .add_attribute("tokens", tokens.to_string())
             .add_attribute("deposit-amount", deposit_amount.to_string())
             .add_attribute("fee", fee.to_string()),
+    ))
+}
+
+fn provide(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    id: MarketId,
+    funds: Funds,
+) -> Result<Response> {
+    let mut market = StoredMarket::load(deps.storage, id)?;
+
+    if env.block.time >= market.deposit_stop_date {
+        return Err(Error::DepositsStopped {
+            id,
+            now: env.block.time,
+            deposit_stop_date: market.deposit_stop_date,
+        });
+    }
+
+    let deposit_amount = funds.require_funds(&market.denom)?;
+    let shares = market.add_liquidity(deposit_amount);
+    MARKETS.save(deps.storage, market.id, &market)?;
+    let shares_str = shares.0.to_string();
+    shares.assign_to(deps.storage, &market, &info.sender)?;
+    Ok(Response::new().add_event(
+        Event::new("provide")
+            .add_attribute("market-id", id.to_string())
+            .add_attribute("deposit-amount", deposit_amount.to_string())
+            .add_attribute("shares", shares_str),
     ))
 }
 
@@ -264,7 +298,9 @@ fn withdraw(
 
     let fee = Decimal256::from_ratio(funds.0, 1u8) * market.withdrawal_fee;
     let fee = Collateral(Uint128::try_from(fee.to_uint_ceil())?);
-    market.add_liquidity(fee);
+    market
+        .add_liquidity(fee)
+        .assign_to(deps.storage, &market, &market.house)?;
     let funds = funds.checked_sub(fee)?;
     MARKETS.save(deps.storage, id, &market)?;
     Ok(Response::new()
