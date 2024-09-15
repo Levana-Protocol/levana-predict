@@ -4,11 +4,18 @@ use cosmwasm_std::Decimal256;
 
 #[derive(Debug, Clone, Copy)]
 pub struct Collateral(pub Decimal256);
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Token(pub Decimal256);
 impl Token {
     pub(crate) fn zero() -> Token {
         Token(Decimal256::zero())
+    }
+}
+#[derive(Debug, Clone, Copy)]
+pub struct LpShare(pub Decimal256);
+impl LpShare {
+    pub(crate) fn zero() -> LpShare {
+        LpShare(Decimal256::zero())
     }
 }
 
@@ -129,5 +136,41 @@ impl std::ops::Sub for Collateral {
 
     fn sub(self, rhs: Self) -> Self::Output {
         Collateral(self.0 - rhs.0)
+    }
+}
+
+impl std::ops::AddAssign for LpShare {
+    fn add_assign(&mut self, rhs: Self) {
+        self.0 += rhs.0;
+    }
+}
+
+impl std::ops::Sub for LpShare {
+    type Output = LpShare;
+
+    fn sub(self, rhs: LpShare) -> Self::Output {
+        LpShare(self.0 - rhs.0)
+    }
+}
+
+impl std::ops::Mul<Decimal256> for LpShare {
+    type Output = LpShare;
+
+    fn mul(self, rhs: Decimal256) -> Self::Output {
+        LpShare(self.0 * rhs)
+    }
+}
+
+impl std::ops::Div for LpShare {
+    type Output = Decimal256;
+
+    fn div(self, rhs: Self) -> Self::Output {
+        self.0 / rhs.0
+    }
+}
+
+impl Display for LpShare {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}S", self.0)
     }
 }
