@@ -1,5 +1,5 @@
-import { Theme, useTheme } from "@mui/joy"
-import { Breakpoint, SxProps, useMediaQuery } from "@mui/system"
+import { type Theme, useTheme } from "@mui/joy"
+import { type Breakpoint, type SxProps, useMediaQuery } from "@mui/system"
 
 const DESKTOP_BREAKPOINT = "lg" as const
 

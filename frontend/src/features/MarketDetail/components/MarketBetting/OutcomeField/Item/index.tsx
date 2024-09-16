@@ -1,6 +1,6 @@
-import { Radio, RadioProps, Stack, Typography } from "@mui/joy"
+import { Radio, type RadioProps, Stack, Typography } from "@mui/joy"
 
-import { MarketOutcome } from "@api/queries/Market"
+import type { MarketOutcome } from "@api/queries/Market"
 import { mergeSx } from "@utils/styles"
 
 interface OutcomeFieldItemProps

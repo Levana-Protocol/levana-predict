@@ -6,7 +6,7 @@ import {
 } from "react-router-dom"
 
 import { App } from "app"
-import { MarketId } from "@api/queries/Market"
+import type { MarketId } from "@api/queries/Market"
 import { ErrorPage } from "@common/ErrorPage"
 import { MarketPage } from "@pages/Market"
 import { MarketsPage } from "@pages/Markets"

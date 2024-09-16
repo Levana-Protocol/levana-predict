@@ -1,5 +1,5 @@
 import { useAccount } from "graz"
-import { Button, ButtonProps, Typography } from "@mui/joy"
+import { Button, type ButtonProps, Typography } from "@mui/joy"
 
 import { mergeSx, useCurrentBreakpoint } from "@utils/styles"
 import { presentConnectionModal } from "@common/ConnectionModal"

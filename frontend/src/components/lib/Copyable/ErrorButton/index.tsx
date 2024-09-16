@@ -1,4 +1,4 @@
-import { Button, ButtonProps } from "@mui/joy"
+import { Button, type ButtonProps } from "@mui/joy"
 
 import { CopyIcon } from "@assets/icons/Copy"
 import { TickIcon } from "@assets/icons/Tick"

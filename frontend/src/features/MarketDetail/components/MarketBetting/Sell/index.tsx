@@ -3,7 +3,7 @@ import { FormProvider } from "react-hook-form"
 import { useQuery } from "@tanstack/react-query"
 
 import { useCurrentAccount } from "@config/chain"
-import { Market } from "@api/queries/Market"
+import type { Market } from "@api/queries/Market"
 import { positionsQuery } from "@api/queries/Positions"
 import { useMarketSellForm } from "./form"
 import { OutcomeField } from "../OutcomeField"

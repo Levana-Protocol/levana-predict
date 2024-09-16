@@ -1,4 +1,4 @@
-import { PropsWithChildren, ReactNode } from "react"
+import type { PropsWithChildren, ReactNode } from "react"
 import { Modal } from "@mui/joy"
 import { Store, useStore } from "@tanstack/react-store"
 

@@ -1,7 +1,7 @@
-import { ReactNode, Suspense } from "react"
+import { type ReactNode, Suspense } from "react"
 import {
   ErrorBoundary,
-  ErrorBoundaryPropsWithFallback,
+  type ErrorBoundaryPropsWithFallback,
 } from "react-error-boundary"
 
 interface LoadableComponentProps<T> {

@@ -1,4 +1,4 @@
-import { Stack, SvgIconProps } from "@mui/joy"
+import { Stack, type SvgIconProps } from "@mui/joy"
 
 import { DESKTOP_BREAKPOINT } from "@utils/styles"
 import { NavbarWalletButton } from "./WalletButton"

@@ -2,7 +2,7 @@ import { queryOptions } from "@tanstack/react-query"
 
 import { NETWORK_ID } from "@config/chain"
 import { fetchQuerier } from "@api/querier"
-import { Denom, Tokens } from "@utils/tokens"
+import { type Denom, Tokens } from "@utils/tokens"
 
 type BalancesResponse = Record<string, string>
 type Balances = Map<Denom, Tokens>

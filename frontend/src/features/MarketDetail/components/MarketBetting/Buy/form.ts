@@ -1,7 +1,7 @@
 import { useForm } from "react-hook-form"
 import { useQuery } from "@tanstack/react-query"
 
-import { Market } from "@api/queries/Market"
+import type { Market } from "@api/queries/Market"
 import { tokenPricesQuery } from "@api/queries/Prices"
 import { usePlaceBet } from "@api/mutations/PlaceBet"
 import { Tokens, USD } from "@utils/tokens"

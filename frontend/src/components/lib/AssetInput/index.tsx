@@ -1,12 +1,12 @@
 import { forwardRef } from "react"
 import {
   Box,
-  BoxProps,
+  type BoxProps,
   Input,
-  InputProps,
+  type InputProps,
   Stack,
   Typography,
-  TypographyProps,
+  type TypographyProps,
 } from "@mui/joy"
 
 import { mergeSx } from "@utils/styles"

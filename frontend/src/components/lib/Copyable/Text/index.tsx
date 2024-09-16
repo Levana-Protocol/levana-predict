@@ -1,4 +1,4 @@
-import { Typography, TypographyProps } from "@mui/joy"
+import { Typography, type TypographyProps } from "@mui/joy"
 
 import { mergeSx } from "@utils/styles"
 import { useCopyToClipboard } from "@utils/hooks"

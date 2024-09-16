@@ -3,12 +3,12 @@ import { useAccount } from "graz"
 import { P, match } from "ts-pattern"
 import { Button, Sheet, Stack, Typography } from "@mui/joy"
 
-import { Market } from "@api/queries/Market"
-import { StyleProps, mergeSx } from "@utils/styles"
+import type { Market } from "@api/queries/Market"
+import { type StyleProps, mergeSx } from "@utils/styles"
 import { LoadableWidget } from "@lib/Loadable/Widget"
 import { ConnectButton } from "@common/ConnectButton"
 import {
-  MarketStatus,
+  type MarketStatus,
   useMarketStatus,
   useSuspenseCurrentMarket,
 } from "@features/MarketDetail/utils"

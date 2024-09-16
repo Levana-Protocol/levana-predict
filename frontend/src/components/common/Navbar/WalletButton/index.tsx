@@ -1,6 +1,6 @@
 import { useAccount } from "graz"
 import { forwardRef } from "react"
-import { Button, ButtonProps, Dropdown, MenuButton, Typography } from "@mui/joy"
+import { Button, type ButtonProps, Dropdown, MenuButton, Typography } from "@mui/joy"
 
 import { ChevronDownIcon } from "@assets/icons/ChevronDown"
 import { useCurrentAccount } from "@config/chain"

@@ -3,7 +3,7 @@ import { queryOptions } from "@tanstack/react-query"
 import { NETWORK_ID } from "@config/chain"
 import { CONTRACT_ADDRESS } from "@config/environment"
 import { fetchQuerier } from "@api/querier"
-import { MarketId } from "./Market"
+import type { MarketId } from "./Market"
 
 interface ResponseGlobalInfo {
   latest_market_id: number | null

@@ -2,14 +2,14 @@
  * @file Imported from the Gov project to match its styles as much as possible
  */
 
-import { PropsWithChildren } from "react"
+import type { PropsWithChildren } from "react"
 import {
   CssBaseline,
   CssVarsProvider,
   GlobalStyles,
-  PaletteBackground,
-  PaletteRange,
-  PaletteText,
+  type PaletteBackground,
+  type PaletteRange,
+  type PaletteText,
   buttonClasses,
   formControlClasses,
   inputClasses,
@@ -19,7 +19,7 @@ import {
   sliderClasses,
   textareaClasses,
 } from "@mui/joy"
-import extendTheme, { ColorSystemOptions } from "@mui/joy/styles/extendTheme"
+import extendTheme, { type ColorSystemOptions } from "@mui/joy/styles/extendTheme"
 
 import { ChevronDownIcon } from "@assets/icons/ChevronDown"
 import { MS_IN_SECOND } from "@utils/time"

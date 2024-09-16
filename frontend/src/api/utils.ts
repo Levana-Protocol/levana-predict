@@ -11,7 +11,7 @@ import { sleep } from "@utils/time"
 const poll = async <N, V>(
   fetchFn: () => Promise<N | V>,
   isValid: (res: N | V) => res is V,
-  maxAttempts: number = 8,
+  maxAttempts = 8,
   getDelayMs: number | ((attemp: number) => number) = (attempt) =>
     Math.pow(2, attempt) * 200,
 ) => {

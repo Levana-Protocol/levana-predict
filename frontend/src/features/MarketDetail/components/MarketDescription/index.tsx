@@ -1,7 +1,7 @@
 import { Box, Typography } from "@mui/joy"
 
-import { Market } from "@api/queries/Market"
-import { StyleProps } from "@utils/styles"
+import type { Market } from "@api/queries/Market"
+import type { StyleProps } from "@utils/styles"
 import { LoadableWidget } from "@lib/Loadable/Widget"
 import { useSuspenseCurrentMarket } from "@features/MarketDetail/utils"
 

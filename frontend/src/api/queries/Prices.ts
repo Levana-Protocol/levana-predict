@@ -4,7 +4,7 @@ import { queryOptions } from "@tanstack/react-query"
 import { MAINNET_NETWORK_ID } from "@config/chain"
 import { fetchQuerier } from "@api/querier"
 import { MS_IN_SECOND } from "@utils/time"
-import { Denom, tokenConfigs } from "@utils/tokens"
+import { type Denom, tokenConfigs } from "@utils/tokens"
 
 const TOKEN_PRICES_REFRESH_RATE = MS_IN_SECOND * 2
 const FACTORY_ADDRESS =

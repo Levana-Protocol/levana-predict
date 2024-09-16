@@ -9,7 +9,7 @@ import {
   FormHelperText,
   FormLabel,
   Sheet,
-  SheetProps,
+  type SheetProps,
   Slider,
   Stack,
 } from "@mui/joy"
@@ -40,7 +40,7 @@ const BetTokensField = (props: BetTokensFieldProps) => {
   const form = useFormContext()
 
   const formValue = form.watch(name) as string
-  const setFormValue = (value: string, validate: boolean = true) => {
+  const setFormValue = (value: string, validate = true) => {
     form.setValue(name, value, { shouldValidate: validate })
   }
 

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import { IconButton, Typography, TypographyProps } from "@mui/joy"
+import { IconButton, Typography, type TypographyProps } from "@mui/joy"
 
 import { ArrowBackIcon } from "@assets/icons/ArrowBack"
 import { mergeSx, stylesUpTo } from "@utils/styles"

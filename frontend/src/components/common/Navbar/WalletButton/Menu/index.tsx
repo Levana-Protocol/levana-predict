@@ -5,7 +5,7 @@ import {
   ListItemDecorator,
   Menu,
   MenuItem,
-  MenuProps,
+  type MenuProps,
   Typography,
 } from "@mui/joy"
 

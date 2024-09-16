@@ -1,8 +1,8 @@
-import { PropsWithChildren, useCallback } from "react"
+import { type PropsWithChildren, useCallback } from "react"
 import {
-  OptionsObject,
-  SnackbarKey,
-  SnackbarMessage,
+  type OptionsObject,
+  type SnackbarKey,
+  type SnackbarMessage,
   SnackbarProvider,
   useSnackbar,
 } from "notistack"

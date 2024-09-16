@@ -15,7 +15,7 @@
 const pluralize = (
   singular: string,
   count: number,
-  inclusive: boolean = false,
+  inclusive = false,
   plural: string = singular + "s",
 ): string => {
   // TODO: use the [Pluralize library](https://github.com/plurals/pluralize)?
@@ -31,8 +31,8 @@ const pluralize = (
  */
 const abbreviateWalletAddress = (
   address: string,
-  startLength: number = 9,
-  endLength: number = 4,
+  startLength = 9,
+  endLength = 4,
 ): string => {
   if (startLength + endLength >= address.length) {
     return address

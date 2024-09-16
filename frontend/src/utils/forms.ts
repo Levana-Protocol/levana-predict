@@ -1,4 +1,4 @@
-import { FieldValues, UseFormReturn } from "react-hook-form"
+import type { FieldValues, UseFormReturn } from "react-hook-form"
 
 /**
  * Utility to get the latest values in a form. Helpful when a field's state changes after the render cycle.

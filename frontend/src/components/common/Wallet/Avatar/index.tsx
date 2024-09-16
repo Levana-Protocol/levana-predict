@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import jdenticon from "jdenticon/standalone"
-import { Avatar, AvatarProps, Box } from "@mui/joy"
+import { Avatar, type AvatarProps, Box } from "@mui/joy"
 
 interface WalletAvatarProps extends Omit<AvatarProps, "children"> {
   address: string

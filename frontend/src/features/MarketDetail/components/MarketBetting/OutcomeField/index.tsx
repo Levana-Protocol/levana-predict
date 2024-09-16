@@ -5,10 +5,10 @@ import {
   FormLabel,
   RadioGroup,
   Sheet,
-  SheetProps,
+  type SheetProps,
 } from "@mui/joy"
 
-import { Market } from "@api/queries/Market"
+import type { Market } from "@api/queries/Market"
 import { mergeSx } from "@utils/styles"
 import { OutcomeFieldItem } from "./Item"
 

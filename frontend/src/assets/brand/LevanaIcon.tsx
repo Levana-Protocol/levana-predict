@@ -1,4 +1,4 @@
-import { SvgIcon, SvgIconProps } from "@mui/joy"
+import { SvgIcon, type SvgIconProps } from "@mui/joy"
 
 import { mergeSx } from "@utils/styles"
 

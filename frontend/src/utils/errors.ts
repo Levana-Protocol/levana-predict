@@ -146,9 +146,9 @@ const displayError = <T>(err: T): ErrorDisplay => {
  */
 const getErrorReport = <T>(err: T): string => {
   let currentErr: unknown = err
-  let report = err instanceof Error && err.stack ? [err.stack] : []
+  const report = err instanceof Error && err.stack ? [err.stack] : []
 
-  let wrappers: string[] = []
+  const wrappers: string[] = []
   // Unwrap the possible `AppError`s containing the underlying error.
   while (currentErr instanceof AppError) {
     wrappers.push(`${currentErr}`)

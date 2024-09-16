@@ -1,11 +1,11 @@
-import { PropsWithChildren } from "react"
+import type { PropsWithChildren } from "react"
 import {
   GrazProvider,
   WalletType,
   useAccount,
   useConnect,
   useSuggestChainAndConnect,
-  ConfigureGrazArgs,
+  type ConfigureGrazArgs,
 } from "graz"
 import { neutron, neutrontestnet } from "graz/chains"
 

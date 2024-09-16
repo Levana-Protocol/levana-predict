@@ -1,6 +1,6 @@
-import { Box, BoxProps } from "@mui/joy"
+import { Box, type BoxProps } from "@mui/joy"
 
-import { Market } from "@api/queries/Market"
+import type { Market } from "@api/queries/Market"
 import { mergeSx } from "@utils/styles"
 
 interface MarketImageProps extends Omit<BoxProps, "children"> {

@@ -1,4 +1,4 @@
-import { SvgIcon, SvgIconProps } from "@mui/joy"
+import { SvgIcon, type SvgIconProps } from "@mui/joy"
 
 const WarningNotificationIcon = (props: SvgIconProps) => {
   const Svg = () => (

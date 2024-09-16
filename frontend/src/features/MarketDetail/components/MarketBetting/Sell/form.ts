@@ -1,7 +1,7 @@
 import BigNumber from "bignumber.js"
 import { useForm } from "react-hook-form"
 
-import { Market } from "@api/queries/Market"
+import type { Market } from "@api/queries/Market"
 import { useCancelBet } from "@api/mutations/CancelBet"
 import { useLatestFormValues } from "@utils/forms"
 

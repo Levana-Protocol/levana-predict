@@ -1,6 +1,6 @@
 import { match } from "ts-pattern"
-import { Coin, calculateFee } from "@cosmjs/stargate"
-import {
+import { type Coin, calculateFee } from "@cosmjs/stargate"
+import type {
   ExecuteResult,
   MsgExecuteContractEncodeObject,
   SigningCosmWasmClient,

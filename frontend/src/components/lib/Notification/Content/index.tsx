@@ -1,7 +1,7 @@
 import { forwardRef } from "react"
 import { match } from "ts-pattern"
 import { Box, IconButton, Sheet, Stack, Typography } from "@mui/joy"
-import { CustomContentProps, SnackbarContent } from "notistack"
+import { type CustomContentProps, SnackbarContent } from "notistack"
 
 import { CloseIcon } from "@assets/icons/Close"
 import { SuccessNotificationIcon } from "@assets/icons/SuccessNotification"

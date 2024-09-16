@@ -1,7 +1,7 @@
 import { match } from "ts-pattern"
-import { Chip, ChipProps } from "@mui/joy"
+import { Chip, type ChipProps } from "@mui/joy"
 
-import { Market } from "@api/queries/Market"
+import type { Market } from "@api/queries/Market"
 import { useMarketStatus } from "@features/MarketDetail/utils"
 
 interface MarketStatusProps extends Omit<ChipProps, "children"> {

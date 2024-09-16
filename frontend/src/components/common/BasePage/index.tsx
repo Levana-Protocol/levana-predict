@@ -1,4 +1,4 @@
-import { Stack, StackProps } from "@mui/joy"
+import { Stack, type StackProps } from "@mui/joy"
 
 import { DESKTOP_BREAKPOINT, mergeSx } from "@utils/styles"
 

@@ -10,7 +10,7 @@ import {
   FormLabel,
   IconButton,
   Sheet,
-  SheetProps,
+  type SheetProps,
   Slider,
   Stack,
   Typography,
@@ -20,7 +20,7 @@ import { SwapArrowsIcon } from "@assets/icons/SwapArrows"
 import { VALID_DECIMAL_REGEX, getProportion } from "@utils/number"
 import { buildGridAreas, mergeSx } from "@utils/styles"
 import { matchesRegex } from "@utils/string"
-import { Denom, Tokens, USD, getTokenConfig } from "@utils/tokens"
+import { type Denom, Tokens, USD, getTokenConfig } from "@utils/tokens"
 import { AssetInput } from "@lib/AssetInput"
 
 interface TokensAmountFieldProps extends Omit<SheetProps, "children"> {
@@ -52,7 +52,7 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
   form.register(toggledFieldName) // The toggled field serves just as context and doesn't have an input element
 
   const formValue = form.watch(valueFieldName) as string
-  const setFormValue = (value: string, validate: boolean = true) => {
+  const setFormValue = (value: string, validate = true) => {
     form.setValue(valueFieldName, value, { shouldValidate: validate })
   }
 

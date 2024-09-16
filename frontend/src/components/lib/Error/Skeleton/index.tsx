@@ -1,5 +1,5 @@
-import { ReactNode } from "react"
-import { Box, Sheet, SheetProps, SvgIconProps } from "@mui/joy"
+import type { ReactNode } from "react"
+import { Box, Sheet, type SheetProps, type SvgIconProps } from "@mui/joy"
 
 import { AlertIcon } from "@assets/icons/Alert"
 import { mergeSx } from "@utils/styles"

@@ -1,6 +1,6 @@
-import { ReactNode } from "react"
-import { SxProps } from "@mui/system"
-import { Sheet, Skeleton, Theme } from "@mui/joy"
+import type { ReactNode } from "react"
+import type { SxProps } from "@mui/system"
+import { Sheet, Skeleton, type Theme } from "@mui/joy"
 
 import { mergeSx } from "@utils/styles"
 import { ErrorSkeleton } from "@lib/Error/Skeleton"
