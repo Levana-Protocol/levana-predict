@@ -28,8 +28,5 @@ jobs:
       - name: Type Checking
         run: cd frontend && pnpm tsc
 
-      - name: Code Quality
-        run: cd frontend && pnpm lint
-
       - name: Code Formatting
         run: cd frontend && pnpm biome ci src
