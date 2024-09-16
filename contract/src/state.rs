@@ -8,7 +8,7 @@ pub const LAST_MARKET_ID: Item<MarketId> = Item::new("last-market-id");
 
 pub const MARKETS: Map<MarketId, StoredMarket> = Map::new("markets");
 
-const SHARES: Map<(MarketId, &Addr), ShareInfo> = Map::new("shares");
+const HOLDERS: Map<(MarketId, &Addr), ShareInfo> = Map::new("holders");
 
 impl ShareInfo {
     pub fn load(
@@ -16,7 +16,7 @@ impl ShareInfo {
         market: &StoredMarket,
         addr: &Addr,
     ) -> Result<Option<ShareInfo>> {
-        match SHARES.may_load(store, (market.id, addr))? {
+        match HOLDERS.may_load(store, (market.id, addr))? {
             None => Ok(None),
             Some(share_info) => {
                 if share_info.outcomes.len() != market.outcomes.len() {
@@ -35,18 +35,31 @@ impl ShareInfo {
         addr: &Addr,
     ) -> StdResult<()> {
         assert_eq!(market.outcomes.len(), self.outcomes.len());
-        SHARES.save(store, (market.id, addr), self)
+        HOLDERS.save(store, (market.id, addr), self)
     }
 
-    pub(crate) fn get_outcome(&self, id: MarketId, outcome: OutcomeId) -> Result<Token> {
-        self.outcomes
+    pub(crate) fn get_outcome(&self, market: &StoredMarket, outcome: OutcomeId) -> Result<Token> {
+        let from_tokens =
+            self.outcomes
+                .get(outcome.usize())
+                .copied()
+                .ok_or_else(|| Error::InvalidOutcome {
+                    id: market.id,
+                    outcome_count: self.outcomes.len().to_string(),
+                    outcome,
+                })?;
+        let from_pool = market
+            .outcomes
             .get(outcome.usize())
-            .copied()
+            .as_ref()
             .ok_or_else(|| Error::InvalidOutcome {
-                id,
+                id: market.id,
                 outcome_count: self.outcomes.len().to_string(),
                 outcome,
-            })
+            })?
+            .pool_tokens
+            * (self.shares / market.lp_shares);
+        Ok(from_tokens + from_pool)
     }
 
     pub(crate) fn get_outcome_mut(
@@ -85,6 +98,8 @@ pub struct StoredMarket {
     pub winner: Option<OutcomeId>,
     pub house: Addr,
     pub total_wallets: u32,
+    /// Total shares across all wallets
+    pub lp_shares: LpShare,
 }
 
 impl StoredMarket {
@@ -126,9 +141,11 @@ pub struct StoredOutcome {
     pub wallets: u32,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct ShareInfo {
     pub outcomes: Vec<Token>,
+    /// LP shares held by this wallet
+    pub shares: LpShare,
     pub claimed_winnings: bool,
 }
 
@@ -138,6 +155,7 @@ impl ShareInfo {
             outcomes: std::iter::repeat(Token::zero())
                 .take(outcome_count)
                 .collect(),
+            shares: LpShare::zero(),
             claimed_winnings: false,
         }
     }

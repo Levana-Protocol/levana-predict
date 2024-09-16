@@ -1,8 +1,25 @@
 use crate::prelude::*;
 
+#[must_use]
+pub struct UnassignedLpShares(pub LpShare);
+impl UnassignedLpShares {
+    pub fn assign_to(
+        self,
+        storage: &mut dyn Storage,
+        market: &StoredMarket,
+        sender: &Addr,
+    ) -> Result<()> {
+        let mut share_info = ShareInfo::load(storage, market, sender)?
+            .unwrap_or_else(|| ShareInfo::new(market.outcomes.len()));
+        share_info.shares += self.0;
+        share_info.save(storage, market, sender)?;
+        Ok(())
+    }
+}
+
 impl StoredMarket {
     /// Adds liquidity to the market without changing prices of assets.
-    pub fn add_liquidity(&mut self, funds: Collateral) {
+    pub fn add_liquidity(&mut self, funds: Collateral) -> UnassignedLpShares {
         let new_total = self.pool_size + funds;
         let scale = new_total / self.pool_size;
         self.pool_size = new_total;
@@ -11,6 +28,10 @@ impl StoredMarket {
             outcome.pool_tokens *= scale;
             outcome.total_tokens += outcome.pool_tokens - old;
         }
+        let old_shares = self.lp_shares;
+        self.lp_shares *= scale;
+
+        UnassignedLpShares(self.lp_shares - old_shares)
     }
 
     /// Place a bet on the given outcome.

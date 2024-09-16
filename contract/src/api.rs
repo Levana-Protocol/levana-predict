@@ -11,6 +11,10 @@ pub enum ExecuteMsg {
     AddMarket {
         params: Box<AddMarketParams>,
     },
+    /// Provide liquidity to the liquidity pool
+    Provide {
+        id: MarketId,
+    },
     /// Place a bet on an outcome
     Deposit {
         id: MarketId,

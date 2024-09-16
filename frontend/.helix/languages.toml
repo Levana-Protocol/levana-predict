@@ -1,0 +1,37 @@
+# Mostly taken from:
+#
+# https://github.com/biomejs/biome/blob/main/editors/helix/manual.md
+#
+# https://github.com/helix-editor/helix/discussions/8987#discussioncomment-8918364
+#
+# Note that we use npx to run biome, as opposed to running biome
+# directly as is done in the link above.
+
+[language-server.biome]
+command = "pnpm"
+args = ["biome", "lsp-proxy"]
+
+[[language]]
+name = "javascript"
+language-servers = [ { name = "typescript-language-server", except-features = [ "format" ] }, "biome" ]
+auto-format = true
+formatter = { command = "pnpm", args = ["biome", "format", "--stdin-file-path", "a.js"] }
+
+[[language]]
+name = "typescript"
+file-types = ["ts"]
+language-servers = [ { name = "typescript-language-server", except-features = [ "format" ] }, "biome" ]
+auto-format = true
+formatter = { command = "pnpm", args = ["biome", "format", "--stdin-file-path", "a.ts"] }
+
+[[language]]
+name = "tsx"
+auto-format = true
+language-servers = [ { name = "typescript-language-server", except-features = [ "format" ] }, "biome" ]
+formatter = { command = "pnpm", args = ["biome", "format", "--stdin-file-path", "a.tsx"] }
+
+[[language]]
+name = "jsx"
+auto-format = true
+language-servers = [ { name = "typescript-language-server", except-features = [ "format" ] }, "biome" ]
+formatter = { command = "pnpm", args = ["biome", "format", "--stdin-file-path", "a.jsx"] }
