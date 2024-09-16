@@ -24,12 +24,12 @@ class Shares {
     return this.value.decimalPlaces(Shares.precision).toFixed()
   }
 
-  plus(shares: BigNumber.Value): Shares {
-    return Shares.fromValue(this.value.plus(shares))
+  plus(shares: Shares): Shares {
+    return Shares.fromValue(this.value.plus(shares.value))
   }
 
-  minus(shares: BigNumber.Value): Shares {
-    return Shares.fromValue(this.value.minus(shares))
+  minus(shares: Shares): Shares {
+    return Shares.fromValue(this.value.minus(shares.value))
   }
 
   times(value: BigNumber.Value): Shares {

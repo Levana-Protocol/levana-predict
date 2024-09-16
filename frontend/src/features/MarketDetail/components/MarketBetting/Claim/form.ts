@@ -18,7 +18,7 @@ const useMarketClaimForm = (market: Market) => {
     market.winnerOutcome !== undefined &&
     !!positions.data &&
     !positions.data.claimed &&
-    !!positions.data.outcomes.get(market.winnerOutcome.id)?.gt(0)
+    !!positions.data.outcomes.get(market.winnerOutcome.id)?.value?.gt(0)
 
   const onSubmit = () => {
     return claimEarnings.mutateAsync()
