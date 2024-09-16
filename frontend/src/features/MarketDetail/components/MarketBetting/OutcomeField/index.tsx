@@ -38,7 +38,7 @@ const OutcomeField = (props: OutcomeFieldProps) => {
               borderWidth: "0.125rem",
               borderStyle: "solid",
               borderColor: (theme) =>
-                !!fieldState.error
+                fieldState.error
                   ? theme.palette.warning.plainColor
                   : "transparent",
               p: 2,

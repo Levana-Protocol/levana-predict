@@ -16,7 +16,7 @@ const pluralize = (
   singular: string,
   count: number,
   inclusive = false,
-  plural: string = singular + "s",
+  plural = `${singular}s`,
 ): string => {
   // TODO: use the [Pluralize library](https://github.com/plurals/pluralize)?
   const pluralized = count === 1 ? singular : plural

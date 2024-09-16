@@ -38,18 +38,21 @@ const useCopyToClipboard = () => {
   const [copied, setCopied] = useResettingState(false, true, 1.5 * MS_IN_SECOND)
   const notifications = useNotifications()
 
-  const copy = useCallback((content: string, notification?: string) => {
-    return navigator.clipboard.writeText(content).then(() => {
-      setCopied()
-      if (!!notification) {
-        notifications.notifySuccess(`Copied ${notification}.`, {
-          // https://notistack.com/features/basic#prevent-duplicate
-          key: COPIED_NOTIFICATION_KEY(content),
-          preventDuplicate: true,
-        })
-      }
-    })
-  }, [])
+  const copy = useCallback(
+    (content: string, notification?: string) => {
+      return navigator.clipboard.writeText(content).then(() => {
+        setCopied()
+        if (notification) {
+          notifications.notifySuccess(`Copied ${notification}.`, {
+            // https://notistack.com/features/basic#prevent-duplicate
+            key: COPIED_NOTIFICATION_KEY(content),
+            preventDuplicate: true,
+          })
+        }
+      })
+    },
+    [notifications.notifySuccess, setCopied],
+  )
 
   return [copied, copy] as const
 }

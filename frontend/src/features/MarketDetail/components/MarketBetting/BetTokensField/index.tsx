@@ -40,9 +40,12 @@ const BetTokensField = (props: BetTokensFieldProps) => {
   const form = useFormContext()
 
   const formValue = form.watch(name) as string
-  const setFormValue = (value: string, validate = true) => {
-    form.setValue(name, value, { shouldValidate: validate })
-  }
+  const setFormValue = useCallback(
+    (value: string, validate = true) => {
+      form.setValue(name, value, { shouldValidate: validate })
+    },
+    [name, form.setValue],
+  )
 
   const isDisabled = !tokensBalance || form.formState.isSubmitting
 
@@ -57,9 +60,12 @@ const BetTokensField = (props: BetTokensFieldProps) => {
   /**
    * Updates the containing form's value
    */
-  const updateValueFromTokens = useCallback((newTokensValue: BigNumber) => {
-    setFormValue(newTokensValue.toFixed(3))
-  }, [])
+  const updateValueFromTokens = useCallback(
+    (newTokensValue: BigNumber) => {
+      setFormValue(newTokensValue.toFixed(3))
+    },
+    [setFormValue],
+  )
 
   /**
    * Updates the containing form's value, getting the given percentage of the current tokens balance and converting it to a token amount
@@ -85,7 +91,7 @@ const BetTokensField = (props: BetTokensFieldProps) => {
         setFormValue(newAmount === "." ? "0." : newAmount)
       }
     },
-    [tokensBalance],
+    [tokensBalance, setFormValue],
   )
 
   return (
@@ -113,7 +119,7 @@ const BetTokensField = (props: BetTokensFieldProps) => {
               borderWidth: "0.125rem",
               borderStyle: "solid",
               borderColor: (theme) =>
-                !!fieldState.error
+                fieldState.error
                   ? theme.palette.warning.plainColor
                   : "transparent",
               p: 2,

@@ -144,10 +144,8 @@ const querierExecuteTx = async (
   signer: SigningCosmWasmClient,
   msgs: ExecuteMsg | ExecuteMsg[],
 ) => {
-  if (!Array.isArray(msgs)) {
-    msgs = [msgs]
-  }
-  const encodedMsgs = msgs.map((msg) => encodeMsgObject(address, msg))
+  const messages = Array.isArray(msgs) ? msgs : [msgs]
+  const encodedMsgs = messages.map((msg) => encodeMsgObject(address, msg))
 
   const fee = await querierSimulate(encodedMsgs)
 
@@ -181,7 +179,7 @@ const querierExecuteTx = async (
 
 type QuerierWaitForTxResponse =
   | { found: QuerierExecuteTxResult }
-  | { not_found: {} }
+  | { not_found: unknown }
 
 interface QuerierExecuteTxResult extends ExecuteResult {
   timestamp: string

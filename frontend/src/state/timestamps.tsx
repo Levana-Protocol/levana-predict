@@ -39,7 +39,7 @@ const useRefreshPeriodically = (key: TimestampKey, refreshRate: number) => {
     return () => {
       clearInterval(interval)
     }
-  }, [refreshRate])
+  }, [key, refreshRate])
 }
 
 const TimestampsHandler = (props: PropsWithChildren) => {
@@ -61,7 +61,10 @@ const useTimedMemo = <T,>(
   deps: DependencyList,
 ): T => {
   const timestamp = useTimestamps()[key]
-  const value = useMemo(() => getValue(timestamp), [timestamp, ...deps])
+  const value = useMemo(
+    () => getValue(timestamp),
+    [getValue, timestamp, ...deps],
+  )
 
   return value
 }

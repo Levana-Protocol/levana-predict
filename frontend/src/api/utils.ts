@@ -13,7 +13,7 @@ const poll = async <N, V>(
   isValid: (res: N | V) => res is V,
   maxAttempts = 8,
   getDelayMs: number | ((attemp: number) => number) = (attempt) =>
-    Math.pow(2, attempt) * 200,
+    2 ** attempt * 200,
 ) => {
   let attempt = 0
   while (attempt < maxAttempts) {

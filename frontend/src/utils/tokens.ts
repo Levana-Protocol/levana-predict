@@ -279,9 +279,7 @@ class Tokens extends Asset {
     this.denom = denom
   }
   toUsd(price: BigNumber): USD {
-    return new USD(
-      this.units.times(price).dividedBy(Math.pow(10, this.exponent)),
-    )
+    return new USD(this.units.times(price).dividedBy(10 ** this.exponent))
   }
 
   toFormat(withSuffix: boolean): string {
@@ -322,9 +320,7 @@ class USD extends Asset {
     const tokenConfig = getTokenConfig(denom)
     return Tokens.fromUnits(
       denom,
-      this.units
-        .dividedBy(tokensPrice)
-        .times(Math.pow(10, tokenConfig.exponent)),
+      this.units.dividedBy(tokensPrice).times(10 ** tokenConfig.exponent),
     )
   }
 

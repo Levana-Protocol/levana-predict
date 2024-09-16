@@ -12,7 +12,7 @@ import { ThemeProvider } from "@config/theme"
 import { ModalsHandler } from "@state/modals"
 import { TimestampsHandler } from "@state/timestamps"
 
-ReactDOM.createRoot(document.getElementById("root")!).render(
+ReactDOM.createRoot(document.getElementById("root") as Element).render(
   <React.StrictMode>
     <ThemeProvider>
       <NotificationsProvider>

@@ -73,11 +73,11 @@ const formatToSignificantDigits = (
 }
 
 const unitsToValue = (units: BigNumber.Value, exponent: number): BigNumber => {
-  return BigNumber(units).dividedBy(Math.pow(10, exponent))
+  return BigNumber(units).dividedBy(10 ** exponent)
 }
 
 const valueToUnits = (value: BigNumber.Value, exponent: number): BigNumber => {
-  return BigNumber(value).times(Math.pow(10, exponent))
+  return BigNumber(value).times(10 ** exponent)
 }
 
 export { getProportion, getPercentage, VALID_DECIMAL_REGEX }

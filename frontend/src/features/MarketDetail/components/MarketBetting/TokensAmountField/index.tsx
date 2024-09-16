@@ -52,9 +52,12 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
   form.register(toggledFieldName) // The toggled field serves just as context and doesn't have an input element
 
   const formValue = form.watch(valueFieldName) as string
-  const setFormValue = (value: string, validate = true) => {
-    form.setValue(valueFieldName, value, { shouldValidate: validate })
-  }
+  const setFormValue = useCallback(
+    (value: string, validate = true) => {
+      form.setValue(valueFieldName, value, { shouldValidate: validate })
+    },
+    [valueFieldName, form.setValue],
+  )
 
   const toggled = form.watch(toggledFieldName) as boolean
   const setToggled = (value: boolean) => {
@@ -71,7 +74,7 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
         ? new USD(formValue).toTokens(denom, price)
         : Tokens.fromValue(denom, formValue).toUsd(price)
     }
-  }, [formValue, price])
+  }, [formValue, price, denom, toggled])
 
   const percentage = useMemo(() => {
     if (!price || !balance || !formValue || !bottomValue) {
@@ -85,7 +88,7 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
         : getProportion(new BigNumber(formValue), balance.getValue())
       return proportion * 100
     }
-  }, [bottomValue, toggled, price, balance])
+  }, [formValue, bottomValue, toggled, price, balance])
 
   /**
    * Updates the containing form's value, converting the given Token value to USD depending on if the field is toggled or not
@@ -100,7 +103,7 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
         }
       }
     },
-    [toggled, price],
+    [toggled, price, setFormValue],
   )
 
   /**
@@ -113,7 +116,7 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
         updateValueFromTokens(Tokens.fromUnits(denom, tokenUnits))
       }
     },
-    [updateValueFromTokens, balance],
+    [updateValueFromTokens, denom, balance],
   )
 
   /**
@@ -129,7 +132,7 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
         setFormValue(newAmount === "." ? "0." : newAmount)
       }
     },
-    [toggled, price, balance],
+    [toggled, setFormValue, tokenConfig.exponent, price, balance],
   )
 
   return (
@@ -157,7 +160,7 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
               borderWidth: "0.125rem",
               borderStyle: "solid",
               borderColor: (theme) =>
-                !!fieldState.error
+                fieldState.error
                   ? theme.palette.warning.plainColor
                   : "transparent",
               p: 2,

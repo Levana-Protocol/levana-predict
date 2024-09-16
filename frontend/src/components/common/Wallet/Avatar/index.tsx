@@ -24,6 +24,7 @@ const WalletAvatar = (props: WalletAvatarProps) => {
             height: "100%",
           },
         }}
+        // biome-ignore lint:
         dangerouslySetInnerHTML={{
           __html: svg,
         }}
