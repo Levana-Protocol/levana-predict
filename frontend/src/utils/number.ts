@@ -39,7 +39,10 @@ const getFirstSignificantDigitIndex = (value: BigNumber): number => {
   let index = 0
 
   if (integerPart.isZero()) {
-    const regexMatch = value.abs().toFixed().match(/0\.(0*[^0])/)
+    const regexMatch = value
+      .abs()
+      .toFixed()
+      .match(/0\.(0*[^0])/)
     const length = regexMatch?.at(1)?.length
 
     if (length !== undefined) {

@@ -19,7 +19,9 @@ import {
   sliderClasses,
   textareaClasses,
 } from "@mui/joy"
-import extendTheme, { type ColorSystemOptions } from "@mui/joy/styles/extendTheme"
+import extendTheme, {
+  type ColorSystemOptions,
+} from "@mui/joy/styles/extendTheme"
 
 import { ChevronDownIcon } from "@assets/icons/ChevronDown"
 import { MS_IN_SECOND } from "@utils/time"

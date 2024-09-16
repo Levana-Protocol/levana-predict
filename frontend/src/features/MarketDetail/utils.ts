@@ -2,7 +2,11 @@ import { useParams } from "react-router-dom"
 import { useSuspenseQuery } from "@tanstack/react-query"
 
 import { useTimedMemo } from "@state/timestamps"
-import { type Market, type MarketOutcome, marketQuery } from "@api/queries/Market"
+import {
+  type Market,
+  type MarketOutcome,
+  marketQuery,
+} from "@api/queries/Market"
 import { getTimeBetween } from "@utils/time"
 
 const useCurrentMarketQuery = () => {

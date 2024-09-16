@@ -1,4 +1,9 @@
-import { type DependencyList, type PropsWithChildren, useEffect, useMemo } from "react"
+import {
+  type DependencyList,
+  type PropsWithChildren,
+  useEffect,
+  useMemo,
+} from "react"
 import { Store, useStore } from "@tanstack/react-store"
 
 import { MS_IN_SECOND, Nanoseconds } from "@utils/time"
