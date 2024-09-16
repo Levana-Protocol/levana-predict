@@ -1,16 +1,27 @@
-import { useCallback, useMemo } from 'react'
-import BigNumber from 'bignumber.js'
-import { Controller, useFormContext } from 'react-hook-form'
-import { Box, Button, ButtonGroup, FormControl, FormHelperText, FormLabel, Sheet, SheetProps, Slider, Stack } from '@mui/joy'
+import { useCallback, useMemo } from "react"
+import BigNumber from "bignumber.js"
+import { Controller, useFormContext } from "react-hook-form"
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  FormControl,
+  FormHelperText,
+  FormLabel,
+  Sheet,
+  type SheetProps,
+  Slider,
+  Stack,
+} from "@mui/joy"
 
-import { VALID_DECIMAL_REGEX, getPercentage } from '@utils/number'
-import { mergeSx } from '@utils/styles'
-import { matchesRegex } from '@utils/string'
-import { AssetInput } from '@lib/AssetInput'
+import { VALID_DECIMAL_REGEX, getPercentage } from "@utils/number"
+import { mergeSx } from "@utils/styles"
+import { matchesRegex } from "@utils/string"
+import { AssetInput } from "@lib/AssetInput"
 
-interface BetTokensFieldProps extends Omit<SheetProps, "children">{
-  name: string,
-  tokensBalance: BigNumber | undefined,
+interface BetTokensFieldProps extends Omit<SheetProps, "children"> {
+  name: string
+  tokensBalance: BigNumber | undefined
 }
 
 /**
@@ -29,9 +40,12 @@ const BetTokensField = (props: BetTokensFieldProps) => {
   const form = useFormContext()
 
   const formValue = form.watch(name) as string
-  const setFormValue = (value: string, validate: boolean = true) => {
-    form.setValue(name, value, { shouldValidate: validate })
-  }
+  const setFormValue = useCallback(
+    (value: string, validate = true) => {
+      form.setValue(name, value, { shouldValidate: validate })
+    },
+    [name, form.setValue],
+  )
 
   const isDisabled = !tokensBalance || form.formState.isSubmitting
 
@@ -46,30 +60,39 @@ const BetTokensField = (props: BetTokensFieldProps) => {
   /**
    * Updates the containing form's value
    */
-  const updateValueFromTokens = useCallback((newTokensValue: BigNumber) => {
-    setFormValue(newTokensValue.toFixed(3))
-  }, [])
+  const updateValueFromTokens = useCallback(
+    (newTokensValue: BigNumber) => {
+      setFormValue(newTokensValue.toFixed(3))
+    },
+    [setFormValue],
+  )
 
   /**
    * Updates the containing form's value, getting the given percentage of the current tokens balance and converting it to a token amount
    */
-  const updateValueFromPercentage = useCallback((newPercentage: number) => {
-    if (tokensBalance) {
-      const newTokens = tokensBalance.dividedBy(100).times(newPercentage)
-      updateValueFromTokens(newTokens)
-    }
-  }, [updateValueFromTokens, tokensBalance])
+  const updateValueFromPercentage = useCallback(
+    (newPercentage: number) => {
+      if (tokensBalance) {
+        const newTokens = tokensBalance.dividedBy(100).times(newPercentage)
+        updateValueFromTokens(newTokens)
+      }
+    },
+    [updateValueFromTokens, tokensBalance],
+  )
 
   /**
    * A wrapper for the field's `onChange` that checks a regex before allowing an update
    */
-  const onChange = useCallback((newAmount: string) => {
-    const regex = VALID_DECIMAL_REGEX(3)
+  const onChange = useCallback(
+    (newAmount: string) => {
+      const regex = VALID_DECIMAL_REGEX(3)
 
-    if (tokensBalance && matchesRegex(newAmount, regex)) {
-      setFormValue(newAmount === "." ? "0." : newAmount)
-    }
-  }, [tokensBalance])
+      if (tokensBalance && matchesRegex(newAmount, regex)) {
+        setFormValue(newAmount === "." ? "0." : newAmount)
+      }
+    },
+    [tokensBalance, setFormValue],
+  )
 
   return (
     <Controller
@@ -86,16 +109,19 @@ const BetTokensField = (props: BetTokensFieldProps) => {
               return "Tokens amount is too large"
             }
           }
-        }
+        },
       }}
-      render={({ field, fieldState }) =>
+      render={({ field, fieldState }) => (
         <Sheet
           {...sheetProps}
           sx={mergeSx(
             {
               borderWidth: "0.125rem",
               borderStyle: "solid",
-              borderColor: (theme) => !!fieldState.error ? theme.palette.warning.plainColor : "transparent",
+              borderColor: (theme) =>
+                fieldState.error
+                  ? theme.palette.warning.plainColor
+                  : "transparent",
               p: 2,
             },
             sheetProps.sx,
@@ -116,7 +142,11 @@ const BetTokensField = (props: BetTokensFieldProps) => {
                 <Button
                   variant="plain"
                   color="success"
-                  sx={{ p: 0, minHeight: 0, textAlign: { xs: "start", sm: "end" } }}
+                  sx={{
+                    p: 0,
+                    minHeight: 0,
+                    textAlign: { xs: "start", sm: "end" },
+                  }}
                   aria-label="Set field to max tokens"
                   disabled={isDisabled}
                   onClick={() => {
@@ -141,17 +171,27 @@ const BetTokensField = (props: BetTokensFieldProps) => {
                 }}
               />
 
-              <Sheet sx={{ mt: 1, p: 1, pt: 0, backgroundColor: "background.level2", overflow: "visible" }}>
+              <Sheet
+                sx={{
+                  mt: 1,
+                  p: 1,
+                  pt: 0,
+                  backgroundColor: "background.level2",
+                  overflow: "visible",
+                }}
+              >
                 <Slider
                   size="lg"
                   color={fieldState.error ? "warning" : "success"}
                   value={percentage}
                   disabled={isDisabled}
-                  onChange={(_, value) => updateValueFromPercentage(value as number)}
+                  onChange={(_, value) =>
+                    updateValueFromPercentage(value as number)
+                  }
                   slotProps={{
                     thumb: {
                       "aria-label": "Percentage of max tokens",
-                    }
+                    },
                   }}
                 />
 
@@ -163,21 +203,23 @@ const BetTokensField = (props: BetTokensFieldProps) => {
                   buttonFlex={1}
                   disabled={isDisabled}
                   sx={{
-                    "--Button-minHeight": theme => theme.spacing(3),
-                    "--ButtonGroup-radius": theme => theme.vars.radius.xl,
+                    "--Button-minHeight": (theme) => theme.spacing(3),
+                    "--ButtonGroup-radius": (theme) => theme.vars.radius.xl,
                     flexWrap: "wrap",
                   }}
                 >
-                  {[25, 50, 100].map(buttonPercentage =>
+                  {[25, 50, 100].map((buttonPercentage) => (
                     <Button
                       key={buttonPercentage}
                       aria-label={`Set field to ${buttonPercentage}% of max tokens`}
-                      sx={{ fontSize: theme => theme.fontSize.xs, py: 0 }}
-                      onClick={() => { updateValueFromPercentage(buttonPercentage) }}
+                      sx={{ fontSize: (theme) => theme.fontSize.xs, py: 0 }}
+                      onClick={() => {
+                        updateValueFromPercentage(buttonPercentage)
+                      }}
                     >
                       {buttonPercentage}%
                     </Button>
-                  )}
+                  ))}
                 </ButtonGroup>
               </Sheet>
 
@@ -187,7 +229,7 @@ const BetTokensField = (props: BetTokensFieldProps) => {
             </Box>
           </FormControl>
         </Sheet>
-      }
+      )}
     />
   )
 }

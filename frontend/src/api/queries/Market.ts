@@ -79,9 +79,10 @@ const marketFromResponse = (response: ResponseMarket): Market => {
     withdrawalFee: BigNumber(response.withdrawal_fee),
     depositStopDate: new Nanoseconds(response.deposit_stop_date),
     withdrawalStopDate: new Nanoseconds(response.withdrawal_stop_date),
-    winnerOutcome: typeof response.winner === "number"
-      ? outcomes.find((outcome) => outcome.id === `${response.winner}`)
-      : undefined,
+    winnerOutcome:
+      typeof response.winner === "number"
+        ? outcomes.find((outcome) => outcome.id === `${response.winner}`)
+        : undefined,
     totalWallets: response.total_wallets,
     poolSize: BigNumber(response.pool_size),
     lpShares: BigNumber(response.lp_shares),

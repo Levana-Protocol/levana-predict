@@ -1,6 +1,6 @@
-import { Stack, StackProps } from '@mui/joy'
+import { Stack, type StackProps } from "@mui/joy"
 
-import { DESKTOP_BREAKPOINT, mergeSx } from '@utils/styles'
+import { DESKTOP_BREAKPOINT, mergeSx } from "@utils/styles"
 
 const BasePage = (props: StackProps) => {
   const { ...stackProps } = props

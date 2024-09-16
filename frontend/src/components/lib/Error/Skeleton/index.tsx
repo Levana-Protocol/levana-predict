@@ -1,12 +1,12 @@
-import { ReactNode } from 'react'
-import { Box, Sheet, SheetProps, SvgIconProps } from '@mui/joy'
+import type { ReactNode } from "react"
+import { Box, Sheet, type SheetProps, type SvgIconProps } from "@mui/joy"
 
-import { AlertIcon } from '@assets/icons/Alert'
-import { mergeSx } from '@utils/styles'
+import { AlertIcon } from "@assets/icons/Alert"
+import { mergeSx } from "@utils/styles"
 
 interface ErrorSkeletonProps extends Omit<SheetProps, "children"> {
-  placeholderContent: ReactNode,
-  iconProps?: SvgIconProps,
+  placeholderContent: ReactNode
+  iconProps?: SvgIconProps
 }
 
 const ErrorSkeleton = (props: ErrorSkeletonProps) => {
@@ -18,9 +18,7 @@ const ErrorSkeleton = (props: ErrorSkeletonProps) => {
       {...sheetProps}
       sx={mergeSx({ position: "relative" }, sheetProps.sx)}
     >
-      <Box sx={{ visibility: "hidden" }}>
-        {placeholderContent}
-      </Box>
+      <Box sx={{ visibility: "hidden" }}>{placeholderContent}</Box>
       <AlertIcon
         {...iconProps}
         sx={mergeSx(

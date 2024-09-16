@@ -20,9 +20,12 @@
       "suspicious": {
         "noArrayIndexKey": "off",
         "noAssignInExpressions": "off",
-        "noConfusingVoidType": "off"
+        "noConfusingVoidType": "off",
+        "noExplicitAny": "off"
       },
-      "complexity": {}
+      "complexity": {
+        "noUselessFragments": "off"
+      }
     },
     "ignore": ["src/**/.generated/**", "node_modules/**"]
   },

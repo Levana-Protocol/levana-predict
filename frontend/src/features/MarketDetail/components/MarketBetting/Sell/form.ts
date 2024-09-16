@@ -1,13 +1,13 @@
-import BigNumber from 'bignumber.js'
-import { useForm } from 'react-hook-form'
+import BigNumber from "bignumber.js"
+import { useForm } from "react-hook-form"
 
-import { Market } from '@api/queries/Market'
-import { useCancelBet } from '@api/mutations/CancelBet'
-import { useLatestFormValues } from '@utils/forms'
+import type { Market } from "@api/queries/Market"
+import { useCancelBet } from "@api/mutations/CancelBet"
+import { useLatestFormValues } from "@utils/forms"
 
 interface SellFormValues {
-  sellAmount: string,
-  sellOutcome: string | null,
+  sellAmount: string
+  sellOutcome: string | null
 }
 
 const useMarketSellForm = (market: Market) => {
@@ -29,7 +29,10 @@ const useMarketSellForm = (market: Market) => {
 
     if (sellAmount && sellOutcome) {
       const tokensAmount = BigNumber(sellAmount)
-      return cancelBet.mutateAsync({ outcomeId: sellOutcome, tokensAmount: tokensAmount })
+      return cancelBet.mutateAsync({
+        outcomeId: sellOutcome,
+        tokensAmount: tokensAmount,
+      })
     } else {
       return Promise.reject()
     }

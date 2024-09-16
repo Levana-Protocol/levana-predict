@@ -1,7 +1,7 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink } from "react-router-dom"
 
-import { routes } from '@config/router'
-import { PredictLogo } from '@assets/brand/PredictLogo'
+import { routes } from "@config/router"
+import { PredictLogo } from "@assets/brand/PredictLogo"
 
 const NavbarLogo = () => {
   return (

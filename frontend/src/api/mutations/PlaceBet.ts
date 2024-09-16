@@ -1,14 +1,14 @@
 import { useCosmWasmSigningClient } from "graz"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate"
+import type { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate"
 
 import { useCurrentAccount } from "@config/chain"
 import { useNotifications } from "@config/notifications"
 import { querierAwaitCacheAnd, querierBroadcastAndWait } from "@api/querier"
-import { MARKET_KEYS, MarketId, OutcomeId } from "@api/queries/Market"
+import { MARKET_KEYS, type MarketId, type OutcomeId } from "@api/queries/Market"
 import { POSITIONS_KEYS } from "@api/queries/Positions"
 import { BALANCES_KEYS } from "@api/queries/Balances"
-import { Tokens } from "@utils/tokens"
+import type { Tokens } from "@utils/tokens"
 import { AppError, errorsMiddleware } from "@utils/errors"
 import BigNumber from "bignumber.js"
 

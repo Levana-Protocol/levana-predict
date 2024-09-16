@@ -1,36 +1,40 @@
-import BigNumber from 'bignumber.js'
+import BigNumber from "bignumber.js"
 
-import defaultLogo from '@assets/tokens/alt.png'
-import ntrnLogo from '@assets/tokens/ntrn-logo.svg'
-import atomLogo from '@assets/tokens/atom-logo.svg'
-import datomLogo from '@assets/tokens/datom-logo.svg'
-import statomLogo from '@assets/tokens/statom-logo.svg'
-import stosmoLogo from '@assets/tokens/stosmo-logo.svg'
-import stdydxLogo from '@assets/tokens/stdydx-logo.svg'
-import sttiaLogo from '@assets/tokens/sttia-logo.svg'
-import stdymLogo from '@assets/tokens/stdym-logo.svg'
-import ethLogo from '@assets/tokens/eth-logo.svg'
-import btcLogo from '@assets/tokens/btc-logo.svg'
-import axlLogo from '@assets/tokens/axl-logo.svg'
-import osmoLogo from '@assets/tokens/osmo-logo.svg'
-import seiLogo from '@assets/tokens/sei-logo.svg'
-import aktLogo from '@assets/tokens/akt-logo.svg'
-import injLogo from '@assets/tokens/inj-logo.svg'
-import tiaLogo from '@assets/tokens/tia-logo.svg'
-import stkatomLogo from '@assets/tokens/stkatom-logo.svg'
-import dymLogo from '@assets/tokens/dym-logo.svg'
-import usdcLogo from '@assets/tokens/usdc-logo.svg'
+import defaultLogo from "@assets/tokens/alt.png"
+import ntrnLogo from "@assets/tokens/ntrn-logo.svg"
+import atomLogo from "@assets/tokens/atom-logo.svg"
+import datomLogo from "@assets/tokens/datom-logo.svg"
+import statomLogo from "@assets/tokens/statom-logo.svg"
+import stosmoLogo from "@assets/tokens/stosmo-logo.svg"
+import stdydxLogo from "@assets/tokens/stdydx-logo.svg"
+import sttiaLogo from "@assets/tokens/sttia-logo.svg"
+import stdymLogo from "@assets/tokens/stdym-logo.svg"
+import ethLogo from "@assets/tokens/eth-logo.svg"
+import btcLogo from "@assets/tokens/btc-logo.svg"
+import axlLogo from "@assets/tokens/axl-logo.svg"
+import osmoLogo from "@assets/tokens/osmo-logo.svg"
+import seiLogo from "@assets/tokens/sei-logo.svg"
+import aktLogo from "@assets/tokens/akt-logo.svg"
+import injLogo from "@assets/tokens/inj-logo.svg"
+import tiaLogo from "@assets/tokens/tia-logo.svg"
+import stkatomLogo from "@assets/tokens/stkatom-logo.svg"
+import dymLogo from "@assets/tokens/dym-logo.svg"
+import usdcLogo from "@assets/tokens/usdc-logo.svg"
 
-import { formatToSignificantDigits, unitsToValue, valueToUnits } from '@utils/number'
+import {
+  formatToSignificantDigits,
+  unitsToValue,
+  valueToUnits,
+} from "@utils/number"
 
 BigNumber.config({ ROUNDING_MODE: BigNumber.ROUND_DOWN })
 export const SIGNIFICANT_DIGITS = 5
 
 export interface TokenConfig {
-  icon: string,
-  symbol: string,
-  exponent: number,
-  pythId: string | undefined,
+  icon: string
+  symbol: string
+  exponent: number
+  pythId: string | undefined
 }
 
 export type Denom = string
@@ -42,7 +46,8 @@ export const tokenConfigs: Map<Denom, TokenConfig> = new Map([
       icon: ntrnLogo,
       symbol: "NTRN",
       exponent: 6,
-      pythId: "a8e6517966a52cb1df864b2764f3629fde3f21d2b640b5c572fcd654cbccd65e",
+      pythId:
+        "a8e6517966a52cb1df864b2764f3629fde3f21d2b640b5c572fcd654cbccd65e",
     },
   ],
   [
@@ -51,7 +56,8 @@ export const tokenConfigs: Map<Denom, TokenConfig> = new Map([
       icon: atomLogo,
       symbol: "ATOM",
       exponent: 6,
-      pythId: "b00b60f88b03a6a625a8d1c048c3f66653edf217439983d037e7222c4e612819",
+      pythId:
+        "b00b60f88b03a6a625a8d1c048c3f66653edf217439983d037e7222c4e612819",
     },
   ],
   [
@@ -60,7 +66,8 @@ export const tokenConfigs: Map<Denom, TokenConfig> = new Map([
       icon: datomLogo,
       symbol: "dATOM",
       exponent: 6,
-      pythId: "b00b60f88b03a6a625a8d1c048c3f66653edf217439983d037e7222c4e612819",
+      pythId:
+        "b00b60f88b03a6a625a8d1c048c3f66653edf217439983d037e7222c4e612819",
     },
   ],
   [
@@ -69,7 +76,8 @@ export const tokenConfigs: Map<Denom, TokenConfig> = new Map([
       icon: statomLogo,
       symbol: "stATOM",
       exponent: 6,
-      pythId: "e58c1e39b5d79f16a1bdf707e336310dda93884270b84f40a2b01bf74d75f671",
+      pythId:
+        "e58c1e39b5d79f16a1bdf707e336310dda93884270b84f40a2b01bf74d75f671",
     },
   ],
   [
@@ -96,7 +104,8 @@ export const tokenConfigs: Map<Denom, TokenConfig> = new Map([
       icon: sttiaLogo,
       symbol: "stTIA",
       exponent: 6,
-      pythId: "a4d617ccf05ffb84700b0fadff45abb4a508e122fa6fc4d7b7c478a7306aaecd",
+      pythId:
+        "a4d617ccf05ffb84700b0fadff45abb4a508e122fa6fc4d7b7c478a7306aaecd",
     },
   ],
   [
@@ -114,7 +123,8 @@ export const tokenConfigs: Map<Denom, TokenConfig> = new Map([
       icon: ethLogo,
       symbol: "ETH",
       exponent: 18,
-      pythId: "ff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace",
+      pythId:
+        "ff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace",
     },
   ],
   [
@@ -123,7 +133,8 @@ export const tokenConfigs: Map<Denom, TokenConfig> = new Map([
       icon: btcLogo,
       symbol: "BTC",
       exponent: 8,
-      pythId: "e62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43",
+      pythId:
+        "e62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43",
     },
   ],
   [
@@ -132,7 +143,8 @@ export const tokenConfigs: Map<Denom, TokenConfig> = new Map([
       icon: axlLogo,
       symbol: "AXL",
       exponent: 6,
-      pythId: "60144b1d5c9e9851732ad1d9760e3485ef80be39b984f6bf60f82b28a2b7f126",
+      pythId:
+        "60144b1d5c9e9851732ad1d9760e3485ef80be39b984f6bf60f82b28a2b7f126",
     },
   ],
   [
@@ -141,7 +153,8 @@ export const tokenConfigs: Map<Denom, TokenConfig> = new Map([
       icon: osmoLogo,
       symbol: "OSMO",
       exponent: 6,
-      pythId: "5867f5683c757393a0670ef0f701490950fe93fdb006d181c8265a831ac0c5c6",
+      pythId:
+        "5867f5683c757393a0670ef0f701490950fe93fdb006d181c8265a831ac0c5c6",
     },
   ],
   [
@@ -150,7 +163,8 @@ export const tokenConfigs: Map<Denom, TokenConfig> = new Map([
       icon: seiLogo,
       symbol: "SEI",
       exponent: 6,
-      pythId: "53614f1cb0c031d4af66c04cb9c756234adad0e1cee85303795091499a4084eb",
+      pythId:
+        "53614f1cb0c031d4af66c04cb9c756234adad0e1cee85303795091499a4084eb",
     },
   ],
   [
@@ -159,7 +173,8 @@ export const tokenConfigs: Map<Denom, TokenConfig> = new Map([
       icon: aktLogo,
       symbol: "AKT",
       exponent: 18,
-      pythId: "4ea5bb4d2f5900cc2e97ba534240950740b4d3b89fe712a94a7304fd2fd92702",
+      pythId:
+        "4ea5bb4d2f5900cc2e97ba534240950740b4d3b89fe712a94a7304fd2fd92702",
     },
   ],
   [
@@ -168,7 +183,8 @@ export const tokenConfigs: Map<Denom, TokenConfig> = new Map([
       icon: injLogo,
       symbol: "INJ",
       exponent: 18,
-      pythId: "7a5bc1d2b56ad029048cd63964b3ad2776eadf812edc1a43a31406cb54bff592",
+      pythId:
+        "7a5bc1d2b56ad029048cd63964b3ad2776eadf812edc1a43a31406cb54bff592",
     },
   ],
   [
@@ -177,7 +193,8 @@ export const tokenConfigs: Map<Denom, TokenConfig> = new Map([
       icon: tiaLogo,
       symbol: "TIA",
       exponent: 6,
-      pythId: "09f7c1d7dfbb7df2b8fe3d3d87ee94a2259d212da4f30c1f0540d066dfa44723",
+      pythId:
+        "09f7c1d7dfbb7df2b8fe3d3d87ee94a2259d212da4f30c1f0540d066dfa44723",
     },
   ],
   [
@@ -195,7 +212,8 @@ export const tokenConfigs: Map<Denom, TokenConfig> = new Map([
       icon: dymLogo,
       symbol: "DYM",
       exponent: 18,
-      pythId: "a9f3b2a89c6f85a6c20a9518abde39b944e839ca49a0c92307c65974d3f14a57",
+      pythId:
+        "a9f3b2a89c6f85a6c20a9518abde39b944e839ca49a0c92307c65974d3f14a57",
     },
   ],
   [
@@ -204,13 +222,21 @@ export const tokenConfigs: Map<Denom, TokenConfig> = new Map([
       icon: usdcLogo,
       symbol: "USDC",
       exponent: 6,
-      pythId: "eaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a",
+      pythId:
+        "eaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a",
     },
   ],
 ])
 
 const getTokenConfig = (denom: Denom): TokenConfig => {
-  return tokenConfigs.get(denom) ?? { icon: defaultLogo, symbol: denom, exponent: 0, pythId: undefined }
+  return (
+    tokenConfigs.get(denom) ?? {
+      icon: defaultLogo,
+      symbol: denom,
+      exponent: 0,
+      pythId: undefined,
+    }
+  )
 }
 
 abstract class Asset {
@@ -219,7 +245,12 @@ abstract class Asset {
   protected exponent: number
   protected maxDecimalPlaces: number
 
-  constructor(symbol: string, units: BigNumber.Value, exponent: number, maxDecimalPlaces: number) {
+  constructor(
+    symbol: string,
+    units: BigNumber.Value,
+    exponent: number,
+    maxDecimalPlaces: number,
+  ) {
     this.symbol = symbol
     this.units = BigNumber(units)
     this.exponent = exponent
@@ -238,12 +269,17 @@ abstract class Asset {
 class Tokens extends Asset {
   public denom: Denom
 
-  protected constructor(symbol: string, denom: Denom, units: BigNumber.Value, exponent: number) {
+  protected constructor(
+    symbol: string,
+    denom: Denom,
+    units: BigNumber.Value,
+    exponent: number,
+  ) {
     super(symbol, units, exponent, exponent)
     this.denom = denom
   }
   toUsd(price: BigNumber): USD {
-    return new USD(this.units.times(price).dividedBy(Math.pow(10, this.exponent)))
+    return new USD(this.units.times(price).dividedBy(10 ** this.exponent))
   }
 
   toFormat(withSuffix: boolean): string {
@@ -282,7 +318,10 @@ class USD extends Asset {
 
   toTokens(denom: Denom, tokensPrice: BigNumber): Tokens {
     const tokenConfig = getTokenConfig(denom)
-    return Tokens.fromUnits(denom, this.units.dividedBy(tokensPrice).times(Math.pow(10, tokenConfig.exponent)))
+    return Tokens.fromUnits(
+      denom,
+      this.units.dividedBy(tokensPrice).times(10 ** tokenConfig.exponent),
+    )
   }
 
   toFormat(withSuffix: boolean): string {

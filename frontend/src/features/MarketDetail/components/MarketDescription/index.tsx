@@ -1,9 +1,9 @@
-import { Box, Typography } from '@mui/joy'
+import { Box, Typography } from "@mui/joy"
 
-import { Market } from '@api/queries/Market'
-import { StyleProps } from '@utils/styles'
-import { LoadableWidget } from '@lib/Loadable/Widget'
-import { useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
+import type { Market } from "@api/queries/Market"
+import type { StyleProps } from "@utils/styles"
+import { LoadableWidget } from "@lib/Loadable/Widget"
+import { useSuspenseCurrentMarket } from "@features/MarketDetail/utils"
 
 const MarketDescription = (props: StyleProps) => {
   return (
@@ -25,9 +25,7 @@ const MarketDescriptionContent = (props: { market: Market }) => {
         Description
       </Typography>
 
-      <Typography level="body-md">
-        {market.description}
-      </Typography>
+      <Typography level="body-md">{market.description}</Typography>
     </>
   )
 }
@@ -40,8 +38,8 @@ const MarketDescriptionPlaceholder = () => {
       </Typography>
 
       <Box
-        width={theme => theme.spacing(1)}
-        height={theme => theme.spacing(10)}
+        width={(theme) => theme.spacing(1)}
+        height={(theme) => theme.spacing(10)}
       />
     </>
   )

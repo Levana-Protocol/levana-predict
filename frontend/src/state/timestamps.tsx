@@ -1,7 +1,12 @@
-import { DependencyList, PropsWithChildren, useEffect, useMemo } from 'react'
-import { Store, useStore } from '@tanstack/react-store'
+import {
+  type DependencyList,
+  type PropsWithChildren,
+  useEffect,
+  useMemo,
+} from "react"
+import { Store, useStore } from "@tanstack/react-store"
 
-import { MS_IN_SECOND, Nanoseconds } from '@utils/time'
+import { MS_IN_SECOND, Nanoseconds } from "@utils/time"
 
 export const MARKET_STATUS_REFRESH_RATE = MS_IN_SECOND * 5
 export const STAKINGS_STATUS_REFRESH_RATE = MS_IN_SECOND * 10
@@ -17,7 +22,7 @@ const timestampsStore = new Store({
 type TimestampKey = keyof typeof timestampsStore.state
 
 const updateTimestamp = (key: TimestampKey) => {
-  return timestampsStore.setState(state => ({
+  return timestampsStore.setState((state) => ({
     ...state,
     [key]: Nanoseconds.fromDate(new Date()),
   }))
@@ -34,15 +39,13 @@ const useRefreshPeriodically = (key: TimestampKey, refreshRate: number) => {
     return () => {
       clearInterval(interval)
     }
-  }, [refreshRate])
+  }, [key, refreshRate])
 }
 
 const TimestampsHandler = (props: PropsWithChildren) => {
   useRefreshPeriodically("marketsStatus", MARKET_STATUS_REFRESH_RATE)
 
-  return (
-    props.children
-  )
+  return props.children
 }
 
 /**
@@ -52,11 +55,24 @@ const TimestampsHandler = (props: PropsWithChildren) => {
  * @param getValue The callback that calculates a new value. Can receive the updated timestamp.
  * @param deps The list of dependencies that cause the value to be recalculated.
  */
-const useTimedMemo = <T,>(key: TimestampKey, getValue: (ts: Nanoseconds) => T, deps: DependencyList): T => {
+const useTimedMemo = <T,>(
+  key: TimestampKey,
+  getValue: (ts: Nanoseconds) => T,
+  deps: DependencyList,
+): T => {
   const timestamp = useTimestamps()[key]
-  const value = useMemo(() => getValue(timestamp), [timestamp, ...deps])
+  const value = useMemo(
+    () => getValue(timestamp),
+    [getValue, timestamp, ...deps],
+  )
 
   return value
 }
 
-export { TimestampsHandler, updateTimestamp, getTimestamp, useTimestamps, useTimedMemo }
+export {
+  TimestampsHandler,
+  updateTimestamp,
+  getTimestamp,
+  useTimestamps,
+  useTimedMemo,
+}

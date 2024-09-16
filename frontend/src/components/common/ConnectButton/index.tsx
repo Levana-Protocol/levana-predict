@@ -1,10 +1,11 @@
-import { useAccount } from 'graz'
-import { Button, ButtonProps, Typography } from '@mui/joy'
+import { useAccount } from "graz"
+import { Button, type ButtonProps, Typography } from "@mui/joy"
 
-import { mergeSx, useCurrentBreakpoint } from '@utils/styles'
-import { presentConnectionModal } from '@common/ConnectionModal'
+import { mergeSx, useCurrentBreakpoint } from "@utils/styles"
+import { presentConnectionModal } from "@common/ConnectionModal"
 
-interface ConnectButtonProps extends Omit<ButtonProps, "children" | "onClick"> {}
+interface ConnectButtonProps
+  extends Omit<ButtonProps, "children" | "onClick"> {}
 
 const ConnectButton = (props: ConnectButtonProps) => {
   const { ...buttonProps } = props
@@ -25,7 +26,9 @@ const ConnectButton = (props: ConnectButtonProps) => {
         buttonProps.sx,
       )}
       aria-label="Connect wallet"
-      onClick={() => { presentConnectionModal() }}
+      onClick={() => {
+        presentConnectionModal()
+      }}
     >
       <Typography textColor="text.primary" fontWeight={600}>
         {isConnecting && (isXsScreen ? "Connecting" : "Connecting wallet")}
@@ -36,4 +39,4 @@ const ConnectButton = (props: ConnectButtonProps) => {
   )
 }
 
-export { ConnectButton, type ConnectButtonProps}
+export { ConnectButton, type ConnectButtonProps }

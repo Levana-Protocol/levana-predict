@@ -1,16 +1,16 @@
-import { ReactNode } from 'react'
-import { SxProps } from '@mui/system'
-import { Sheet, Skeleton, Theme } from '@mui/joy'
+import type { ReactNode } from "react"
+import type { SxProps } from "@mui/system"
+import { Sheet, Skeleton, type Theme } from "@mui/joy"
 
-import { mergeSx } from '@utils/styles'
-import { ErrorSkeleton } from '@lib/Error/Skeleton'
-import { LoadableComponent } from '..'
+import { mergeSx } from "@utils/styles"
+import { ErrorSkeleton } from "@lib/Error/Skeleton"
+import { LoadableComponent } from ".."
 
 interface LoadableWidgetProps<T> {
-  useDeps: () => T,
-  renderContent: (deps: T) => ReactNode,
-  placeholderContent: ReactNode,
-  sx?: SxProps<Theme>,
+  useDeps: () => T
+  renderContent: (deps: T) => ReactNode
+  placeholderContent: ReactNode
+  sx?: SxProps<Theme>
 }
 
 const LoadableWidget = <T,>(props: LoadableWidgetProps<T>) => {
@@ -19,20 +19,20 @@ const LoadableWidget = <T,>(props: LoadableWidgetProps<T>) => {
   return (
     <LoadableComponent
       useDeps={useDeps}
-      renderContent={(deps) =>
+      renderContent={(deps) => (
         <Sheet
           sx={mergeSx(
             {
               p: { xs: 2, sm: 3 },
               height: "100%",
-              backgroundColor: theme => theme.palette.background.level4,
+              backgroundColor: (theme) => theme.palette.background.level4,
             },
             sx,
           )}
         >
           {renderContent(deps)}
         </Sheet>
-      }
+      )}
       loadingFallback={
         <Skeleton
           variant="rectangular"

@@ -1,11 +1,14 @@
-import { PropsWithChildren } from 'react'
-import axios from 'axios'
-import { QueryClient, QueryClientProvider as TanStackQueryClientProvider } from '@tanstack/react-query'
+import type { PropsWithChildren } from "react"
+import axios from "axios"
+import {
+  QueryClient,
+  QueryClientProvider as TanStackQueryClientProvider,
+} from "@tanstack/react-query"
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: Infinity,
+      staleTime: Number.POSITIVE_INFINITY,
       retry: false,
     },
   },

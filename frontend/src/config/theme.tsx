@@ -2,14 +2,14 @@
  * @file Imported from the Gov project to match its styles as much as possible
  */
 
-import { PropsWithChildren } from 'react'
+import type { PropsWithChildren } from "react"
 import {
   CssBaseline,
   CssVarsProvider,
   GlobalStyles,
-  PaletteBackground,
-  PaletteRange,
-  PaletteText,
+  type PaletteBackground,
+  type PaletteRange,
+  type PaletteText,
   buttonClasses,
   formControlClasses,
   inputClasses,
@@ -18,20 +18,22 @@ import {
   sheetClasses,
   sliderClasses,
   textareaClasses,
-} from '@mui/joy'
-import extendTheme, { ColorSystemOptions } from '@mui/joy/styles/extendTheme'
+} from "@mui/joy"
+import extendTheme, {
+  type ColorSystemOptions,
+} from "@mui/joy/styles/extendTheme"
 
-import { ChevronDownIcon } from '@assets/icons/ChevronDown'
-import { MS_IN_SECOND } from '@utils/time'
+import { ChevronDownIcon } from "@assets/icons/ChevronDown"
+import { MS_IN_SECOND } from "@utils/time"
 
 declare module "@mui/joy/styles/types/colorSystem" {
   interface PaletteBackgroundOverrides {
-    spotlight1: true,
-    level4: true,
+    spotlight1: true
+    level4: true
   }
 
   interface Palette {
-    primarySoft: Pick<PaletteRange, 100 | 200 | 300 | 400 | 500 | 600>,
+    primarySoft: Pick<PaletteRange, 100 | 200 | 300 | 400 | 500 | 600>
   }
 }
 
@@ -260,9 +262,9 @@ const theme = extendTheme({
             "--Badge-ringColor": "var(--palette-background-level2)",
           },
           [`.${sheetClasses.colorNeutral} .${listItemButtonClasses.colorNeutral}:hover &`]:
-          {
-            "--Badge-ringColor": "var(--palette-neutral-plainHoverBg)",
-          },
+            {
+              "--Badge-ringColor": "var(--palette-neutral-plainHoverBg)",
+            },
         },
       },
     },
@@ -394,7 +396,7 @@ const theme = extendTheme({
             backgroundColor: "transparent",
             [`&.${inputClasses.focused}`]: {
               "--Input-focusedHighlight": "transparent",
-            }
+            },
           },
           [`&.${inputClasses.colorDanger}`]: {
             "--variant-outlinedBorder": theme.palette.warning.plainColor,
@@ -431,12 +433,14 @@ const theme = extendTheme({
             "--variant-outlinedHoverBg": theme.palette.warning.softBg,
           },
           "--Select-placeholderOpacity": 1,
-          [`& .${selectClasses.indicator}.${selectClasses.expanded}`]: { transform: "rotate(-180deg)" },
+          [`& .${selectClasses.indicator}.${selectClasses.expanded}`]: {
+            transform: "rotate(-180deg)",
+          },
           [`&.${selectClasses.expanded}`]: {
             borderWidth: "0.125rem",
             borderColor: theme.palette.primary.outlinedColor,
             backgroundColor: theme.palette.background.level2,
-          }
+          },
         }),
         listbox: ({ theme }) => ({
           borderRadius: theme.radius.md,
@@ -445,7 +449,7 @@ const theme = extendTheme({
       },
       defaultProps: {
         indicator: <ChevronDownIcon />,
-      }
+      },
     },
     JoyTextarea: {
       styleOverrides: {
@@ -465,7 +469,7 @@ const theme = extendTheme({
             backgroundColor: "transparent",
             [`&.${textareaClasses.focused}`]: {
               "--Textarea-focusedHighlight": "transparent",
-            }
+            },
           },
         }),
 
@@ -484,11 +488,13 @@ const theme = extendTheme({
       styleOverrides: {
         root: ({ ownerState }) => ({
           flexGrow: 0,
-          ...(ownerState.determinate && ownerState.value !== undefined && ownerState.value > 0 && {
-            "&::before": {
-              minWidth: "var(--LinearProgress-progressRadius)",
-            }
-          })
+          ...(ownerState.determinate &&
+            ownerState.value !== undefined &&
+            ownerState.value > 0 && {
+              "&::before": {
+                minWidth: "var(--LinearProgress-progressRadius)",
+              },
+            }),
         }),
       },
     },
@@ -558,13 +564,15 @@ const theme = extendTheme({
             borderRadius: 0,
           }),
 
-          ...(ownerState.variant === "solid" && ownerState.color === "neutral" && {
-            backgroundColor: theme.palette.background.level1,
-          }),
+          ...(ownerState.variant === "solid" &&
+            ownerState.color === "neutral" && {
+              backgroundColor: theme.palette.background.level1,
+            }),
 
-          ...(ownerState.variant === "solid" && ownerState.color === "danger" && {
-            backgroundColor: theme.palette.danger[900],
-          }),
+          ...(ownerState.variant === "solid" &&
+            ownerState.color === "danger" && {
+              backgroundColor: theme.palette.danger[900],
+            }),
         }),
       },
     },
@@ -660,16 +668,18 @@ const theme = extendTheme({
       },
       styleOverrides: {
         root: ({ ownerState, theme }) => ({
-          ...(ownerState.color === "primary" && ownerState.variant === "soft" && {
-            backgroundColor: theme.palette.background.spotlight1,
-          })
+          ...(ownerState.color === "primary" &&
+            ownerState.variant === "soft" && {
+              backgroundColor: theme.palette.background.spotlight1,
+            }),
         }),
         arrow: ({ ownerState, theme }) => ({
-          ...(ownerState.color === "primary" && ownerState.variant === "soft" && {
-            "&::before": {
-              borderColor: theme.palette.background.spotlight1,
-            }
-          })
+          ...(ownerState.color === "primary" &&
+            ownerState.variant === "soft" && {
+              "&::before": {
+                borderColor: theme.palette.background.spotlight1,
+              },
+            }),
         }),
       },
     },
@@ -695,7 +705,7 @@ const ThemeProvider = (props: PropsWithChildren) => {
             minWidth: 0,
           },
 
-          "ul": {
+          ul: {
             paddingInlineStart: "1.5rem",
           },
         }}

@@ -1,10 +1,10 @@
-import { Theme, useTheme } from '@mui/joy'
-import { Breakpoint, SxProps, useMediaQuery } from '@mui/system'
+import { type Theme, useTheme } from "@mui/joy"
+import { type Breakpoint, type SxProps, useMediaQuery } from "@mui/system"
 
 const DESKTOP_BREAKPOINT = "lg" as const
 
 interface StyleProps {
-  sx?: SxProps<Theme>,
+  sx?: SxProps<Theme>
 }
 
 /**
@@ -28,7 +28,11 @@ const stylesFrom = (limit: Breakpoint, sx: SxProps<Theme>): SxProps<Theme> => {
 /**
  * @returns an `SxProps` object that applies the given styles only at a certain breakpoint, and the given fallback for other breakpoints.
  */
-const stylesOnlyAt = (limit: Breakpoint, sx: SxProps<Theme>, fallback?: SxProps<Theme>): SxProps<Theme> => {
+const stylesOnlyAt = (
+  limit: Breakpoint,
+  sx: SxProps<Theme>,
+  fallback?: SxProps<Theme>,
+): SxProps<Theme> => {
   return mergeSx(
     (theme: Theme) => ({ [theme.breakpoints.not(limit)]: fallback }),
     (theme: Theme) => ({ [theme.breakpoints.only(limit)]: sx }),
@@ -57,7 +61,7 @@ const hiddenFrom = (limit: Breakpoint) => {
  * buildGridAreas(["top_left top_right", "bottom_left bottom_right"])
  */
 const buildGridAreas = (rows: string[]): string => {
-  return rows.map(row => `"${row}"`).join(" ")
+  return rows.map((row) => `"${row}"`).join(" ")
 }
 
 /**
@@ -84,7 +88,9 @@ const cellWidthMinusGap = (width: number, items: number) => {
 const useScreenLargerThan = (breakpoint: Breakpoint) => {
   const theme = useTheme()
   // https://mui.com/material-ui/react-use-media-query/#usemediaquery-query-options-matches
-  const matches = useMediaQuery(theme.breakpoints.up(breakpoint), { noSsr: true })
+  const matches = useMediaQuery(theme.breakpoints.up(breakpoint), {
+    noSsr: true,
+  })
 
   return matches
 }
@@ -95,7 +101,9 @@ const useScreenLargerThan = (breakpoint: Breakpoint) => {
 const useScreenSmallerThan = (breakpoint: Breakpoint) => {
   const theme = useTheme()
   // https://mui.com/material-ui/react-use-media-query/#usemediaquery-query-options-matches
-  const matches = useMediaQuery(theme.breakpoints.down(breakpoint), { noSsr: true })
+  const matches = useMediaQuery(theme.breakpoints.down(breakpoint), {
+    noSsr: true,
+  })
 
   return matches
 }
@@ -114,16 +122,40 @@ const useCurrentBreakpoint = (): Breakpoint => {
   const matchesMd = useScreenLargerThan("md")
   const matchesSm = useScreenLargerThan("sm")
 
-  return matchesXl ? "xl" : matchesLg ? "lg" : matchesMd ? "md" : matchesSm ? "sm" : "xs"
+  return matchesXl
+    ? "xl"
+    : matchesLg
+      ? "lg"
+      : matchesMd
+        ? "md"
+        : matchesSm
+          ? "sm"
+          : "xs"
 }
 
 /**
  * @returns the merge result of the given `sx` props. Later `sx` instances will override earlier ones.
  */
 const mergeSx = (...sxs: (SxProps<Theme> | undefined)[]): SxProps<Theme> => {
-  return sxs.flatMap(sx => Array.isArray(sx) ? sx : [sx])
+  return sxs.flatMap((sx) => (Array.isArray(sx) ? sx : [sx]))
 }
 
 export type { StyleProps }
-export { stylesUpTo, hiddenUpTo , stylesFrom, hiddenFrom, stylesOnlyAt, buildGridAreas, widthMinusGap, cellWidthMinusGap, mergeSx }
-export { useScreenLargerThan, useScreenSmallerThan, useIsDesktop, useCurrentBreakpoint, DESKTOP_BREAKPOINT }
+export {
+  stylesUpTo,
+  hiddenUpTo,
+  stylesFrom,
+  hiddenFrom,
+  stylesOnlyAt,
+  buildGridAreas,
+  widthMinusGap,
+  cellWidthMinusGap,
+  mergeSx,
+}
+export {
+  useScreenLargerThan,
+  useScreenSmallerThan,
+  useIsDesktop,
+  useCurrentBreakpoint,
+  DESKTOP_BREAKPOINT,
+}

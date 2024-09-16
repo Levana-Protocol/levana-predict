@@ -1,0 +1,32 @@
+name: Frontend
+
+on: push
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          CI: true
+        run: |
+          cd frontend && pnpm install
+
+      - name: Type Checking
+        run: cd frontend && pnpm tsc
+
+      - name: Code Formatting
+        run: cd frontend && pnpm biome ci src

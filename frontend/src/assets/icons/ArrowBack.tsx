@@ -1,4 +1,4 @@
-import SvgIcon, { SvgIconProps } from '@mui/joy/SvgIcon'
+import SvgIcon, { type SvgIconProps } from "@mui/joy/SvgIcon"
 
 const ArrowBackIcon = (props: SvgIconProps) => {
   const Svg = () => (

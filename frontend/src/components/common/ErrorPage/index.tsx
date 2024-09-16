@@ -1,10 +1,10 @@
-import { useNavigate } from 'react-router-dom'
-import { Box, Button, Stack, Typography } from '@mui/joy'
+import { useNavigate } from "react-router-dom"
+import { Box, Button, Stack, Typography } from "@mui/joy"
 
-import { DESKTOP_BREAKPOINT } from '@utils/styles'
-import { NavbarLogo } from '@common/Navbar/Logo'
-import { Footer } from '@common/Footer'
-import { BasePage } from '../BasePage'
+import { DESKTOP_BREAKPOINT } from "@utils/styles"
+import { NavbarLogo } from "@common/Navbar/Logo"
+import { Footer } from "@common/Footer"
+import { BasePage } from "../BasePage"
 
 const ErrorPage = () => {
   const navigate = useNavigate()

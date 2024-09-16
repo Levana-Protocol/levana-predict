@@ -1,6 +1,6 @@
-import { BigNumber } from 'bignumber.js'
+import { BigNumber } from "bignumber.js"
 
-import { pluralize } from './string'
+import { pluralize } from "./string"
 
 export const NS_IN_MS = 1000000
 export const MS_IN_SECOND = 1000
@@ -9,10 +9,13 @@ export const MS_IN_HOUR = 60 * MS_IN_MINUTE
 export const MS_IN_DAY = 24 * MS_IN_HOUR
 
 const sleep = (ms: number) => {
-  return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
-const formatDate = (date: Date, options?: Intl.DateTimeFormatOptions): string => {
+const formatDate = (
+  date: Date,
+  options?: Intl.DateTimeFormatOptions,
+): string => {
   return date.toLocaleString(undefined, {
     timeStyle: "short",
     dateStyle: "short",
@@ -70,7 +73,11 @@ const nsToLargestTimeUnit = (ns: Nanoseconds) => {
 
   for (const unit of units) {
     if (ms.gte(unit.ms)) {
-      return pluralize(unit.key, ms.dividedToIntegerBy(unit.ms).toNumber(), true)
+      return pluralize(
+        unit.key,
+        ms.dividedToIntegerBy(unit.ms).toNumber(),
+        true,
+      )
     }
   }
 

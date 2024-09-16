@@ -1,8 +1,12 @@
-import BigNumber from 'bignumber.js'
+import BigNumber from "bignumber.js"
 
-const VALID_DECIMAL_REGEX = (maxDecimals: number) => RegExp(`^\\d*(?:(?=\\.)\\.\\d{0,${maxDecimals}}|)$`)
+const VALID_DECIMAL_REGEX = (maxDecimals: number) =>
+  RegExp(`^\\d*(?:(?=\\.)\\.\\d{0,${maxDecimals}}|)$`)
 
-const getProportion = (value: BigNumber.Value, total: BigNumber.Value): number => {
+const getProportion = (
+  value: BigNumber.Value,
+  total: BigNumber.Value,
+): number => {
   const bigTotal = BigNumber(total)
 
   if (bigTotal.isZero()) {
@@ -13,7 +17,10 @@ const getProportion = (value: BigNumber.Value, total: BigNumber.Value): number =
   }
 }
 
-const getPercentage = (value: BigNumber.Value, total: BigNumber.Value): number => {
+const getPercentage = (
+  value: BigNumber.Value,
+  total: BigNumber.Value,
+): number => {
   const bigTotal = BigNumber(total)
 
   if (bigTotal.isZero()) {
@@ -32,7 +39,10 @@ const getFirstSignificantDigitIndex = (value: BigNumber): number => {
   let index = 0
 
   if (integerPart.isZero()) {
-    const regexMatch = value.abs().toFixed().match(RegExp("0\\.(0*[^0])"))
+    const regexMatch = value
+      .abs()
+      .toFixed()
+      .match(/0\.(0*[^0])/)
     const length = regexMatch?.at(1)?.length
 
     if (length !== undefined) {
@@ -45,16 +55,17 @@ const getFirstSignificantDigitIndex = (value: BigNumber): number => {
   return index
 }
 
-const formatToSignificantDigits = (value: BigNumber, significantDigits: number, maxDigits: number): string => {
+const formatToSignificantDigits = (
+  value: BigNumber,
+  significantDigits: number,
+  maxDigits: number,
+): string => {
   if (value.isZero()) {
     return "0"
   }
 
   const decimalPlaces = Math.min(
-    Math.max(
-      getFirstSignificantDigitIndex(value) + significantDigits,
-      0,
-    ),
+    Math.max(getFirstSignificantDigitIndex(value) + significantDigits, 0),
     maxDigits,
   )
 
@@ -62,11 +73,11 @@ const formatToSignificantDigits = (value: BigNumber, significantDigits: number, 
 }
 
 const unitsToValue = (units: BigNumber.Value, exponent: number): BigNumber => {
-  return BigNumber(units).dividedBy(Math.pow(10, exponent))
+  return BigNumber(units).dividedBy(10 ** exponent)
 }
 
 const valueToUnits = (value: BigNumber.Value, exponent: number): BigNumber => {
-  return BigNumber(value).times(Math.pow(10, exponent))
+  return BigNumber(value).times(10 ** exponent)
 }
 
 export { getProportion, getPercentage, VALID_DECIMAL_REGEX }
