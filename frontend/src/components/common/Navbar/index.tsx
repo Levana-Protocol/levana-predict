@@ -1,21 +1,20 @@
-import { Stack, SvgIconProps } from '@mui/joy'
+import { Stack, SvgIconProps } from "@mui/joy"
 
-import { DESKTOP_BREAKPOINT } from '@utils/styles'
-import { NavbarWalletButton } from './WalletButton'
-import { NavbarLogo } from './Logo'
+import { DESKTOP_BREAKPOINT } from "@utils/styles"
+import { NavbarWalletButton } from "./WalletButton"
+import { NavbarLogo } from "./Logo"
 
 interface PageTab {
-  name: string,
-  route: string,
-  Icon: (props: SvgIconProps) => JSX.Element,
+  name: string
+  route: string
+  Icon: (props: SvgIconProps) => JSX.Element
 }
 
 interface ExternalTab extends PageTab {
-  title: string,
+  title: string
 }
 
 const Navbar = () => {
-
   return (
     <Stack
       direction="row"

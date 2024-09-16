@@ -1,7 +1,7 @@
-import { Stack } from '@mui/joy'
+import { Stack } from "@mui/joy"
 
-import { LevanaIcon } from './LevanaIcon'
-import { LevanaName } from './LevanaName'
+import { LevanaIcon } from "./LevanaIcon"
+import { LevanaName } from "./LevanaName"
 
 const LevanaLogo = () => {
   return (

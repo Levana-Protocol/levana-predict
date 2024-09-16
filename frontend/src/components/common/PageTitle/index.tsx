@@ -1,11 +1,11 @@
-import { Link } from 'react-router-dom'
-import { IconButton, Typography, TypographyProps } from '@mui/joy'
+import { Link } from "react-router-dom"
+import { IconButton, Typography, TypographyProps } from "@mui/joy"
 
-import { ArrowBackIcon } from '@assets/icons/ArrowBack'
-import { mergeSx, stylesUpTo } from '@utils/styles'
+import { ArrowBackIcon } from "@assets/icons/ArrowBack"
+import { mergeSx, stylesUpTo } from "@utils/styles"
 
 interface PageTitleProps extends TypographyProps {
-  backTo?: { route: string, name: string },
+  backTo?: { route: string; name: string }
 }
 
 const PageTitle = (props: PageTitleProps) => {
@@ -21,15 +21,13 @@ const PageTitle = (props: PageTitleProps) => {
         typographyProps.sx,
       )}
       {...(backTo && {
-        startDecorator:
+        startDecorator: (
           <Link to={backTo.route} aria-label={`Back to ${backTo.name}`}>
-            <IconButton
-              variant="outlined"
-              size="lg"
-            >
+            <IconButton variant="outlined" size="lg">
               <ArrowBackIcon />
             </IconButton>
-          </Link>,
+          </Link>
+        ),
       })}
     />
   )

@@ -1,39 +1,40 @@
-import { useCosmWasmSigningClient } from 'graz'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate'
+import { useCosmWasmSigningClient } from "graz"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate"
 
-import { useCurrentAccount } from '@config/chain'
-import { useNotifications } from '@config/notifications'
-import { querierAwaitCacheAnd, querierBroadcastAndWait } from '@api/querier'
-import { MarketId } from '@api/queries/Market'
-import { POSITIONS_KEYS } from '@api/queries/Positions'
-import { BALANCES_KEYS } from '@api/queries/Balances'
-import { AppError, errorsMiddleware } from '@utils/errors'
+import { useCurrentAccount } from "@config/chain"
+import { useNotifications } from "@config/notifications"
+import { querierAwaitCacheAnd, querierBroadcastAndWait } from "@api/querier"
+import { MarketId } from "@api/queries/Market"
+import { POSITIONS_KEYS } from "@api/queries/Positions"
+import { BALANCES_KEYS } from "@api/queries/Balances"
+import { AppError, errorsMiddleware } from "@utils/errors"
 
 interface ClaimEarningsRequest {
   collect: {
-    id: number,
-  },
+    id: number
+  }
 }
 
-const putClaimEarnings = (address: string, signer: SigningCosmWasmClient, marketId: MarketId) => {
+const putClaimEarnings = (
+  address: string,
+  signer: SigningCosmWasmClient,
+  marketId: MarketId,
+) => {
   const msg: ClaimEarningsRequest = {
     collect: {
       id: Number(marketId),
     },
   }
 
-  return querierBroadcastAndWait(
-    address,
-    signer,
-    { payload: msg },
-  )
+  return querierBroadcastAndWait(address, signer, { payload: msg })
 }
 
 const CLAIM_EARNINGS_KEYS = {
   all: ["claim_earnings"] as const,
   address: (address: string) => [...CLAIM_EARNINGS_KEYS.all, address] as const,
-  market: (address: string, marketId: MarketId) => [...CLAIM_EARNINGS_KEYS.address(address), marketId] as const,
+  market: (address: string, marketId: MarketId) =>
+    [...CLAIM_EARNINGS_KEYS.address(address), marketId] as const,
 }
 
 const useClaimEarnings = (marketId: MarketId) => {
@@ -46,7 +47,10 @@ const useClaimEarnings = (marketId: MarketId) => {
     mutationKey: CLAIM_EARNINGS_KEYS.market(account.bech32Address, marketId),
     mutationFn: () => {
       if (signer.data) {
-        return errorsMiddleware("claim", putClaimEarnings(account.bech32Address, signer.data, marketId))
+        return errorsMiddleware(
+          "claim",
+          putClaimEarnings(account.bech32Address, signer.data, marketId),
+        )
       } else {
         return Promise.reject()
       }
@@ -55,13 +59,19 @@ const useClaimEarnings = (marketId: MarketId) => {
       notifications.notifySuccess("Successfully claimed earnings.")
 
       return querierAwaitCacheAnd(
-        () => queryClient.invalidateQueries({ queryKey: POSITIONS_KEYS.market(account.bech32Address, marketId)}),
-        () => queryClient.invalidateQueries({ queryKey: BALANCES_KEYS.address(account.bech32Address)}),
+        () =>
+          queryClient.invalidateQueries({
+            queryKey: POSITIONS_KEYS.market(account.bech32Address, marketId),
+          }),
+        () =>
+          queryClient.invalidateQueries({
+            queryKey: BALANCES_KEYS.address(account.bech32Address),
+          }),
       )
     },
     onError: (err) => {
       notifications.notifyError(
-        AppError.withCause("Failed to claim earnings.", err)
+        AppError.withCause("Failed to claim earnings.", err),
       )
     },
   })

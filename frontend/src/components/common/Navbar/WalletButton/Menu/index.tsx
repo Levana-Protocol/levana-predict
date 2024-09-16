@@ -1,14 +1,22 @@
-import { useDisconnect } from 'graz'
-import { ListDivider, ListItemContent, ListItemDecorator, Menu, MenuItem, MenuProps, Typography } from '@mui/joy'
+import { useDisconnect } from "graz"
+import {
+  ListDivider,
+  ListItemContent,
+  ListItemDecorator,
+  Menu,
+  MenuItem,
+  MenuProps,
+  Typography,
+} from "@mui/joy"
 
-import { CopyIcon } from '@assets/icons/Copy'
-import { DisconnectIcon } from '@assets/icons/Disconnect'
-import { useCurrentAccount } from '@config/chain'
-import { abbreviateWalletAddress } from '@utils/string'
-import { mergeSx } from '@utils/styles'
-import { useCopyToClipboard } from '@utils/hooks'
+import { CopyIcon } from "@assets/icons/Copy"
+import { DisconnectIcon } from "@assets/icons/Disconnect"
+import { useCurrentAccount } from "@config/chain"
+import { abbreviateWalletAddress } from "@utils/string"
+import { mergeSx } from "@utils/styles"
+import { useCopyToClipboard } from "@utils/hooks"
 
-interface NavbarWalletMenuProps extends Omit<MenuProps, "children"> { }
+interface NavbarWalletMenuProps extends Omit<MenuProps, "children"> {}
 
 const NavbarWalletMenu = (props: NavbarWalletMenuProps) => {
   const { ...menuProps } = props
@@ -28,9 +36,16 @@ const NavbarWalletMenu = (props: NavbarWalletMenuProps) => {
     >
       <MenuItem
         aria-label="Copy wallet address to clipboard"
-        onClick={() => { copy(account.bech32Address, abbreviateWalletAddress(account.bech32Address)) }}
+        onClick={() => {
+          copy(
+            account.bech32Address,
+            abbreviateWalletAddress(account.bech32Address),
+          )
+        }}
       >
-        <ListItemDecorator><CopyIcon /></ListItemDecorator>
+        <ListItemDecorator>
+          <CopyIcon />
+        </ListItemDecorator>
         <ListItemContent>
           <Typography level="inherit">Copy address</Typography>
           <Typography level="body-sm" textColor="text.secondary">
@@ -43,9 +58,13 @@ const NavbarWalletMenu = (props: NavbarWalletMenuProps) => {
 
       <MenuItem
         aria-label="Disconnect wallet"
-        onClick={() => { disconnect() }}
+        onClick={() => {
+          disconnect()
+        }}
       >
-        <ListItemDecorator><DisconnectIcon /></ListItemDecorator>
+        <ListItemDecorator>
+          <DisconnectIcon />
+        </ListItemDecorator>
         <ListItemContent>
           <Typography level="inherit">Disconnect</Typography>
         </ListItemContent>

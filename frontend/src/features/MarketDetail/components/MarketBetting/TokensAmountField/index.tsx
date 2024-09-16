@@ -1,20 +1,33 @@
-import { useCallback, useMemo } from 'react'
-import BigNumber from 'bignumber.js'
-import { Controller, useFormContext } from 'react-hook-form'
-import { Box, Button, ButtonGroup, FormControl, FormHelperText, FormLabel, IconButton, Sheet, SheetProps, Slider, Stack, Typography } from '@mui/joy'
+import { useCallback, useMemo } from "react"
+import BigNumber from "bignumber.js"
+import { Controller, useFormContext } from "react-hook-form"
+import {
+  Box,
+  Button,
+  ButtonGroup,
+  FormControl,
+  FormHelperText,
+  FormLabel,
+  IconButton,
+  Sheet,
+  SheetProps,
+  Slider,
+  Stack,
+  Typography,
+} from "@mui/joy"
 
-import { SwapArrowsIcon } from '@assets/icons/SwapArrows'
-import { VALID_DECIMAL_REGEX, getProportion } from '@utils/number'
-import { buildGridAreas, mergeSx } from '@utils/styles'
-import { matchesRegex } from '@utils/string'
-import { Denom, Tokens, USD, getTokenConfig } from '@utils/tokens'
-import { AssetInput } from '@lib/AssetInput'
+import { SwapArrowsIcon } from "@assets/icons/SwapArrows"
+import { VALID_DECIMAL_REGEX, getProportion } from "@utils/number"
+import { buildGridAreas, mergeSx } from "@utils/styles"
+import { matchesRegex } from "@utils/string"
+import { Denom, Tokens, USD, getTokenConfig } from "@utils/tokens"
+import { AssetInput } from "@lib/AssetInput"
 
-interface TokensAmountFieldProps extends Omit<SheetProps, "children">{
-  name: string,
-  denom: Denom,
-  price: BigNumber | undefined,
-  balance: Tokens | undefined,
+interface TokensAmountFieldProps extends Omit<SheetProps, "children"> {
+  name: string
+  denom: Denom
+  price: BigNumber | undefined
+  balance: Tokens | undefined
 }
 
 /**
@@ -54,7 +67,9 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
     if (!price || !formValue) {
       return null
     } else {
-      return toggled ? new USD(formValue).toTokens(denom, price) : Tokens.fromValue(denom, formValue).toUsd(price)
+      return toggled
+        ? new USD(formValue).toTokens(denom, price)
+        : Tokens.fromValue(denom, formValue).toUsd(price)
     }
   }, [formValue, price])
 
@@ -63,7 +78,10 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
       return 0
     } else {
       const proportion = toggled
-        ? getProportion(new BigNumber(formValue), balance.toUsd(price).getValue())
+        ? getProportion(
+            new BigNumber(formValue),
+            balance.toUsd(price).getValue(),
+          )
         : getProportion(new BigNumber(formValue), balance.getValue())
       return proportion * 100
     }
@@ -72,36 +90,47 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
   /**
    * Updates the containing form's value, converting the given Token value to USD depending on if the field is toggled or not
    */
-  const updateValueFromTokens = useCallback((newTokensValue: Tokens) => {
-    if (price) {
-      if (toggled) {
-        setFormValue(newTokensValue.toUsd(price).toInput())
-      } else {
-        setFormValue(newTokensValue.toInput())
+  const updateValueFromTokens = useCallback(
+    (newTokensValue: Tokens) => {
+      if (price) {
+        if (toggled) {
+          setFormValue(newTokensValue.toUsd(price).toInput())
+        } else {
+          setFormValue(newTokensValue.toInput())
+        }
       }
-    }
-  }, [toggled, price])
+    },
+    [toggled, price],
+  )
 
   /**
    * Updates the containing form's value, getting the given percentage of the current Token balance and converting it to USD depending on if the field is toggled or not
    */
-  const updateValueFromPercentage = useCallback((newPercentage: number) => {
-    if (balance) {
-      const tokenUnits = balance.units.dividedBy(100).times(newPercentage)
-      updateValueFromTokens(Tokens.fromUnits(denom, tokenUnits))
-    }
-  }, [updateValueFromTokens, balance])
+  const updateValueFromPercentage = useCallback(
+    (newPercentage: number) => {
+      if (balance) {
+        const tokenUnits = balance.units.dividedBy(100).times(newPercentage)
+        updateValueFromTokens(Tokens.fromUnits(denom, tokenUnits))
+      }
+    },
+    [updateValueFromTokens, balance],
+  )
 
   /**
    * A wrapper for the field's `onChange` that checks a regex before allowing an update
    */
-  const onChange = useCallback((newAmount: string) => {
-    const regex = VALID_DECIMAL_REGEX(toggled ? USD.maxDecimalPlaces : tokenConfig.exponent)
+  const onChange = useCallback(
+    (newAmount: string) => {
+      const regex = VALID_DECIMAL_REGEX(
+        toggled ? USD.maxDecimalPlaces : tokenConfig.exponent,
+      )
 
-    if (price && balance && matchesRegex(newAmount, regex)) {
-      setFormValue(newAmount === "." ? "0." : newAmount)
-    }
-  }, [toggled, price, balance])
+      if (price && balance && matchesRegex(newAmount, regex)) {
+        setFormValue(newAmount === "." ? "0." : newAmount)
+      }
+    },
+    [toggled, price, balance],
+  )
 
   return (
     <Controller
@@ -118,34 +147,39 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
               return `${tokenConfig.symbol} amount is too large`
             }
           }
-        }
+        },
       }}
-      render={({ field, fieldState }) =>
+      render={({ field, fieldState }) => (
         <Sheet
           {...sheetProps}
           sx={mergeSx(
             {
               borderWidth: "0.125rem",
               borderStyle: "solid",
-              borderColor: (theme) => !!fieldState.error ? theme.palette.warning.plainColor : "transparent",
+              borderColor: (theme) =>
+                !!fieldState.error
+                  ? theme.palette.warning.plainColor
+                  : "transparent",
               p: 2,
             },
             sheetProps.sx,
           )}
         >
           <FormControl error={!!fieldState.error} sx={{ gap: 1 }}>
-            <Box sx={{
-              display: "grid",
-              gridTemplateAreas: buildGridAreas([
-                "label label label label",
-                "field field field toggle",
-                "bottom bottom bottom toggle",
-                "slider slider slider slider",
-                "error error error error",
-              ]),
-              gridTemplateColumns: "max-content 1fr 1fr max-content",
-              columnGap: 1,
-            }}>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateAreas: buildGridAreas([
+                  "label label label label",
+                  "field field field toggle",
+                  "bottom bottom bottom toggle",
+                  "slider slider slider slider",
+                  "error error error error",
+                ]),
+                gridTemplateColumns: "max-content 1fr 1fr max-content",
+                columnGap: 1,
+              }}
+            >
               <Stack
                 direction={{ xs: "column", sm: "row" }}
                 alignItems={{ xs: "flex-start", sm: "center" }}
@@ -159,7 +193,11 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
                 <Button
                   variant="plain"
                   color="success"
-                  sx={{ p: 0, minHeight: 0, textAlign: { xs: "start", sm: "end" } }}
+                  sx={{
+                    p: 0,
+                    minHeight: 0,
+                    textAlign: { xs: "start", sm: "end" },
+                  }}
                   aria-label={`Set field to max ${tokenConfig.symbol}`}
                   disabled={isDisabled}
                   onClick={() => {
@@ -185,8 +223,19 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
                 }}
               />
 
-              <Typography level="body-sm" textColor="text.primary" fontWeight={500} sx={{ wordBreak: "break-all", gridArea: "bottom" }}>
-                {(bottomValue ?? (toggled ? Tokens.fromUnits(denom, 0) : new USD(0))).toInput()} <Typography textColor="text.secondary">{toggled ? tokenConfig.symbol : USD.symbol}</Typography>
+              <Typography
+                level="body-sm"
+                textColor="text.primary"
+                fontWeight={500}
+                sx={{ wordBreak: "break-all", gridArea: "bottom" }}
+              >
+                {(
+                  bottomValue ??
+                  (toggled ? Tokens.fromUnits(denom, 0) : new USD(0))
+                ).toInput()}{" "}
+                <Typography textColor="text.secondary">
+                  {toggled ? tokenConfig.symbol : USD.symbol}
+                </Typography>
               </Typography>
 
               <IconButton
@@ -202,7 +251,10 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
                 }}
                 onClick={() => {
                   setToggled(!toggled)
-                  setFormValue(bottomValue ? bottomValue.toInput() : "", !!bottomValue)
+                  setFormValue(
+                    bottomValue ? bottomValue.toInput() : "",
+                    !!bottomValue,
+                  )
                 }}
                 size="sm"
                 aria-label={`Switch input to ${toggled ? tokenConfig.symbol : USD.symbol}`}
@@ -210,17 +262,28 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
                 <SwapArrowsIcon />
               </IconButton>
 
-              <Sheet sx={{ mt: 1, p: 1, pt: 0, backgroundColor: "background.level2", overflow: "visible", gridArea: "slider" }}>
+              <Sheet
+                sx={{
+                  mt: 1,
+                  p: 1,
+                  pt: 0,
+                  backgroundColor: "background.level2",
+                  overflow: "visible",
+                  gridArea: "slider",
+                }}
+              >
                 <Slider
                   size="lg"
                   color={fieldState.error ? "warning" : "success"}
                   value={percentage}
                   disabled={isDisabled}
-                  onChange={(_, value) => updateValueFromPercentage(value as number)}
+                  onChange={(_, value) =>
+                    updateValueFromPercentage(value as number)
+                  }
                   slotProps={{
                     thumb: {
                       "aria-label": `Percentage of max ${tokenConfig.symbol}`,
-                    }
+                    },
                   }}
                 />
 
@@ -232,21 +295,23 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
                   buttonFlex={1}
                   disabled={isDisabled}
                   sx={{
-                    "--Button-minHeight": theme => theme.spacing(3),
-                    "--ButtonGroup-radius": theme => theme.vars.radius.xl,
+                    "--Button-minHeight": (theme) => theme.spacing(3),
+                    "--ButtonGroup-radius": (theme) => theme.vars.radius.xl,
                     flexWrap: "wrap",
                   }}
                 >
-                  {[25, 50, 100].map(buttonPercentage =>
+                  {[25, 50, 100].map((buttonPercentage) => (
                     <Button
                       key={buttonPercentage}
                       aria-label={`Set field to ${buttonPercentage}% of max ${tokenConfig.symbol}`}
-                      sx={{ fontSize: theme => theme.fontSize.xs, py: 0 }}
-                      onClick={() => { updateValueFromPercentage(buttonPercentage) }}
+                      sx={{ fontSize: (theme) => theme.fontSize.xs, py: 0 }}
+                      onClick={() => {
+                        updateValueFromPercentage(buttonPercentage)
+                      }}
                     >
                       {buttonPercentage}%
                     </Button>
-                  )}
+                  ))}
                 </ButtonGroup>
               </Sheet>
 
@@ -256,7 +321,7 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
             </Box>
           </FormControl>
         </Sheet>
-      }
+      )}
     />
   )
 }

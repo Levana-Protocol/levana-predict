@@ -12,7 +12,12 @@
  * // returns "1 day"
  * pluralize("day", 1, true)
  */
-const pluralize = (singular: string, count: number, inclusive: boolean = false, plural: string = singular + 's'): string => {
+const pluralize = (
+  singular: string,
+  count: number,
+  inclusive: boolean = false,
+  plural: string = singular + "s",
+): string => {
   // TODO: use the [Pluralize library](https://github.com/plurals/pluralize)?
   const pluralized = count === 1 ? singular : plural
   return inclusive ? `${count} ${pluralized}` : pluralized
@@ -24,7 +29,11 @@ const pluralize = (singular: string, count: number, inclusive: boolean = false, 
  * @param startLength The number of characters to show starting from the left.
  * @param endLength The number of characters to show starting from the right.
  */
-const abbreviateWalletAddress = (address: string, startLength: number = 9, endLength: number = 4): string => {
+const abbreviateWalletAddress = (
+  address: string,
+  startLength: number = 9,
+  endLength: number = 4,
+): string => {
   if (startLength + endLength >= address.length) {
     return address
   }

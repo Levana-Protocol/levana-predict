@@ -1,16 +1,17 @@
-import { Radio, RadioProps, Stack, Typography } from '@mui/joy'
+import { Radio, RadioProps, Stack, Typography } from "@mui/joy"
 
-import { MarketOutcome } from '@api/queries/Market'
-import { mergeSx } from '@utils/styles'
+import { MarketOutcome } from "@api/queries/Market"
+import { mergeSx } from "@utils/styles"
 
-interface OutcomeFieldItemProps extends Omit<RadioProps, "children" | "label" | "value"> {
-  outcome: MarketOutcome,
+interface OutcomeFieldItemProps
+  extends Omit<RadioProps, "children" | "label" | "value"> {
+  outcome: MarketOutcome
 }
 
 const OutcomeFieldItem = (props: OutcomeFieldItemProps) => {
   const { outcome, ...radioProps } = props
 
-  return(
+  return (
     <Radio
       value={outcome.id}
       aria-label={`Set outcome of bet to "${outcome.label}"`}
@@ -19,7 +20,13 @@ const OutcomeFieldItem = (props: OutcomeFieldItemProps) => {
           <Typography
             level="body-md"
             fontWeight={600}
-            color={outcome.label === "Yes" ? "success" : outcome.label === "No" ? "danger" : "neutral"}
+            color={
+              outcome.label === "Yes"
+                ? "success"
+                : outcome.label === "No"
+                  ? "danger"
+                  : "neutral"
+            }
           >
             {outcome.label}
           </Typography>
@@ -71,4 +78,4 @@ const OutcomeFieldItem = (props: OutcomeFieldItemProps) => {
   )
 }
 
-export { OutcomeFieldItem, type OutcomeFieldItemProps}
+export { OutcomeFieldItem, type OutcomeFieldItemProps }

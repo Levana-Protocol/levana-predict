@@ -1,7 +1,7 @@
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from "react"
 
-import { useNotifications } from '@config/notifications'
-import { MS_IN_SECOND } from './time'
+import { useNotifications } from "@config/notifications"
+import { MS_IN_SECOND } from "./time"
 
 /**
  * A wrapper around `useState` that alternates between two values.
@@ -11,17 +11,18 @@ import { MS_IN_SECOND } from './time'
  * @param newValue the value the state is switched to.
  * @param delayMs the delay after which the state is reset to its default value.
  */
-const useResettingState = <T>(initialValue: T, newValue: T | (() => T), delayMs: number) => {
+const useResettingState = <T>(
+  initialValue: T,
+  newValue: T | (() => T),
+  delayMs: number,
+) => {
   const [value, setValue] = useState(initialValue)
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>()
 
   const changeState = useCallback(() => {
     clearTimeout(timeoutRef.current)
     setValue(newValue)
-    timeoutRef.current = setTimeout(
-      () => setValue(initialValue),
-      delayMs,
-    )
+    timeoutRef.current = setTimeout(() => setValue(initialValue), delayMs)
   }, [initialValue, newValue, delayMs])
 
   return [value, changeState] as const
@@ -38,21 +39,16 @@ const useCopyToClipboard = () => {
   const notifications = useNotifications()
 
   const copy = useCallback((content: string, notification?: string) => {
-    return navigator.clipboard
-      .writeText(content)
-      .then(() => {
-        setCopied()
-        if (!!notification) {
-          notifications.notifySuccess(
-            `Copied ${notification}.`,
-            {
-              // https://notistack.com/features/basic#prevent-duplicate
-              key: COPIED_NOTIFICATION_KEY(content),
-              preventDuplicate: true,
-            },
-          )
-        }
-      })
+    return navigator.clipboard.writeText(content).then(() => {
+      setCopied()
+      if (!!notification) {
+        notifications.notifySuccess(`Copied ${notification}.`, {
+          // https://notistack.com/features/basic#prevent-duplicate
+          key: COPIED_NOTIFICATION_KEY(content),
+          preventDuplicate: true,
+        })
+      }
+    })
   }, [])
 
   return [copied, copy] as const

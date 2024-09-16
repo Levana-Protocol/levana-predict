@@ -1,11 +1,12 @@
-import { Typography, TypographyProps } from '@mui/joy'
+import { Typography, TypographyProps } from "@mui/joy"
 
-import { mergeSx } from '@utils/styles'
-import { useCopyToClipboard } from '@utils/hooks'
+import { mergeSx } from "@utils/styles"
+import { useCopyToClipboard } from "@utils/hooks"
 
-interface CopyableTextProps extends Omit<TypographyProps, "children" | "onClick"> {
-  text: string,
-  notificationText?: string,
+interface CopyableTextProps
+  extends Omit<TypographyProps, "children" | "onClick"> {
+  text: string
+  notificationText?: string
 }
 
 const CopyableText = (props: CopyableTextProps) => {
@@ -31,4 +32,4 @@ const CopyableText = (props: CopyableTextProps) => {
   )
 }
 
-export { CopyableText, type CopyableTextProps}
+export { CopyableText, type CopyableTextProps }

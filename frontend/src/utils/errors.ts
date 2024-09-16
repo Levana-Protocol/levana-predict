@@ -1,14 +1,14 @@
-import { AxiosError } from 'axios'
-import { P, match } from 'ts-pattern'
-import { isRouteErrorResponse } from 'react-router-dom'
+import { AxiosError } from "axios"
+import { P, match } from "ts-pattern"
+import { isRouteErrorResponse } from "react-router-dom"
 
-import { ENV } from '@config/environment'
-import { CHAIN_ID } from '@config/chain'
+import { ENV } from "@config/environment"
+import { CHAIN_ID } from "@config/chain"
 
 type SeverityLevel = "error" | "suppress"
 
 interface AppErrorOptions extends ErrorOptions {
-  level?: SeverityLevel,
+  level?: SeverityLevel
 }
 
 /**
@@ -28,45 +28,44 @@ class AppError extends Error {
    * If the cause is another `AppError`, its severity level is replicated.
    */
   static withCause(message: string, cause: unknown) {
-    return new AppError(
-      message,
-      {
-        level: cause instanceof AppError ? cause.level : "error",
-        cause: cause,
-      },
-    )
+    return new AppError(message, {
+      level: cause instanceof AppError ? cause.level : "error",
+      cause: cause,
+    })
   }
 }
 
-type UserAction =
-  | "connect"
-  | "buy"
-  | "sell"
-  | "claim"
+type UserAction = "connect" | "buy" | "sell" | "claim"
 
 /**
  * @returns user-friendly errors (if possible), based on the action that is being performed.
  */
 const errorForAction = (err: any, actionType?: UserAction): AppError | any => {
-
   if (actionType === "connect") {
     return match(err)
       .with(
         { message: P.string.regex("Request rejected") },
-        () => new AppError("User rejected the connection.", { cause: err, level: "suppress" }),
+        () =>
+          new AppError("User rejected the connection.", {
+            cause: err,
+            level: "suppress",
+          }),
       )
       .with(
         { message: P.string.regex("User closed wallet connect") },
-        () => new AppError("User rejected the connection.", { cause: err, level: "suppress" }),
+        () =>
+          new AppError("User rejected the connection.", {
+            cause: err,
+            level: "suppress",
+          }),
       )
-      .with(
-        { message: P.string.regex("There is no chain info for .+") },
-        () => AppError.withCause(
+      .with({ message: P.string.regex("There is no chain info for .+") }, () =>
+        AppError.withCause(
           `Your app or extension doesn't have the necessary chain info for ${CHAIN_ID}. Please add the necessary chain and try again.`,
           err,
         ),
       )
-      .otherwise(() => err )
+      .otherwise(() => err)
   }
 
   if (err instanceof AxiosError) {
@@ -86,11 +85,10 @@ const errorForAction = (err: any, actionType?: UserAction): AppError | any => {
           actionType: "buy",
           message: P.string.regex("Deposits for market .+ have been stopped."),
         },
-        () => AppError.withCause("You can no longer bet on this market.", err)
+        () => AppError.withCause("You can no longer bet on this market.", err),
       )
-      .with(
-        { message: P.string.regex("out of gas") },
-        () => AppError.withCause("The transaction doesn't have enough gas.", err)
+      .with({ message: P.string.regex("out of gas") }, () =>
+        AppError.withCause("The transaction doesn't have enough gas.", err),
       )
       .with(
         { message: P.string.regex("Tried to use .+, but .+ available") },
@@ -112,15 +110,18 @@ const errorForAction = (err: any, actionType?: UserAction): AppError | any => {
  * Intercepts a promise's errors and makes them more user-friendly.
  * @throws the new error, or the original one if no parsing was done.
  */
-const errorsMiddleware = <T>(actionType: UserAction, action: Promise<T>): Promise<T> => {
+const errorsMiddleware = <T>(
+  actionType: UserAction,
+  action: Promise<T>,
+): Promise<T> => {
   return action.catch((err) => {
     throw errorForAction(err, actionType)
   })
 }
 
 interface ErrorDisplay {
-  title: string,
-  description?: string,
+  title: string
+  description?: string
 }
 
 /**
@@ -128,7 +129,10 @@ interface ErrorDisplay {
  */
 const displayError = <T>(err: T): ErrorDisplay => {
   if (err instanceof AppError) {
-    const causeMsg = err.cause instanceof AppError ? err.cause.message : "Something went wrong."
+    const causeMsg =
+      err.cause instanceof AppError
+        ? err.cause.message
+        : "Something went wrong."
     return { title: err.message, description: causeMsg }
   } else if (isRouteErrorResponse(err) && err.status === 404) {
     return { title: "We can't find what you're looking for." }
@@ -142,7 +146,7 @@ const displayError = <T>(err: T): ErrorDisplay => {
  */
 const getErrorReport = <T>(err: T): string => {
   let currentErr: unknown = err
-  let report = (err instanceof Error && err.stack) ? [err.stack] : []
+  let report = err instanceof Error && err.stack ? [err.stack] : []
 
   let wrappers: string[] = []
   // Unwrap the possible `AppError`s containing the underlying error.
@@ -157,14 +161,18 @@ const getErrorReport = <T>(err: T): string => {
 
   // Handle the underlying error variants.
   if (currentErr instanceof AxiosError) {
-    report.push(`Underlying error:\n${currentErr}\nCause:\n${currentErr.cause}\nResponse:\n${JSON.stringify(currentErr.response?.data)}`)
+    report.push(
+      `Underlying error:\n${currentErr}\nCause:\n${currentErr.cause}\nResponse:\n${JSON.stringify(currentErr.response?.data)}`,
+    )
   } else if (currentErr instanceof Error) {
     report.push(`Underlying error:\n${currentErr}\nCause:\n${currentErr.cause}`)
   } else if (currentErr) {
     report.push(`Underlying error:\n${JSON.stringify(currentErr)}`)
   }
 
-  report.push(`Environment:\n${JSON.stringify({env: ENV, host: window.location.host, chain: CHAIN_ID })}`)
+  report.push(
+    `Environment:\n${JSON.stringify({ env: ENV, host: window.location.host, chain: CHAIN_ID })}`,
+  )
 
   return `${report.join("\n\n---\n\n")}\n`
 }

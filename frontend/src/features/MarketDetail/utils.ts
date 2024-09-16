@@ -1,9 +1,9 @@
-import { useParams } from 'react-router-dom'
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useParams } from "react-router-dom"
+import { useSuspenseQuery } from "@tanstack/react-query"
 
-import { useTimedMemo } from '@state/timestamps'
-import { Market, MarketOutcome, marketQuery } from '@api/queries/Market'
-import { getTimeBetween } from '@utils/time'
+import { useTimedMemo } from "@state/timestamps"
+import { Market, MarketOutcome, marketQuery } from "@api/queries/Market"
+import { getTimeBetween } from "@utils/time"
 
 const useCurrentMarketQuery = () => {
   const { marketId } = useParams()
@@ -20,27 +20,42 @@ const useSuspenseCurrentMarket = (): Market => {
 }
 
 type MarketStatus =
-  | { state: "withdrawals", timeLeft: string }
-  | { state: "deposits", timeLeft: string }
+  | { state: "withdrawals"; timeLeft: string }
+  | { state: "deposits"; timeLeft: string }
   | { state: "deciding" }
-  | { state: "decided", winner: MarketOutcome }
+  | { state: "decided"; winner: MarketOutcome }
 
 const useMarketStatus = (market: Market): MarketStatus => {
-  return useTimedMemo("marketsStatus", (timestamp) => {
-    if (market.winnerOutcome) {
-      return { state: "decided", winner: market.winnerOutcome }
-    }
+  return useTimedMemo(
+    "marketsStatus",
+    (timestamp) => {
+      if (market.winnerOutcome) {
+        return { state: "decided", winner: market.winnerOutcome }
+      }
 
-    if (timestamp.gte(market.depositStopDate)) {
-      return { state: "deciding" }
-    }
+      if (timestamp.gte(market.depositStopDate)) {
+        return { state: "deciding" }
+      }
 
-    if (timestamp.gte(market.withdrawalStopDate)) {
-      return { state: "deposits", timeLeft: getTimeBetween(timestamp, market.depositStopDate) }
-    }
+      if (timestamp.gte(market.withdrawalStopDate)) {
+        return {
+          state: "deposits",
+          timeLeft: getTimeBetween(timestamp, market.depositStopDate),
+        }
+      }
 
-    return { state: "withdrawals", timeLeft: getTimeBetween(timestamp, market.withdrawalStopDate) }
-  }, [market.winnerOutcome, market.depositStopDate, market.withdrawalStopDate])
+      return {
+        state: "withdrawals",
+        timeLeft: getTimeBetween(timestamp, market.withdrawalStopDate),
+      }
+    },
+    [market.winnerOutcome, market.depositStopDate, market.withdrawalStopDate],
+  )
 }
 
-export { useCurrentMarketQuery, useSuspenseCurrentMarket, useMarketStatus, type MarketStatus }
+export {
+  useCurrentMarketQuery,
+  useSuspenseCurrentMarket,
+  useMarketStatus,
+  type MarketStatus,
+}

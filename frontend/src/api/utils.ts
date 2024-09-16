@@ -1,4 +1,4 @@
-import { sleep } from '@utils/time'
+import { sleep } from "@utils/time"
 
 /**
  * Polls a request until its result is valid, and returns that result.
@@ -12,12 +12,14 @@ const poll = async <N, V>(
   fetchFn: () => Promise<N | V>,
   isValid: (res: N | V) => res is V,
   maxAttempts: number = 8,
-  getDelayMs: number | ((attemp: number) => number) = (attempt) => Math.pow(2, attempt) * 200,
+  getDelayMs: number | ((attemp: number) => number) = (attempt) =>
+    Math.pow(2, attempt) * 200,
 ) => {
   let attempt = 0
   while (attempt < maxAttempts) {
     if (attempt > 0) {
-      const delayMs = typeof getDelayMs === "number" ? getDelayMs : getDelayMs(attempt)
+      const delayMs =
+        typeof getDelayMs === "number" ? getDelayMs : getDelayMs(attempt)
       await sleep(delayMs)
     }
 

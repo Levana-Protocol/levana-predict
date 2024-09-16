@@ -1,10 +1,10 @@
-import { Box, Stack, Typography } from '@mui/joy'
+import { Box, Stack, Typography } from "@mui/joy"
 
-import { Market } from '@api/queries/Market'
-import { StyleProps } from '@utils/styles'
-import { Tokens } from '@utils/tokens'
-import { LoadableWidget } from '@lib/Loadable/Widget'
-import { useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
+import { Market } from "@api/queries/Market"
+import { StyleProps } from "@utils/styles"
+import { Tokens } from "@utils/tokens"
+import { LoadableWidget } from "@lib/Loadable/Widget"
+import { useSuspenseCurrentMarket } from "@features/MarketDetail/utils"
 
 const MarketOutcomes = (props: StyleProps) => {
   return (
@@ -25,32 +25,43 @@ const MarketOutcomesContent = (props: { market: Market }) => {
       <Typography level="title-md" fontWeight={600} sx={{ mb: 2 }}>
         Outcomes
       </Typography>
-      <Stack
-        direction="row"
-        alignItems="center"
-        gap={4}
-      >
-        {market.possibleOutcomes.map(outcome =>
+      <Stack direction="row" alignItems="center" gap={4}>
+        {market.possibleOutcomes.map((outcome) => (
           <Box key={outcome.id}>
             <Typography
               level="title-lg"
               fontWeight={600}
-              color={outcome.label === "Yes" ? "success" : outcome.label === "No" ? "danger" : "neutral"}
+              color={
+                outcome.label === "Yes"
+                  ? "success"
+                  : outcome.label === "No"
+                    ? "danger"
+                    : "neutral"
+              }
             >
               {outcome.label} - {outcome.price.toFormat(3)}
             </Typography>
-            <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
+            <Typography
+              level="title-md"
+              textColor="text.secondary"
+              fontWeight={500}
+            >
               {outcome.percentage.toFixed(1)}%
             </Typography>
-            <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
+            <Typography
+              level="title-md"
+              textColor="text.secondary"
+              fontWeight={500}
+            >
               {outcome.totalTokens.toFixed(3)} tokens bet
             </Typography>
           </Box>
-        )}
+        ))}
       </Stack>
       <Box sx={{ mt: 2 }}>
         <Typography level="body-md" textColor="text.secondary" fontWeight={600}>
-          Prize pool size: {Tokens.fromUnits(market.denom, market.poolSize).toFormat(true)}
+          Prize pool size:{" "}
+          {Tokens.fromUnits(market.denom, market.poolSize).toFormat(true)}
         </Typography>
       </Box>
     </>
@@ -63,18 +74,10 @@ const MarketOutcomesPlaceholder = () => {
       <Typography level="title-md" fontWeight={600} sx={{ mb: 2 }}>
         Outcomes
       </Typography>
-      <Stack
-        direction="row"
-        alignItems="center"
-        gap={4}
-        sx={{ mt: 2 }}
-      >
-        {["Yes", "No"].map(outcome =>
+      <Stack direction="row" alignItems="center" gap={4} sx={{ mt: 2 }}>
+        {["Yes", "No"].map((outcome) => (
           <Box key={outcome}>
-            <Typography
-              level="title-lg"
-              fontWeight={600}
-            >
+            <Typography level="title-lg" fontWeight={600}>
               {outcome} - 0.000
             </Typography>
             <Typography level="title-md" fontWeight={500}>
@@ -84,7 +87,7 @@ const MarketOutcomesPlaceholder = () => {
               0.000 tokens bet
             </Typography>
           </Box>
-        )}
+        ))}
       </Stack>
       <Box sx={{ mt: 2 }}>
         <Typography level="body-md" fontWeight={600}>

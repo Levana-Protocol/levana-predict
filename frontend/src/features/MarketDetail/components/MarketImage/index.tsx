@@ -1,10 +1,10 @@
-import { Box, BoxProps } from '@mui/joy'
+import { Box, BoxProps } from "@mui/joy"
 
-import { Market } from '@api/queries/Market'
-import { mergeSx } from '@utils/styles'
+import { Market } from "@api/queries/Market"
+import { mergeSx } from "@utils/styles"
 
 interface MarketImageProps extends Omit<BoxProps, "children"> {
-  market: Market,
+  market: Market
 }
 
 const MarketImage = (props: MarketImageProps) => {

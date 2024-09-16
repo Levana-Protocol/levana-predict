@@ -1,4 +1,4 @@
-import SvgIcon, { SvgIconProps } from '@mui/joy/SvgIcon'
+import SvgIcon, { SvgIconProps } from "@mui/joy/SvgIcon"
 
 const ChevronDownIcon = (props: SvgIconProps) => {
   const Svg = () => (

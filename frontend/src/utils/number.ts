@@ -1,8 +1,12 @@
-import BigNumber from 'bignumber.js'
+import BigNumber from "bignumber.js"
 
-const VALID_DECIMAL_REGEX = (maxDecimals: number) => RegExp(`^\\d*(?:(?=\\.)\\.\\d{0,${maxDecimals}}|)$`)
+const VALID_DECIMAL_REGEX = (maxDecimals: number) =>
+  RegExp(`^\\d*(?:(?=\\.)\\.\\d{0,${maxDecimals}}|)$`)
 
-const getProportion = (value: BigNumber.Value, total: BigNumber.Value): number => {
+const getProportion = (
+  value: BigNumber.Value,
+  total: BigNumber.Value,
+): number => {
   const bigTotal = BigNumber(total)
 
   if (bigTotal.isZero()) {
@@ -13,7 +17,10 @@ const getProportion = (value: BigNumber.Value, total: BigNumber.Value): number =
   }
 }
 
-const getPercentage = (value: BigNumber.Value, total: BigNumber.Value): number => {
+const getPercentage = (
+  value: BigNumber.Value,
+  total: BigNumber.Value,
+): number => {
   const bigTotal = BigNumber(total)
 
   if (bigTotal.isZero()) {
@@ -45,16 +52,17 @@ const getFirstSignificantDigitIndex = (value: BigNumber): number => {
   return index
 }
 
-const formatToSignificantDigits = (value: BigNumber, significantDigits: number, maxDigits: number): string => {
+const formatToSignificantDigits = (
+  value: BigNumber,
+  significantDigits: number,
+  maxDigits: number,
+): string => {
   if (value.isZero()) {
     return "0"
   }
 
   const decimalPlaces = Math.min(
-    Math.max(
-      getFirstSignificantDigitIndex(value) + significantDigits,
-      0,
-    ),
+    Math.max(getFirstSignificantDigitIndex(value) + significantDigits, 0),
     maxDigits,
   )
 

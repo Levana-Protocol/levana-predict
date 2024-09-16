@@ -1,17 +1,17 @@
-import { useForm } from 'react-hook-form'
-import { useQuery } from '@tanstack/react-query'
+import { useForm } from "react-hook-form"
+import { useQuery } from "@tanstack/react-query"
 
-import { Market } from '@api/queries/Market'
-import { tokenPricesQuery } from '@api/queries/Prices'
-import { usePlaceBet } from '@api/mutations/PlaceBet'
-import { Tokens, USD } from '@utils/tokens'
+import { Market } from "@api/queries/Market"
+import { tokenPricesQuery } from "@api/queries/Prices"
+import { usePlaceBet } from "@api/mutations/PlaceBet"
+import { Tokens, USD } from "@utils/tokens"
 
 interface BuyFormValues {
   betAmount: {
-    value: string,
-    toggled: boolean,
-  },
-  betOutcome: string | null,
+    value: string
+    toggled: boolean
+  }
+  betOutcome: string | null
 }
 
 const useMarketBuyForm = (market: Market) => {
@@ -36,15 +36,23 @@ const useMarketBuyForm = (market: Market) => {
     const price = prices.data?.get(denom)
 
     if (betAmount && betOutcome && price) {
-      const tokensAmount = isToggled ? new USD(betAmount).toTokens(denom, price) : Tokens.fromValue(denom, betAmount)
+      const tokensAmount = isToggled
+        ? new USD(betAmount).toTokens(denom, price)
+        : Tokens.fromValue(denom, betAmount)
 
-      return placeBet.mutateAsync({ outcomeId: betOutcome, tokensAmount: tokensAmount })
+      return placeBet.mutateAsync({
+        outcomeId: betOutcome,
+        tokensAmount: tokensAmount,
+      })
     } else {
       return Promise.reject()
     }
   }
 
-  const canSubmit = form.formState.isValid && !form.formState.isSubmitting && !!prices.data?.has(market.denom)
+  const canSubmit =
+    form.formState.isValid &&
+    !form.formState.isSubmitting &&
+    !!prices.data?.has(market.denom)
 
   return { form, canSubmit, onSubmit }
 }

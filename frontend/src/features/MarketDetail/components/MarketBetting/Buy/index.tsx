@@ -1,14 +1,14 @@
-import { Button, Stack } from '@mui/joy'
-import { FormProvider } from 'react-hook-form'
-import { useQuery } from '@tanstack/react-query'
+import { Button, Stack } from "@mui/joy"
+import { FormProvider } from "react-hook-form"
+import { useQuery } from "@tanstack/react-query"
 
-import { useCurrentAccount } from '@config/chain'
-import { Market } from '@api/queries/Market'
-import { balancesQuery } from '@api/queries/Balances'
-import { tokenPricesQuery } from '@api/queries/Prices'
-import { OutcomeField } from '../OutcomeField'
-import { TokensAmountField } from '../TokensAmountField'
-import { useMarketBuyForm } from './form'
+import { useCurrentAccount } from "@config/chain"
+import { Market } from "@api/queries/Market"
+import { balancesQuery } from "@api/queries/Balances"
+import { tokenPricesQuery } from "@api/queries/Prices"
+import { OutcomeField } from "../OutcomeField"
+import { TokensAmountField } from "../TokensAmountField"
+import { useMarketBuyForm } from "./form"
 
 const MarketBuyForm = (props: { market: Market }) => {
   const { market } = props
@@ -26,10 +26,7 @@ const MarketBuyForm = (props: { market: Market }) => {
         direction="column"
         rowGap={1.5}
       >
-        <OutcomeField
-          name="betOutcome"
-          market={market}
-        />
+        <OutcomeField name="betOutcome" market={market} />
 
         <TokensAmountField
           name="betAmount"

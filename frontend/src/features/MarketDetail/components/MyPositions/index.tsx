@@ -1,19 +1,21 @@
-import { Box, Stack, Typography } from '@mui/joy'
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { Box, Stack, Typography } from "@mui/joy"
+import { useSuspenseQuery } from "@tanstack/react-query"
 
-import { useCurrentAccount } from '@config/chain'
-import { Market } from '@api/queries/Market'
-import { Positions, positionsQuery } from '@api/queries/Positions'
-import { StyleProps } from '@utils/styles'
-import { Tokens } from '@utils/tokens'
-import { LoadableWidget } from '@lib/Loadable/Widget'
-import { useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
+import { useCurrentAccount } from "@config/chain"
+import { Market } from "@api/queries/Market"
+import { Positions, positionsQuery } from "@api/queries/Positions"
+import { StyleProps } from "@utils/styles"
+import { Tokens } from "@utils/tokens"
+import { LoadableWidget } from "@lib/Loadable/Widget"
+import { useSuspenseCurrentMarket } from "@features/MarketDetail/utils"
 
 const MyPositions = (props: StyleProps) => {
   return (
     <LoadableWidget
       useDeps={useDeps}
-      renderContent={({ market, positions }) => <MyPositionsContent market={market} positions={positions} />}
+      renderContent={({ market, positions }) => (
+        <MyPositionsContent market={market} positions={positions} />
+      )}
       placeholderContent={<MyPositionsPlaceholder />}
       sx={props.sx}
     />
@@ -23,42 +25,63 @@ const MyPositions = (props: StyleProps) => {
 const useDeps = () => {
   const account = useCurrentAccount()
   const market = useSuspenseCurrentMarket()
-  const positions = useSuspenseQuery(positionsQuery(account.bech32Address, market.id)).data
+  const positions = useSuspenseQuery(
+    positionsQuery(account.bech32Address, market.id),
+  ).data
 
   return { market, positions }
 }
 
-const MyPositionsContent = (props: { market: Market, positions: Positions }) => {
+const MyPositionsContent = (props: {
+  market: Market
+  positions: Positions
+}) => {
   const { market, positions } = props
 
   return (
     <>
-      <Typography level="title-md" fontWeight={600} sx={{ mb: 2 }}>My positions</Typography>
-      <Stack
-        direction="row"
-        alignItems="center"
-        gap={4}
-      >
+      <Typography level="title-md" fontWeight={600} sx={{ mb: 2 }}>
+        My positions
+      </Typography>
+      <Stack direction="row" alignItems="center" gap={4}>
         {market.possibleOutcomes
-          .filter(outcome => positions.outcomes.get(outcome.id)?.gt(0))
-          .map(outcome =>
+          .filter((outcome) => positions.outcomes.get(outcome.id)?.gt(0))
+          .map((outcome) => (
             <Box key={outcome.id}>
               <Typography
                 level="title-lg"
                 fontWeight={600}
-                color={outcome.label === "Yes" ? "success" : outcome.label === "No" ? "danger" : "neutral"}
+                color={
+                  outcome.label === "Yes"
+                    ? "success"
+                    : outcome.label === "No"
+                      ? "danger"
+                      : "neutral"
+                }
               >
                 {outcome.label}
               </Typography>
-              <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
-                Potential winnings: {Tokens.fromUnits(market.denom, positions.outcomes.get(outcome.id)?.times(market.poolSize) ?? 0).toFormat(true)}
+              <Typography
+                level="title-md"
+                textColor="text.secondary"
+                fontWeight={500}
+              >
+                Potential winnings:{" "}
+                {Tokens.fromUnits(
+                  market.denom,
+                  positions.outcomes.get(outcome.id)?.times(market.poolSize) ??
+                    0,
+                ).toFormat(true)}
               </Typography>
-              <Typography level="title-md" textColor="text.secondary" fontWeight={500}>
+              <Typography
+                level="title-md"
+                textColor="text.secondary"
+                fontWeight={500}
+              >
                 {positions.outcomes.get(outcome.id)?.toFixed(3)} Tokens
               </Typography>
             </Box>
-          )
-        }
+          ))}
       </Stack>
     </>
   )
@@ -67,13 +90,11 @@ const MyPositionsContent = (props: { market: Market, positions: Positions }) => 
 const MyPositionsPlaceholder = () => {
   return (
     <>
-      <Typography level="title-md" fontWeight={600} sx={{ mb: 2 }}>My positions</Typography>
-      <Stack
-        direction="row"
-        alignItems="center"
-        gap={4}
-      >
-        {[0, 1, 2].map(index =>
+      <Typography level="title-md" fontWeight={600} sx={{ mb: 2 }}>
+        My positions
+      </Typography>
+      <Stack direction="row" alignItems="center" gap={4}>
+        {[0, 1, 2].map((index) => (
           <Box key={index}>
             <Typography level="title-lg" fontWeight={600}>
               Yes
@@ -85,7 +106,7 @@ const MyPositionsPlaceholder = () => {
               Potential winnings: 0.000000 NTRN
             </Typography>
           </Box>
-        )}
+        ))}
       </Stack>
     </>
   )

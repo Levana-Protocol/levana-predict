@@ -1,12 +1,20 @@
-import { forwardRef } from 'react'
-import { Box, BoxProps, Input, InputProps, Stack, Typography, TypographyProps } from '@mui/joy'
+import { forwardRef } from "react"
+import {
+  Box,
+  BoxProps,
+  Input,
+  InputProps,
+  Stack,
+  Typography,
+  TypographyProps,
+} from "@mui/joy"
 
-import { mergeSx } from '@utils/styles'
+import { mergeSx } from "@utils/styles"
 
 interface AssetInputProps extends Omit<InputProps, "slotProps"> {
-  assetSymbol: string,
+  assetSymbol: string
   slotProps?: {
-    container?: BoxProps,
+    container?: BoxProps
   }
 }
 
@@ -17,15 +25,16 @@ const AssetInput = forwardRef((props: AssetInputProps, _ref: any) => {
   const { assetSymbol, slotProps, ...inputProps } = props
 
   const inputFontSx = { fontWeight: 600, fontSize: "xl2" } as const
-  const hiddenSx = { visibility: "hidden", userSelect: "none", pointerEvents: "none" } as const
+  const hiddenSx = {
+    visibility: "hidden",
+    userSelect: "none",
+    pointerEvents: "none",
+  } as const
 
   return (
     <Box
       {...slotProps?.container}
-      sx={mergeSx(
-        slotProps?.container?.sx,
-        { position: "relative" },
-      )}
+      sx={mergeSx(slotProps?.container?.sx, { position: "relative" })}
     >
       <Stack
         direction="row"
@@ -38,7 +47,7 @@ const AssetInput = forwardRef((props: AssetInputProps, _ref: any) => {
           left: 0,
           right: 0,
           fontWeight: inputFontSx.fontWeight,
-          fontSize: theme => theme.fontSize[inputFontSx.fontSize],
+          fontSize: (theme) => theme.fontSize[inputFontSx.fontSize],
         }}
       >
         <Box // Invisible replication of input content to shift the suffix according to its width
@@ -64,14 +73,14 @@ const AssetInput = forwardRef((props: AssetInputProps, _ref: any) => {
           {
             p: 0,
             fontWeight: inputFontSx.fontWeight,
-            fontSize: theme => theme.fontSize[inputFontSx.fontSize],
+            fontSize: (theme) => theme.fontSize[inputFontSx.fontSize],
           },
           inputProps.sx,
         )}
         slotProps={{
           input: {
             inputMode: "decimal",
-          }
+          },
         }}
         endDecorator={
           <Suffix // Invisible suffix to occupy space

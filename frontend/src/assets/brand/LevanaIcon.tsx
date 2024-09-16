@@ -1,6 +1,6 @@
-import { SvgIcon, SvgIconProps } from '@mui/joy'
+import { SvgIcon, SvgIconProps } from "@mui/joy"
 
-import { mergeSx } from '@utils/styles'
+import { mergeSx } from "@utils/styles"
 
 const LevanaIcon = (props: SvgIconProps) => {
   const { width = 28 } = props
@@ -9,7 +9,7 @@ const LevanaIcon = (props: SvgIconProps) => {
     <SvgIcon
       {...props}
       viewBox="0 0 28 32"
-      sx={mergeSx({ width, height: "100%" }, props.sx )}
+      sx={mergeSx({ width, height: "100%" }, props.sx)}
     >
       <defs>
         <path

@@ -1,15 +1,15 @@
-import { PropsWithChildren, ReactNode } from 'react'
-import { Modal } from '@mui/joy'
-import { Store, useStore } from '@tanstack/react-store'
+import { PropsWithChildren, ReactNode } from "react"
+import { Modal } from "@mui/joy"
+import { Store, useStore } from "@tanstack/react-store"
 
-type ModalData = { key: string, dialog: ReactNode }
+type ModalData = { key: string; dialog: ReactNode }
 
 const modalsStore = new Store<ModalData[]>([])
 
 const present = (key: string, dialog: ReactNode) => {
-  modalsStore.setState(_state => {
+  modalsStore.setState((_state) => {
     const modals = [..._state]
-    const index = modals.findIndex(modal => modal.key === key)
+    const index = modals.findIndex((modal) => modal.key === key)
 
     if (index >= 0) {
       const modal = modals.splice(index, 1)[0]
@@ -24,9 +24,9 @@ const present = (key: string, dialog: ReactNode) => {
 }
 
 const dismiss = (key: string) => {
-  modalsStore.setState(_state => {
+  modalsStore.setState((_state) => {
     const modals = [..._state]
-    const index = modals.findIndex(modal => modal.key === key)
+    const index = modals.findIndex((modal) => modal.key === key)
 
     if (index >= 0) {
       modals.splice(index, 1)[0]
@@ -44,15 +44,17 @@ const ModalsHandler = (props: PropsWithChildren) => {
     <>
       {children}
 
-      {modals.map(modal =>
+      {modals.map((modal) => (
         <Modal
           key={modal.key}
           open={true}
-          onClose={() => { dismiss(modal.key) }}
+          onClose={() => {
+            dismiss(modal.key)
+          }}
         >
           <>{modal.dialog}</>
         </Modal>
-      )}
+      ))}
     </>
   )
 }

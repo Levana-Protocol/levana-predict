@@ -1,16 +1,20 @@
-import { useState } from 'react'
-import { useAccount } from 'graz'
-import { P, match } from 'ts-pattern'
-import { Button, Sheet, Stack, Typography } from '@mui/joy'
+import { useState } from "react"
+import { useAccount } from "graz"
+import { P, match } from "ts-pattern"
+import { Button, Sheet, Stack, Typography } from "@mui/joy"
 
-import { Market } from '@api/queries/Market'
-import { StyleProps, mergeSx } from '@utils/styles'
-import { LoadableWidget } from '@lib/Loadable/Widget'
-import { ConnectButton } from '@common/ConnectButton'
-import { MarketStatus, useMarketStatus, useSuspenseCurrentMarket } from '@features/MarketDetail/utils'
-import { MarketClaimForm } from './Claim'
-import { MarketBuyForm } from './Buy'
-import { MarketSellForm } from './Sell'
+import { Market } from "@api/queries/Market"
+import { StyleProps, mergeSx } from "@utils/styles"
+import { LoadableWidget } from "@lib/Loadable/Widget"
+import { ConnectButton } from "@common/ConnectButton"
+import {
+  MarketStatus,
+  useMarketStatus,
+  useSuspenseCurrentMarket,
+} from "@features/MarketDetail/utils"
+import { MarketClaimForm } from "./Claim"
+import { MarketBuyForm } from "./Buy"
+import { MarketSellForm } from "./Sell"
 
 const MarketBetting = (props: StyleProps) => {
   return (
@@ -28,24 +32,25 @@ const MarketBettingContent = (props: { market: Market }) => {
   const { isConnected } = useAccount()
   const marketStatus = useMarketStatus(market)
 
-  return (
-    isConnected
-      ?
-        match(marketStatus)
-        .with({ state : "decided"}, () => <MarketClaimForm market={market} />)
-          .with({ state: "deciding" }, () => <MarketBettingDeciding />)
-          .otherwise((status) => <MarketBettingForm market={market} status={status} />)
-      : <MarketBettingDisconnected status={marketStatus} />
+  return isConnected ? (
+    match(marketStatus)
+      .with({ state: "decided" }, () => <MarketClaimForm market={market} />)
+      .with({ state: "deciding" }, () => <MarketBettingDeciding />)
+      .otherwise((status) => (
+        <MarketBettingForm market={market} status={status} />
+      ))
+  ) : (
+    <MarketBettingDisconnected status={marketStatus} />
   )
 }
 
-const MarketBettingForm = (props: { market: Market, status: MarketStatus }) => {
+const MarketBettingForm = (props: { market: Market; status: MarketStatus }) => {
   const { market, status } = props
   const [action, setAction] = useState<"buy" | "sell">("buy")
 
   return (
     <>
-      <Stack direction="row" columnGap={2} sx={{ mb: 2}}>
+      <Stack direction="row" columnGap={2} sx={{ mb: 2 }}>
         <Button
           color="neutral"
           variant="plain"
@@ -57,7 +62,9 @@ const MarketBettingForm = (props: { market: Market, status: MarketStatus }) => {
             borderRadius: 0,
             borderBottom: action === "buy" ? "2px solid white" : undefined,
           }}
-          onClick={() => { setAction("buy") }}
+          onClick={() => {
+            setAction("buy")
+          }}
         >
           Buy
         </Button>
@@ -72,7 +79,9 @@ const MarketBettingForm = (props: { market: Market, status: MarketStatus }) => {
             borderRadius: 0,
             borderBottom: action === "sell" ? "2px solid white" : undefined,
           }}
-          onClick={() => { setAction("sell") }}
+          onClick={() => {
+            setAction("sell")
+          }}
           disabled={status.state !== "withdrawals"}
         >
           Sell
@@ -82,8 +91,7 @@ const MarketBettingForm = (props: { market: Market, status: MarketStatus }) => {
       {match(action)
         .with("buy", () => <MarketBuyForm market={market} />)
         .with("sell", () => <MarketSellForm market={market} />)
-        .exhaustive()
-      }
+        .exhaustive()}
     </>
   )
 }
@@ -96,7 +104,8 @@ const MarketBettingDeciding = () => {
       </Typography>
       <Sheet sx={{ p: 1 }}>
         <Typography level="body-md">
-          This market is awaiting a decision by the arbitrator, and its outcome hasn't been decided yet.
+          This market is awaiting a decision by the arbitrator, and its outcome
+          hasn't been decided yet.
         </Typography>
       </Sheet>
     </>
@@ -110,10 +119,15 @@ const MarketBettingDisconnected = (props: { status: MarketStatus }) => {
     <>
       <Typography level="body-md" sx={{ mb: 0.75 }}>
         {match(status.state)
-          .with(P.union("decided", "deciding"), () => "Connect your wallet to view your earnings.")
-          .with(P.union("withdrawals", "deposits"), () => "Connect your wallet to make a bet.")
-          .exhaustive()
-        }
+          .with(
+            P.union("decided", "deciding"),
+            () => "Connect your wallet to view your earnings.",
+          )
+          .with(
+            P.union("withdrawals", "deposits"),
+            () => "Connect your wallet to make a bet.",
+          )
+          .exhaustive()}
       </Typography>
       <ConnectButton sx={{ borderRadius: "sm" }} fullWidth />
     </>
@@ -124,12 +138,8 @@ const MarketBettingPlaceholder = () => {
   // TODO: better placeholder
   return (
     <>
-      <Typography level="h3">
-        Loading this market's betting...
-      </Typography>
-      <Typography level="body-lg">
-        Loading this market's betting...
-      </Typography>
+      <Typography level="h3">Loading this market's betting...</Typography>
+      <Typography level="body-lg">Loading this market's betting...</Typography>
     </>
   )
 }

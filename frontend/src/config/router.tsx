@@ -1,10 +1,15 @@
-import { Navigate, createBrowserRouter, RouterProvider as ReactRouterProvider, generatePath } from 'react-router-dom'
+import {
+  Navigate,
+  createBrowserRouter,
+  RouterProvider as ReactRouterProvider,
+  generatePath,
+} from "react-router-dom"
 
-import { App } from 'app'
-import { MarketId } from '@api/queries/Market'
-import { ErrorPage } from '@common/ErrorPage'
-import { MarketPage } from '@pages/Market'
-import { MarketsPage } from '@pages/Markets'
+import { App } from "app"
+import { MarketId } from "@api/queries/Market"
+import { ErrorPage } from "@common/ErrorPage"
+import { MarketPage } from "@pages/Market"
+import { MarketsPage } from "@pages/Markets"
 
 const routesBuilder = {
   markets: {
@@ -12,7 +17,8 @@ const routesBuilder = {
     get: () => routesBuilder.markets.segment,
     market: {
       segment: ":marketId" as const,
-      get: () => `${routesBuilder.markets.segment}/${routesBuilder.markets.market.segment}` as const,
+      get: () =>
+        `${routesBuilder.markets.segment}/${routesBuilder.markets.market.segment}` as const,
     },
   },
 }
@@ -25,7 +31,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to={routesBuilder.markets.get()} />
+        element: <Navigate to={routesBuilder.markets.get()} />,
       },
       {
         path: routesBuilder.markets.market.get(),
@@ -40,14 +46,13 @@ const router = createBrowserRouter([
 ])
 
 const RouterProvider = () => {
-  return (
-    <ReactRouterProvider router={router} />
-  )
+  return <ReactRouterProvider router={router} />
 }
 
 const routes = {
   markets: `/${routesBuilder.markets.get()}`,
-  market: (marketId: MarketId) => generatePath(`/${routesBuilder.markets.market.get()}`, { marketId })
+  market: (marketId: MarketId) =>
+    generatePath(`/${routesBuilder.markets.market.get()}`, { marketId }),
 }
 
 export { routes, RouterProvider }

@@ -1,20 +1,16 @@
-import { useMemo } from 'react'
-import jdenticon from 'jdenticon/standalone'
-import { Avatar, AvatarProps, Box } from '@mui/joy'
+import { useMemo } from "react"
+import jdenticon from "jdenticon/standalone"
+import { Avatar, AvatarProps, Box } from "@mui/joy"
 
 interface WalletAvatarProps extends Omit<AvatarProps, "children"> {
-  address: string,
+  address: string
 }
 
 const WalletAvatar = (props: WalletAvatarProps) => {
   const { address, ...avatarProps } = props
 
   const svg = useMemo(() => {
-    return jdenticon.toSvg(
-      address,
-      100,
-      { hues: [7, 29, 148, 234, 277] },
-    )
+    return jdenticon.toSvg(address, 100, { hues: [7, 29, 148, 234, 277] })
   }, [address])
 
   return (

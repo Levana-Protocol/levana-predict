@@ -1,9 +1,16 @@
-import { PropsWithChildren } from 'react'
-import { GrazProvider, WalletType, useAccount, useConnect, useSuggestChainAndConnect, ConfigureGrazArgs } from 'graz'
-import { neutron, neutrontestnet } from 'graz/chains'
+import { PropsWithChildren } from "react"
+import {
+  GrazProvider,
+  WalletType,
+  useAccount,
+  useConnect,
+  useSuggestChainAndConnect,
+  ConfigureGrazArgs,
+} from "graz"
+import { neutron, neutrontestnet } from "graz/chains"
 
-import { errorsMiddleware } from '@utils/errors'
-import { IS_TESTNET } from './environment'
+import { errorsMiddleware } from "@utils/errors"
+import { IS_TESTNET } from "./environment"
 
 type ChainInfo = ConfigureGrazArgs["chains"][number]
 
@@ -18,9 +25,10 @@ export const CHAIN_INFO: ChainInfo = (() => {
   const chainInfo = IS_TESTNET ? neutrontestnet : neutron
 
   // `graz generate` is misconfiguring a field, so we fix it manually:
-  const currenciesWithFix = chainInfo.feeCurrencies.map(feeCurrency => ({
+  const currenciesWithFix = chainInfo.feeCurrencies.map((feeCurrency) => ({
     ...feeCurrency,
-    coinGeckoId: feeCurrency.coinGeckoId === "" ? undefined : feeCurrency.coinGeckoId,
+    coinGeckoId:
+      feeCurrency.coinGeckoId === "" ? undefined : feeCurrency.coinGeckoId,
   }))
 
   return {
@@ -32,7 +40,8 @@ export const CHAIN_ID = CHAIN_INFO.chainId
 
 export const WALLET_CONNECT_ID = "0739280223ce943edb2c9fbbaefafdb6"
 
-export const TESTNET_RPC_URL = "https://querier-testnet.levana.finance/rpc/neutron-testnet"
+export const TESTNET_RPC_URL =
+  "https://querier-testnet.levana.finance/rpc/neutron-testnet"
 export const GAS_MULTIPLIER = 1.4
 export const DEFAULT_GAS_PRICE = 0.0025
 
@@ -72,17 +81,17 @@ const useConnectWallet = () => {
 
   const connectWallet = (wallet: WalletType) => {
     if (wallet === WalletType.KEPLR || wallet === WalletType.LEAP) {
-      return suggestAndConnectAsync({ chainInfo: CHAIN_INFO, walletType: wallet })
+      return suggestAndConnectAsync({
+        chainInfo: CHAIN_INFO,
+        walletType: wallet,
+      })
     } else {
       return connectAsync({ chainId: CHAIN_ID, walletType: wallet })
     }
   }
 
   return (wallet: WalletType) =>
-    errorsMiddleware(
-      "connect",
-      connectWallet(wallet),
-    )
+    errorsMiddleware("connect", connectWallet(wallet))
 }
 
 export { ChainProvider, useCurrentAccount, useConnectWallet }
