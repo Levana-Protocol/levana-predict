@@ -29,7 +29,7 @@ jobs:
         run: cd frontend && pnpm tsc
 
       - name: Code Quality
-        run: pnpm lint
+        run: cd frontend && pnpm lint
 
       - name: Code Formatting
-        run: pnpm biome ci src
+        run: cd frontend && pnpm biome ci src
