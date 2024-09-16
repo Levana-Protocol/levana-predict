@@ -1,5 +1,4 @@
 import { useCosmWasmSigningClient } from "graz"
-import type BigNumber from "bignumber.js"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate"
 
@@ -10,6 +9,7 @@ import { MARKET_KEYS, type MarketId, type OutcomeId } from "@api/queries/Market"
 import { POSITIONS_KEYS } from "@api/queries/Positions"
 import { BALANCES_KEYS } from "@api/queries/Balances"
 import { AppError, errorsMiddleware } from "@utils/errors"
+import type { Shares } from "@utils/shares"
 
 interface CancelBetRequest {
   withdraw: {
@@ -21,7 +21,7 @@ interface CancelBetRequest {
 
 interface CancelBetArgs {
   outcomeId: OutcomeId
-  tokensAmount: BigNumber
+  sharesAmount: Shares
 }
 
 const putCancelBet = (
@@ -34,7 +34,7 @@ const putCancelBet = (
     withdraw: {
       id: Number(marketId),
       outcome: Number(args.outcomeId),
-      tokens: args.tokensAmount.toFixed(),
+      tokens: args.sharesAmount.value.toFixed(),
     },
   }
 
@@ -68,7 +68,7 @@ const useCancelBet = (marketId: MarketId) => {
     },
     onSuccess: (_, args) => {
       notifications.notifySuccess(
-        `Successfully cancelled bet of ${args.tokensAmount.toFixed(3)} tokens.`,
+        `Successfully cancelled bet of ${args.sharesAmount.toFormat(true)}.`,
       )
 
       return querierAwaitCacheAnd(
@@ -89,7 +89,7 @@ const useCancelBet = (marketId: MarketId) => {
     onError: (err, args) => {
       notifications.notifyError(
         AppError.withCause(
-          `Failed to cancel bet of ${args.tokensAmount.toFixed(3)} tokens.`,
+          `Failed to cancel bet of ${args.sharesAmount.toFormat(true)}.`,
           err,
         ),
       )

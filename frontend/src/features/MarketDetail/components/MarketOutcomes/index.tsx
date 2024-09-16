@@ -2,7 +2,6 @@ import { Box, Stack, Typography } from "@mui/joy"
 
 import type { Market } from "@api/queries/Market"
 import type { StyleProps } from "@utils/styles"
-import { Tokens } from "@utils/tokens"
 import { LoadableWidget } from "@lib/Loadable/Widget"
 import { useSuspenseCurrentMarket } from "@features/MarketDetail/utils"
 
@@ -39,7 +38,7 @@ const MarketOutcomesContent = (props: { market: Market }) => {
                     : "neutral"
               }
             >
-              {outcome.label} - {outcome.price.toFormat(3)}
+              {outcome.label} - {outcome.price.toFormat(true)}
             </Typography>
             <Typography
               level="title-md"
@@ -53,15 +52,14 @@ const MarketOutcomesContent = (props: { market: Market }) => {
               textColor="text.secondary"
               fontWeight={500}
             >
-              {outcome.totalTokens.toFixed(3)} tokens bet
+              {outcome.totalShares.toFormat(true)} bet
             </Typography>
           </Box>
         ))}
       </Stack>
       <Box sx={{ mt: 2 }}>
         <Typography level="body-md" textColor="text.secondary" fontWeight={600}>
-          Prize pool size:{" "}
-          {Tokens.fromUnits(market.denom, market.poolSize).toFormat(true)}
+          Prize pool size: {market.poolSize.toFormat(true)}
         </Typography>
       </Box>
     </>
@@ -84,7 +82,7 @@ const MarketOutcomesPlaceholder = () => {
               0.0%
             </Typography>
             <Typography level="title-md" fontWeight={500}>
-              0.000 tokens bet
+              0.000 shares bet
             </Typography>
           </Box>
         ))}

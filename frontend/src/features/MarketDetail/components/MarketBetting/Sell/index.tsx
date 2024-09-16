@@ -7,7 +7,7 @@ import type { Market } from "@api/queries/Market"
 import { positionsQuery } from "@api/queries/Positions"
 import { useMarketSellForm } from "./form"
 import { OutcomeField } from "../OutcomeField"
-import { BetTokensField } from "../BetTokensField"
+import { SharesAmountField } from "../SharesAmountField"
 
 const MarketSellForm = (props: { market: Market }) => {
   const { market } = props
@@ -15,7 +15,7 @@ const MarketSellForm = (props: { market: Market }) => {
   const positions = useQuery(positionsQuery(account.bech32Address, market.id))
 
   const { form, canSubmit, onSubmit, outcome } = useMarketSellForm(market)
-  const tokensBalance = outcome
+  const sharesBalance = outcome
     ? positions.data?.outcomes.get(outcome)
     : undefined
 
@@ -29,7 +29,7 @@ const MarketSellForm = (props: { market: Market }) => {
       >
         <OutcomeField name="sellOutcome" market={market} />
 
-        <BetTokensField name="sellAmount" tokensBalance={tokensBalance} />
+        <SharesAmountField name="sellAmount" balance={sharesBalance} />
 
         <Button
           aria-label="Cancel bet"

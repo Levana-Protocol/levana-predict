@@ -17,25 +17,26 @@ import {
 import { VALID_DECIMAL_REGEX, getPercentage } from "@utils/number"
 import { mergeSx } from "@utils/styles"
 import { matchesRegex } from "@utils/string"
+import type { Shares } from "@utils/shares"
 import { AssetInput } from "@lib/AssetInput"
 
-interface BetTokensFieldProps extends Omit<SheetProps, "children"> {
+interface SharesAmountFieldProps extends Omit<SheetProps, "children"> {
   name: string
-  tokensBalance: BigNumber | undefined
+  balance: Shares | undefined
 }
 
 /**
- * An input field for an amount of bet tokens.
+ * An input field for an amount of shares.
  *
  * Registers `${name}` into the containing form.
  *
  * Must be placed inside a `FormContext`.
  *
  * @param name The name of the field.
- * @param tokensBalance The bet tokens amount to use for validations, the "max" button, and the slider.
+ * @param balance The shares amount to use for validations, the "max" button, and the slider.
  */
-const BetTokensField = (props: BetTokensFieldProps) => {
-  const { name, tokensBalance, ...sheetProps } = props
+const SharesAmountField = (props: SharesAmountFieldProps) => {
+  const { name, balance, ...sheetProps } = props
 
   const form = useFormContext()
 
@@ -47,37 +48,37 @@ const BetTokensField = (props: BetTokensFieldProps) => {
     [name, form.setValue],
   )
 
-  const isDisabled = !tokensBalance || form.formState.isSubmitting
+  const isDisabled = !balance || form.formState.isSubmitting
 
   const percentage = useMemo(() => {
-    if (!tokensBalance || !formValue) {
+    if (!balance || !formValue) {
       return 0
     } else {
-      return getPercentage(BigNumber(formValue), tokensBalance)
+      return getPercentage(BigNumber(formValue), balance.value)
     }
-  }, [formValue, tokensBalance])
+  }, [formValue, balance])
 
   /**
    * Updates the containing form's value
    */
-  const updateValueFromTokens = useCallback(
-    (newTokensValue: BigNumber) => {
-      setFormValue(newTokensValue.toFixed(3))
+  const updateValueFromShares = useCallback(
+    (newShares: Shares) => {
+      setFormValue(newShares.toInput())
     },
     [setFormValue],
   )
 
   /**
-   * Updates the containing form's value, getting the given percentage of the current tokens balance and converting it to a token amount
+   * Updates the containing form's value, getting the given percentage of the current shares balance and converting it to a shares amount
    */
   const updateValueFromPercentage = useCallback(
     (newPercentage: number) => {
-      if (tokensBalance) {
-        const newTokens = tokensBalance.dividedBy(100).times(newPercentage)
-        updateValueFromTokens(newTokens)
+      if (balance) {
+        const newShares = balance.dividedBy(100).times(newPercentage)
+        updateValueFromShares(newShares)
       }
     },
-    [updateValueFromTokens, tokensBalance],
+    [updateValueFromShares, balance],
   )
 
   /**
@@ -87,11 +88,11 @@ const BetTokensField = (props: BetTokensFieldProps) => {
     (newAmount: string) => {
       const regex = VALID_DECIMAL_REGEX(3)
 
-      if (tokensBalance && matchesRegex(newAmount, regex)) {
+      if (balance && matchesRegex(newAmount, regex)) {
         setFormValue(newAmount === "." ? "0." : newAmount)
       }
     },
-    [tokensBalance, setFormValue],
+    [balance, setFormValue],
   )
 
   return (
@@ -103,10 +104,10 @@ const BetTokensField = (props: BetTokensFieldProps) => {
         validate: (fieldValue: string) => {
           if (fieldValue) {
             const value = new BigNumber(fieldValue)
-            if (value.isZero()) {
-              return "Tokens amount has to be greater than 0"
-            } else if (tokensBalance && value.gt(tokensBalance)) {
-              return "Tokens amount is too large"
+            if (!value.gt(0)) {
+              return "Shares amount has to be greater than 0"
+            } else if (balance && value.gt(balance.value)) {
+              return "You don't have enough shares"
             }
           }
         },
@@ -137,7 +138,7 @@ const BetTokensField = (props: BetTokensFieldProps) => {
                 sx={{ mb: 1 }}
               >
                 <FormLabel sx={{ m: 0, alignSelf: { sm: "center" } }}>
-                  Tokens
+                  Shares
                 </FormLabel>
                 <Button
                   variant="plain"
@@ -147,23 +148,23 @@ const BetTokensField = (props: BetTokensFieldProps) => {
                     minHeight: 0,
                     textAlign: { xs: "start", sm: "end" },
                   }}
-                  aria-label="Set field to max tokens"
+                  aria-label="Set field to max shares"
                   disabled={isDisabled}
                   onClick={() => {
-                    if (tokensBalance) {
-                      updateValueFromTokens(tokensBalance)
+                    if (balance) {
+                      updateValueFromShares(balance)
                     }
                   }}
                 >
-                  Max: {tokensBalance ? tokensBalance.toFixed(3) : "-"}
+                  Max: {balance ? balance.toFormat(false) : "-"}
                 </Button>
               </Stack>
 
               <AssetInput
                 {...field}
-                assetSymbol="tokens"
+                assetSymbol="shares"
                 value={formValue}
-                placeholder="0.00"
+                placeholder="0.000"
                 disabled={isDisabled}
                 {...(!!fieldState.error && { color: "warning" })}
                 onChange={(e) => {
@@ -190,7 +191,7 @@ const BetTokensField = (props: BetTokensFieldProps) => {
                   }
                   slotProps={{
                     thumb: {
-                      "aria-label": "Percentage of max tokens",
+                      "aria-label": "Percentage of max shares",
                     },
                   }}
                 />
@@ -211,7 +212,7 @@ const BetTokensField = (props: BetTokensFieldProps) => {
                   {[25, 50, 100].map((buttonPercentage) => (
                     <Button
                       key={buttonPercentage}
-                      aria-label={`Set field to ${buttonPercentage}% of max tokens`}
+                      aria-label={`Set field to ${buttonPercentage}% of max shares`}
                       sx={{ fontSize: (theme) => theme.fontSize.xs, py: 0 }}
                       onClick={() => {
                         updateValueFromPercentage(buttonPercentage)
@@ -234,4 +235,4 @@ const BetTokensField = (props: BetTokensFieldProps) => {
   )
 }
 
-export { BetTokensField, type BetTokensFieldProps }
+export { SharesAmountField, type SharesAmountFieldProps }

@@ -1,25 +1,25 @@
 import BigNumber from "bignumber.js"
 
-import defaultLogo from "@assets/tokens/alt.png"
-import ntrnLogo from "@assets/tokens/ntrn-logo.svg"
-import atomLogo from "@assets/tokens/atom-logo.svg"
-import datomLogo from "@assets/tokens/datom-logo.svg"
-import statomLogo from "@assets/tokens/statom-logo.svg"
-import stosmoLogo from "@assets/tokens/stosmo-logo.svg"
-import stdydxLogo from "@assets/tokens/stdydx-logo.svg"
-import sttiaLogo from "@assets/tokens/sttia-logo.svg"
-import stdymLogo from "@assets/tokens/stdym-logo.svg"
-import ethLogo from "@assets/tokens/eth-logo.svg"
-import btcLogo from "@assets/tokens/btc-logo.svg"
-import axlLogo from "@assets/tokens/axl-logo.svg"
-import osmoLogo from "@assets/tokens/osmo-logo.svg"
-import seiLogo from "@assets/tokens/sei-logo.svg"
-import aktLogo from "@assets/tokens/akt-logo.svg"
-import injLogo from "@assets/tokens/inj-logo.svg"
-import tiaLogo from "@assets/tokens/tia-logo.svg"
-import stkatomLogo from "@assets/tokens/stkatom-logo.svg"
-import dymLogo from "@assets/tokens/dym-logo.svg"
-import usdcLogo from "@assets/tokens/usdc-logo.svg"
+import defaultLogo from "@assets/coins/alt.png"
+import ntrnLogo from "@assets/coins/ntrn-logo.svg"
+import atomLogo from "@assets/coins/atom-logo.svg"
+import datomLogo from "@assets/coins/datom-logo.svg"
+import statomLogo from "@assets/coins/statom-logo.svg"
+import stosmoLogo from "@assets/coins/stosmo-logo.svg"
+import stdydxLogo from "@assets/coins/stdydx-logo.svg"
+import sttiaLogo from "@assets/coins/sttia-logo.svg"
+import stdymLogo from "@assets/coins/stdym-logo.svg"
+import ethLogo from "@assets/coins/eth-logo.svg"
+import btcLogo from "@assets/coins/btc-logo.svg"
+import axlLogo from "@assets/coins/axl-logo.svg"
+import osmoLogo from "@assets/coins/osmo-logo.svg"
+import seiLogo from "@assets/coins/sei-logo.svg"
+import aktLogo from "@assets/coins/akt-logo.svg"
+import injLogo from "@assets/coins/inj-logo.svg"
+import tiaLogo from "@assets/coins/tia-logo.svg"
+import stkatomLogo from "@assets/coins/stkatom-logo.svg"
+import dymLogo from "@assets/coins/dym-logo.svg"
+import usdcLogo from "@assets/coins/usdc-logo.svg"
 
 import {
   formatToSignificantDigits,
@@ -30,7 +30,7 @@ import {
 BigNumber.config({ ROUNDING_MODE: BigNumber.ROUND_DOWN })
 export const SIGNIFICANT_DIGITS = 5
 
-export interface TokenConfig {
+export interface CoinConfig {
   icon: string
   symbol: string
   exponent: number
@@ -39,7 +39,7 @@ export interface TokenConfig {
 
 export type Denom = string
 
-export const tokenConfigs: Map<Denom, TokenConfig> = new Map([
+export const coinConfigs: Map<Denom, CoinConfig> = new Map([
   [
     "untrn",
     {
@@ -61,7 +61,7 @@ export const tokenConfigs: Map<Denom, TokenConfig> = new Map([
     },
   ],
   [
-    "ibc/EA6E1E8BA2EB9F681C4BD12C8C81A46530A62934F2BD561B120A00F46946CE87	",
+    "ibc/EA6E1E8BA2EB9F681C4BD12C8C81A46530A62934F2BD561B120A00F46946CE87",
     {
       icon: datomLogo,
       symbol: "dATOM",
@@ -228,9 +228,9 @@ export const tokenConfigs: Map<Denom, TokenConfig> = new Map([
   ],
 ])
 
-const getTokenConfig = (denom: Denom): TokenConfig => {
+const getCoinConfig = (denom: Denom): CoinConfig => {
   return (
-    tokenConfigs.get(denom) ?? {
+    coinConfigs.get(denom) ?? {
       icon: defaultLogo,
       symbol: denom,
       exponent: 0,
@@ -266,7 +266,7 @@ abstract class Asset {
   }
 }
 
-class Tokens extends Asset {
+class Coins extends Asset {
   public denom: Denom
 
   protected constructor(
@@ -278,6 +278,7 @@ class Tokens extends Asset {
     super(symbol, units, exponent, exponent)
     this.denom = denom
   }
+
   toUsd(price: BigNumber): USD {
     return new USD(this.units.times(price).dividedBy(10 ** this.exponent))
   }
@@ -296,15 +297,20 @@ class Tokens extends Asset {
     return `${this.getValue().toFormat(this.exponent)}${withSuffix ? ` ${this.symbol}` : ""}`
   }
 
-  static fromUnits(denom: string, units: BigNumber.Value): Tokens {
-    const tokenConfig = getTokenConfig(denom)
-    return new Tokens(tokenConfig.symbol, denom, units, tokenConfig.exponent)
+  static fromUnits(denom: string, units: BigNumber.Value): Coins {
+    const coinConfig = getCoinConfig(denom)
+    return new Coins(coinConfig.symbol, denom, units, coinConfig.exponent)
   }
 
-  static fromValue(denom: string, value: BigNumber.Value): Tokens {
-    const tokenConfig = getTokenConfig(denom)
-    const units = valueToUnits(value, tokenConfig.exponent)
-    return Tokens.fromUnits(denom, units)
+  static fromValue(denom: string, value: BigNumber.Value): Coins {
+    const coinConfig = getCoinConfig(denom)
+    const units = valueToUnits(value, coinConfig.exponent)
+    return Coins.fromUnits(denom, units)
+  }
+
+  times(value: BigNumber.Value): Coins {
+    const newUnits = this.units.times(value)
+    return Coins.fromUnits(this.denom, newUnits)
   }
 }
 
@@ -316,11 +322,11 @@ class USD extends Asset {
     super(USD.symbol, value, 0, USD.maxDecimalPlaces)
   }
 
-  toTokens(denom: Denom, tokensPrice: BigNumber): Tokens {
-    const tokenConfig = getTokenConfig(denom)
-    return Tokens.fromUnits(
+  toCoins(denom: Denom, coinsPrice: BigNumber): Coins {
+    const coinConfig = getCoinConfig(denom)
+    return Coins.fromUnits(
       denom,
-      this.units.dividedBy(tokensPrice).times(10 ** tokenConfig.exponent),
+      this.units.dividedBy(coinsPrice).times(10 ** coinConfig.exponent),
     )
   }
 
@@ -329,4 +335,4 @@ class USD extends Asset {
   }
 }
 
-export { Asset, Tokens, USD, getTokenConfig }
+export { Asset, Coins, USD, getCoinConfig }

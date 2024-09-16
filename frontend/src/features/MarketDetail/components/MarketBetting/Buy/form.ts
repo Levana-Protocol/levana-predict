@@ -2,9 +2,9 @@ import { useForm } from "react-hook-form"
 import { useQuery } from "@tanstack/react-query"
 
 import type { Market } from "@api/queries/Market"
-import { tokenPricesQuery } from "@api/queries/Prices"
+import { coinPricesQuery } from "@api/queries/Prices"
 import { usePlaceBet } from "@api/mutations/PlaceBet"
-import { Tokens, USD } from "@utils/tokens"
+import { Coins, USD } from "@utils/coins"
 
 interface BuyFormValues {
   betAmount: {
@@ -27,7 +27,7 @@ const useMarketBuyForm = (market: Market) => {
 
   const denom = market.denom
   const placeBet = usePlaceBet(market.id)
-  const prices = useQuery(tokenPricesQuery)
+  const prices = useQuery(coinPricesQuery)
 
   const onSubmit = (formValues: BuyFormValues) => {
     const isToggled = formValues.betAmount.toggled
@@ -36,13 +36,13 @@ const useMarketBuyForm = (market: Market) => {
     const price = prices.data?.get(denom)
 
     if (betAmount && betOutcome && price) {
-      const tokensAmount = isToggled
-        ? new USD(betAmount).toTokens(denom, price)
-        : Tokens.fromValue(denom, betAmount)
+      const coinsAmount = isToggled
+        ? new USD(betAmount).toCoins(denom, price)
+        : Coins.fromValue(denom, betAmount)
 
       return placeBet.mutateAsync({
         outcomeId: betOutcome,
-        tokensAmount: tokensAmount,
+        coinsAmount: coinsAmount,
       })
     } else {
       return Promise.reject()

@@ -1,9 +1,9 @@
-import BigNumber from "bignumber.js"
 import { queryOptions } from "@tanstack/react-query"
 
 import { NETWORK_ID } from "@config/chain"
 import { CONTRACT_ADDRESS } from "@config/environment"
 import { fetchQuerier } from "@api/querier"
+import { Shares } from "@utils/shares"
 import type { MarketId, OutcomeId } from "./Market"
 
 interface PositionsResponse {
@@ -13,19 +13,19 @@ interface PositionsResponse {
 }
 
 interface Positions {
-  outcomes: Map<OutcomeId, BigNumber>
+  outcomes: Map<OutcomeId, Shares>
   claimed: boolean
-  shares: BigNumber
+  shares: Shares
 }
 
 const positionsFromResponse = (response: PositionsResponse): Positions => {
   const entries = response.outcomes.map(
-    (amount, index) => [`${index}`, BigNumber(amount)] as const,
+    (amount, index) => [`${index}`, Shares.fromValue(amount)] as const,
   )
   return {
     outcomes: new Map(entries),
     claimed: response.claimed_winnings,
-    shares: BigNumber(response.shares),
+    shares: Shares.fromValue(response.shares),
   }
 }
 

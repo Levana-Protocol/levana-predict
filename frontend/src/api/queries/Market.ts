@@ -6,6 +6,8 @@ import { NETWORK_ID } from "@config/chain"
 import { CONTRACT_ADDRESS } from "@config/environment"
 import { fetchQuerier } from "@api/querier"
 import { Nanoseconds, sleep } from "@utils/time"
+import { Coins } from "@utils/coins"
+import { Shares } from "@utils/shares"
 
 interface ResponseMarket {
   id: number
@@ -44,19 +46,18 @@ interface Market {
   withdrawalStopDate: Nanoseconds
   winnerOutcome: MarketOutcome | undefined
   totalWallets: number
-  poolSize: BigNumber
+  poolSize: Coins
   lpShares: BigNumber
 }
 
 interface MarketOutcome {
   id: OutcomeId
   label: string
-  poolTokens: BigNumber
-  totalTokens: BigNumber
+  poolShares: Shares
+  totalShares: Shares
   wallets: number
-  /// This is the amount of collateral you'd have to bet on an outcome
-  /// to receive 1 collateral of winnings.
-  price: BigNumber
+  /// This is the amount of collateral you'd have to bet on an outcome to receive 1 collateral of winnings.
+  price: Coins
   /// What percentage of the vote this outcome received
   percentage: BigNumber
 }
@@ -80,11 +81,11 @@ const marketFromResponse = (response: ResponseMarket): Market => {
     depositStopDate: new Nanoseconds(response.deposit_stop_date),
     withdrawalStopDate: new Nanoseconds(response.withdrawal_stop_date),
     winnerOutcome:
-      typeof response.winner === "number"
-        ? outcomes.find((outcome) => outcome.id === `${response.winner}`)
-        : undefined,
+      response.winner === null
+        ? undefined
+        : outcomes.find((outcome) => outcome.id === `${response.winner}`),
     totalWallets: response.total_wallets,
-    poolSize: BigNumber(response.pool_size),
+    poolSize: Coins.fromUnits(response.denom, response.pool_size),
     lpShares: BigNumber(response.lp_shares),
   }
 }
@@ -97,8 +98,6 @@ const outcomeFromResponse = (
   for (const outcome of market.outcomes) {
     totalPoolTokens = totalPoolTokens.plus(outcome.pool_tokens)
   }
-  const outcomeTotalTokens = BigNumber(response.total_tokens)
-  const outcomePoolTokens = BigNumber(response.pool_tokens)
 
   // Taken from: https://docs.gnosis.io/conditionaltokens/docs/introduction3/
   // oddsWeightForOutcome = product(numOutcomeTokensInInventoryForOtherOutcome for every otherOutcome)
@@ -130,10 +129,10 @@ const outcomeFromResponse = (
   return {
     id: `${response.id}`,
     label: response.label,
-    poolTokens: outcomePoolTokens,
-    totalTokens: outcomeTotalTokens,
+    poolShares: Shares.fromValue(response.pool_tokens),
+    totalShares: Shares.fromValue(response.total_tokens),
     wallets: response.wallets,
-    price: oddsForOutcome,
+    price: Coins.fromValue(market.denom, oddsForOutcome),
     percentage: oddsForOutcome,
   }
 }

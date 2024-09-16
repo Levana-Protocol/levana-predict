@@ -1,4 +1,4 @@
-import { Box, Link, Stack, Typography } from "@mui/joy"
+import { Link, Typography } from "@mui/joy"
 import { useSuspenseQuery } from "@tanstack/react-query"
 
 import { useCurrentAccount } from "@config/chain"
@@ -36,7 +36,7 @@ const MyLiquidityContent = (props: {
   positions: Positions
 }) => {
   const { market, positions } = props
-  const poolPortion = positions.shares.div(market.lpShares).times(100)
+  const poolPortion = positions.shares.value.div(market.lpShares).times(100)
 
   return (
     <>
@@ -55,23 +55,12 @@ const MyLiquidityPlaceholder = () => {
   return (
     <>
       <Typography level="title-md" fontWeight={600} sx={{ mb: 2 }}>
-        My positions
+        My liquidity
       </Typography>
-      <Stack direction="row" alignItems="center" gap={4}>
-        {[0, 1, 2].map((index) => (
-          <Box key={index}>
-            <Typography level="title-lg" fontWeight={600}>
-              Yes
-            </Typography>
-            <Typography level="title-md" fontWeight={500}>
-              0 Tokens
-            </Typography>
-            <Typography level="title-md" fontWeight={500}>
-              Potential winnings: 0.000000 NTRN
-            </Typography>
-          </Box>
-        ))}
-      </Stack>
+      <Typography>
+        You own 0.000% of the liquidity pool.{" "}
+        <Link disabled>Learn more about liquidity pools.</Link>
+      </Typography>
     </>
   )
 }

@@ -79,7 +79,7 @@ const EarningsContent = (props: { market: Market; positions: Positions }) => {
         <Typography level="body-md">
           You have claimed your earnings for this market.
         </Typography>
-      ) : earnings?.gt(0) ? (
+      ) : earnings?.value.gt(0) ? (
         <Box>
           <Typography
             level="title-lg"
@@ -99,7 +99,7 @@ const EarningsContent = (props: { market: Market; positions: Positions }) => {
             textColor="text.secondary"
             fontWeight={500}
           >
-            {earnings.toFixed(3)} tokens
+            {earnings.toFormat(true)}
           </Typography>
         </Box>
       ) : (
@@ -119,7 +119,7 @@ const EarningsPlaceholder = () => {
           Yes
         </Typography>
         <Typography level="title-md" fontWeight={500}>
-          0.000 tokens
+          0.000 shares
         </Typography>
       </Box>
     </Sheet>
