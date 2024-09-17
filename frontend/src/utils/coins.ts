@@ -312,6 +312,11 @@ class Coins extends Asset {
     const newUnits = this.units.times(value)
     return Coins.fromUnits(this.denom, newUnits)
   }
+
+  dividedBy(value: BigNumber.Value): Coins {
+    const newUnits = this.units.dividedBy(value)
+    return Coins.fromUnits(this.denom, newUnits)
+  }
 }
 
 class USD extends Asset {
