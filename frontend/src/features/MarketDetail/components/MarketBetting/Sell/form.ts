@@ -1,9 +1,9 @@
-import BigNumber from "bignumber.js"
 import { useForm } from "react-hook-form"
 
 import type { Market } from "@api/queries/Market"
 import { useCancelBet } from "@api/mutations/CancelBet"
 import { useLatestFormValues } from "@utils/forms"
+import { Shares } from "@utils/shares"
 
 interface SellFormValues {
   sellAmount: string
@@ -28,10 +28,10 @@ const useMarketSellForm = (market: Market) => {
     const sellOutcome = formValues.sellOutcome
 
     if (sellAmount && sellOutcome) {
-      const tokensAmount = BigNumber(sellAmount)
+      const sharesAmount = Shares.fromValue(sellAmount)
       return cancelBet.mutateAsync({
         outcomeId: sellOutcome,
-        tokensAmount: tokensAmount,
+        sharesAmount: sharesAmount,
       })
     } else {
       return Promise.reject()

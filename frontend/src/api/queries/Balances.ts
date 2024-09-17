@@ -2,16 +2,16 @@ import { queryOptions } from "@tanstack/react-query"
 
 import { NETWORK_ID } from "@config/chain"
 import { fetchQuerier } from "@api/querier"
-import { type Denom, Tokens } from "@utils/tokens"
+import { type Denom, Coins } from "@utils/coins"
 
 type BalancesResponse = Record<string, string>
-type Balances = Map<Denom, Tokens>
+type Balances = Map<Denom, Coins>
 
 const balancesFromResponse = (response: BalancesResponse): Balances => {
   return new Map(
     Object.entries(response).map(([denom, units]) => [
       denom,
-      Tokens.fromUnits(denom, units),
+      Coins.fromUnits(denom, units),
     ]),
   )
 }

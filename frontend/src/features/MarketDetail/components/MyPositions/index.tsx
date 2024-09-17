@@ -5,7 +5,7 @@ import { useCurrentAccount } from "@config/chain"
 import type { Market } from "@api/queries/Market"
 import { type Positions, positionsQuery } from "@api/queries/Positions"
 import type { StyleProps } from "@utils/styles"
-import { Tokens } from "@utils/tokens"
+import { getPotentialWinnings, getShares } from "@utils/shares"
 import { LoadableWidget } from "@lib/Loadable/Widget"
 import { useSuspenseCurrentMarket } from "@features/MarketDetail/utils"
 
@@ -37,6 +37,9 @@ const MyPositionsContent = (props: {
   positions: Positions
 }) => {
   const { market, positions } = props
+  const outcomesWithPositions = market.possibleOutcomes.filter((outcome) =>
+    positions.outcomes.get(outcome.id)?.value.gt(0),
+  )
 
   return (
     <>
@@ -44,44 +47,41 @@ const MyPositionsContent = (props: {
         My positions
       </Typography>
       <Stack direction="row" alignItems="center" gap={4}>
-        {market.possibleOutcomes
-          .filter((outcome) => positions.outcomes.get(outcome.id)?.gt(0))
-          .map((outcome) => (
-            <Box key={outcome.id}>
-              <Typography
-                level="title-lg"
-                fontWeight={600}
-                color={
-                  outcome.label === "Yes"
-                    ? "success"
-                    : outcome.label === "No"
-                      ? "danger"
-                      : "neutral"
-                }
-              >
-                {outcome.label}
-              </Typography>
-              <Typography
-                level="title-md"
-                textColor="text.secondary"
-                fontWeight={500}
-              >
-                Potential winnings:{" "}
-                {Tokens.fromUnits(
-                  market.denom,
-                  positions.outcomes.get(outcome.id)?.times(market.poolSize) ??
-                    0,
-                ).toFormat(true)}
-              </Typography>
-              <Typography
-                level="title-md"
-                textColor="text.secondary"
-                fontWeight={500}
-              >
-                {positions.outcomes.get(outcome.id)?.toFixed(3)} Tokens
-              </Typography>
-            </Box>
-          ))}
+        {outcomesWithPositions.map((outcome) => (
+          <Box key={outcome.id}>
+            <Typography
+              level="title-lg"
+              fontWeight={600}
+              color={
+                outcome.label === "Yes"
+                  ? "success"
+                  : outcome.label === "No"
+                    ? "danger"
+                    : "neutral"
+              }
+            >
+              {outcome.label}
+            </Typography>
+            <Typography
+              level="title-md"
+              textColor="text.secondary"
+              fontWeight={500}
+            >
+              {getShares(positions, outcome.id).toFormat(true)}
+            </Typography>
+            <Typography
+              level="title-md"
+              textColor="text.secondary"
+              fontWeight={500}
+            >
+              Potential winnings:{" "}
+              {getPotentialWinnings(
+                market,
+                getShares(positions, outcome.id),
+              ).toFormat(true)}
+            </Typography>
+          </Box>
+        ))}
       </Stack>
     </>
   )
@@ -100,7 +100,7 @@ const MyPositionsPlaceholder = () => {
               Yes
             </Typography>
             <Typography level="title-md" fontWeight={500}>
-              0 Tokens
+              0 shares
             </Typography>
             <Typography level="title-md" fontWeight={500}>
               Potential winnings: 0.000000 NTRN

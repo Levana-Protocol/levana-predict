@@ -20,31 +20,31 @@ import { SwapArrowsIcon } from "@assets/icons/SwapArrows"
 import { VALID_DECIMAL_REGEX, getProportion } from "@utils/number"
 import { buildGridAreas, mergeSx } from "@utils/styles"
 import { matchesRegex } from "@utils/string"
-import { type Denom, Tokens, USD, getTokenConfig } from "@utils/tokens"
+import { type Denom, Coins, USD, getCoinConfig } from "@utils/coins"
 import { AssetInput } from "@lib/AssetInput"
 
-interface TokensAmountFieldProps extends Omit<SheetProps, "children"> {
+interface CoinsAmountFieldProps extends Omit<SheetProps, "children"> {
   name: string
   denom: Denom
   price: BigNumber | undefined
-  balance: Tokens | undefined
+  balance: Coins | undefined
 }
 
 /**
- * An input field for a Tokens amount that can be toggled between Token and USD.
+ * An input field for an amount of Coins that can be toggled between the Coin and USD.
  *
  * Registers `${name}.value` and `${name}.toggled` into the containing form.
- * If `toggled` is true, the `amount` is in USD. If `toggled` is false, the `amount` is in Token.
+ * If `toggled` is true, the `amount` is in USD. If `toggled` is false, the `amount` is in Coins.
  *
  * Must be placed inside a `FormContext`.
  *
  * @param name The base name of the field.
- * @param price The price to use for Token <=> USD conversions.
- * @param balance The Token amount to use for validations, the "max" button, and the slider.
+ * @param price The price to use for Coins <=> USD conversions.
+ * @param balance The Coiuns amount to use for validations, the "max" button, and the slider.
  */
-const TokensAmountField = (props: TokensAmountFieldProps) => {
+const CoinsAmountField = (props: CoinsAmountFieldProps) => {
   const { name, denom, price, balance, ...sheetProps } = props
-  const tokenConfig = getTokenConfig(denom)
+  const coinConfig = useMemo(() => getCoinConfig(denom), [denom])
 
   const form = useFormContext()
   const valueFieldName = `${name}.value`
@@ -71,8 +71,8 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
       return null
     } else {
       return toggled
-        ? new USD(formValue).toTokens(denom, price)
-        : Tokens.fromValue(denom, formValue).toUsd(price)
+        ? new USD(formValue).toCoins(denom, price)
+        : Coins.fromValue(denom, formValue).toUsd(price)
     }
   }, [formValue, price, denom, toggled])
 
@@ -91,15 +91,15 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
   }, [formValue, bottomValue, toggled, price, balance])
 
   /**
-   * Updates the containing form's value, converting the given Token value to USD depending on if the field is toggled or not
+   * Updates the containing form's value, converting the given Coin value to USD depending on if the field is toggled or not
    */
-  const updateValueFromTokens = useCallback(
-    (newTokensValue: Tokens) => {
+  const updateValueFromCoins = useCallback(
+    (newCoins: Coins) => {
       if (price) {
         if (toggled) {
-          setFormValue(newTokensValue.toUsd(price).toInput())
+          setFormValue(newCoins.toUsd(price).toInput())
         } else {
-          setFormValue(newTokensValue.toInput())
+          setFormValue(newCoins.toInput())
         }
       }
     },
@@ -107,16 +107,16 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
   )
 
   /**
-   * Updates the containing form's value, getting the given percentage of the current Token balance and converting it to USD depending on if the field is toggled or not
+   * Updates the containing form's value, getting the given percentage of the current Coin balance and converting it to USD depending on if the field is toggled or not
    */
   const updateValueFromPercentage = useCallback(
     (newPercentage: number) => {
       if (balance) {
-        const tokenUnits = balance.units.dividedBy(100).times(newPercentage)
-        updateValueFromTokens(Tokens.fromUnits(denom, tokenUnits))
+        const coinUnits = balance.units.dividedBy(100).times(newPercentage)
+        updateValueFromCoins(Coins.fromUnits(denom, coinUnits))
       }
     },
-    [updateValueFromTokens, denom, balance],
+    [updateValueFromCoins, denom, balance],
   )
 
   /**
@@ -125,14 +125,14 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
   const onChange = useCallback(
     (newAmount: string) => {
       const regex = VALID_DECIMAL_REGEX(
-        toggled ? USD.maxDecimalPlaces : tokenConfig.exponent,
+        toggled ? USD.maxDecimalPlaces : coinConfig.exponent,
       )
 
       if (price && balance && matchesRegex(newAmount, regex)) {
         setFormValue(newAmount === "." ? "0." : newAmount)
       }
     },
-    [toggled, setFormValue, tokenConfig.exponent, price, balance],
+    [toggled, setFormValue, coinConfig, price, balance],
   )
 
   return (
@@ -144,10 +144,10 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
         validate: (fieldValue: string) => {
           if (fieldValue) {
             const value = new BigNumber(fieldValue)
-            if (value.isZero()) {
-              return `${tokenConfig.symbol} amount has to be greater than 0`
+            if (!value.gt(0)) {
+              return `${coinConfig.symbol} amount has to be greater than 0`
             } else if (balance && value.gt(balance.getValue())) {
-              return `${tokenConfig.symbol} amount is too large`
+              return `You don't have enough ${coinConfig.symbol}.`
             }
           }
         },
@@ -201,11 +201,11 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
                     minHeight: 0,
                     textAlign: { xs: "start", sm: "end" },
                   }}
-                  aria-label={`Set field to max ${tokenConfig.symbol}`}
+                  aria-label={`Set field to max ${coinConfig.symbol}`}
                   disabled={isDisabled}
                   onClick={() => {
                     if (balance) {
-                      updateValueFromTokens(balance)
+                      updateValueFromCoins(balance)
                     }
                   }}
                 >
@@ -215,7 +215,7 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
 
               <AssetInput
                 {...field}
-                assetSymbol={toggled ? USD.symbol : tokenConfig.symbol}
+                assetSymbol={toggled ? USD.symbol : coinConfig.symbol}
                 slotProps={{ container: { sx: { gridArea: "field" } } }}
                 value={formValue}
                 placeholder="0.00"
@@ -234,10 +234,10 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
               >
                 {(
                   bottomValue ??
-                  (toggled ? Tokens.fromUnits(denom, 0) : new USD(0))
+                  (toggled ? Coins.fromUnits(denom, 0) : new USD(0))
                 ).toInput()}{" "}
                 <Typography textColor="text.secondary">
-                  {toggled ? tokenConfig.symbol : USD.symbol}
+                  {toggled ? coinConfig.symbol : USD.symbol}
                 </Typography>
               </Typography>
 
@@ -260,7 +260,7 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
                   )
                 }}
                 size="sm"
-                aria-label={`Switch input to ${toggled ? tokenConfig.symbol : USD.symbol}`}
+                aria-label={`Switch input to ${toggled ? coinConfig.symbol : USD.symbol}`}
               >
                 <SwapArrowsIcon />
               </IconButton>
@@ -285,7 +285,7 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
                   }
                   slotProps={{
                     thumb: {
-                      "aria-label": `Percentage of max ${tokenConfig.symbol}`,
+                      "aria-label": `Percentage of max ${coinConfig.symbol}`,
                     },
                   }}
                 />
@@ -306,7 +306,7 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
                   {[25, 50, 100].map((buttonPercentage) => (
                     <Button
                       key={buttonPercentage}
-                      aria-label={`Set field to ${buttonPercentage}% of max ${tokenConfig.symbol}`}
+                      aria-label={`Set field to ${buttonPercentage}% of max ${coinConfig.symbol}`}
                       sx={{ fontSize: (theme) => theme.fontSize.xs, py: 0 }}
                       onClick={() => {
                         updateValueFromPercentage(buttonPercentage)
@@ -329,4 +329,4 @@ const TokensAmountField = (props: TokensAmountFieldProps) => {
   )
 }
 
-export { TokensAmountField, type TokensAmountFieldProps }
+export { CoinsAmountField, type CoinsAmountFieldProps }

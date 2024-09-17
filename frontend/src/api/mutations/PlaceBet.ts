@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js"
 import { useCosmWasmSigningClient } from "graz"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate"
@@ -8,9 +9,8 @@ import { querierAwaitCacheAnd, querierBroadcastAndWait } from "@api/querier"
 import { MARKET_KEYS, type MarketId, type OutcomeId } from "@api/queries/Market"
 import { POSITIONS_KEYS } from "@api/queries/Positions"
 import { BALANCES_KEYS } from "@api/queries/Balances"
-import type { Tokens } from "@utils/tokens"
+import type { Coins } from "@utils/coins"
 import { AppError, errorsMiddleware } from "@utils/errors"
-import BigNumber from "bignumber.js"
 
 interface ProvideRequest {
   provide: {
@@ -27,7 +27,7 @@ interface PlaceBetRequest {
 
 interface PlaceBetArgs {
   outcomeId: OutcomeId
-  tokensAmount: Tokens
+  coinsAmount: Coins
 }
 
 /// Hard-coded proportion of deposits that are provided as liquidity.
@@ -51,20 +51,20 @@ const putPlaceBet = (
     },
   }
 
-  const provideAmount = args.tokensAmount.units.times(PROVIDE_PORTION)
-  const depositAmount = args.tokensAmount.units.minus(provideAmount)
+  const provideAmount = args.coinsAmount.units.times(PROVIDE_PORTION)
+  const depositAmount = args.coinsAmount.units.minus(provideAmount)
 
   return querierBroadcastAndWait(address, signer, [
     {
       payload: provideMsg,
       funds: [
-        { denom: args.tokensAmount.denom, amount: provideAmount.toFixed(0) },
+        { denom: args.coinsAmount.denom, amount: provideAmount.toFixed(0) },
       ],
     },
     {
       payload: depositMsg,
       funds: [
-        { denom: args.tokensAmount.denom, amount: depositAmount.toFixed(0) },
+        { denom: args.coinsAmount.denom, amount: depositAmount.toFixed(0) },
       ],
     },
   ])
@@ -97,7 +97,7 @@ const usePlaceBet = (marketId: MarketId) => {
     },
     onSuccess: (_, args) => {
       notifications.notifySuccess(
-        `Successfully bet ${args.tokensAmount.toFormat(true)}.`,
+        `Successfully bet ${args.coinsAmount.toFormat(true)}.`,
       )
 
       return querierAwaitCacheAnd(
@@ -118,7 +118,7 @@ const usePlaceBet = (marketId: MarketId) => {
     onError: (err, args) => {
       notifications.notifyError(
         AppError.withCause(
-          `Failed to bet ${args.tokensAmount.toFormat(true)}.`,
+          `Failed to bet ${args.coinsAmount.toFormat(true)}.`,
           err,
         ),
       )
