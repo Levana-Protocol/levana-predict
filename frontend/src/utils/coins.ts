@@ -39,6 +39,9 @@ export interface CoinConfig {
 
 export type Denom = string
 
+export const USDC_DENOM =
+  "ibc/498A0751C798A0D9A389AA3691123DADA57DAA4FE165D5C75894505B876BA6E4"
+
 export const coinConfigs: Map<Denom, CoinConfig> = new Map([
   [
     "untrn",
@@ -217,7 +220,7 @@ export const coinConfigs: Map<Denom, CoinConfig> = new Map([
     },
   ],
   [
-    "ibc/498A0751C798A0D9A389AA3691123DADA57DAA4FE165D5C75894505B876BA6E4",
+    USDC_DENOM,
     {
       icon: usdcLogo,
       symbol: "USDC",
