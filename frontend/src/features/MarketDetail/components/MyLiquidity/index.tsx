@@ -45,7 +45,12 @@ const MyLiquidityContent = (props: {
       </Typography>
       <Typography>
         You own {poolPortion.toFixed(3)}% of the liquidity pool.{" "}
-        <Link>Learn more about liquidity pools.</Link>
+        <Link
+          href="https://levana-prediction.zendesk.com/hc/en-us/articles/29284778150555-Liquidity-pools-in-Levana-Predict"
+          target="_blank"
+        >
+          Learn more about liquidity pools.
+        </Link>
       </Typography>
     </>
   )
