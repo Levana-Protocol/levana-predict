@@ -1,5 +1,6 @@
 import { Link, Typography } from "@mui/joy"
 import { useSuspenseQuery } from "@tanstack/react-query"
+import { Link as RouterLink } from "react-router-dom"
 
 import { useCurrentAccount } from "@config/chain"
 import type { Market } from "@api/queries/Market"
@@ -7,6 +8,9 @@ import { type Positions, positionsQuery } from "@api/queries/Positions"
 import type { StyleProps } from "@utils/styles"
 import { LoadableWidget } from "@lib/Loadable/Widget"
 import { useSuspenseCurrentMarket } from "@features/MarketDetail/utils"
+
+const LIQUIDITY_POOLS_URL =
+  "https://levana-prediction.zendesk.com/hc/en-us/articles/29284778150555-Liquidity-pools-in-Levana-Predict"
 
 const MyLiquidity = (props: StyleProps) => {
   return (
@@ -45,7 +49,16 @@ const MyLiquidityContent = (props: {
       </Typography>
       <Typography>
         You own {poolPortion.toFixed(3)}% of the liquidity pool.{" "}
-        <Link>Learn more about liquidity pools.</Link>
+        <Link
+          component={RouterLink}
+          to={LIQUIDITY_POOLS_URL}
+          title="Liquidity pools article"
+          aria-label="View article about liquidity pools"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Learn more about liquidity pools.
+        </Link>
       </Typography>
     </>
   )
