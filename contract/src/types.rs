@@ -3,16 +3,16 @@ use std::{
     ops::{Add, AddAssign, Div, Mul, MulAssign, Sub, SubAssign},
 };
 
-use cosmwasm_std::{ConversionOverflowError, OverflowError};
+use cosmwasm_std::{OverflowError, Uint256};
 use cw_storage_plus::{Key, KeyDeserialize, Prefixer, PrimaryKey};
 
 use crate::prelude::*;
 
 #[derive(Clone, Serialize, Deserialize, JsonSchema, Debug, Copy, PartialEq, Eq)]
-pub struct Collateral(pub Uint128);
+pub struct Collateral(pub Uint256);
 impl Collateral {
     pub(crate) fn zero() -> Self {
-        Collateral(Uint128::zero())
+        Collateral(Uint256::zero())
     }
 
     pub(crate) fn checked_sub(&self, rhs: Collateral) -> Result<Self, OverflowError> {
@@ -43,11 +43,10 @@ impl Sub for Collateral {
 }
 
 impl Mul<Decimal256> for Collateral {
-    type Output = Result<Collateral, ConversionOverflowError>;
+    type Output = Collateral;
 
     fn mul(self, rhs: Decimal256) -> Self::Output {
-        let uint256 = (Decimal256::from_ratio(self.0, 1u8) * rhs).to_uint_floor();
-        uint256.try_into().map(Collateral)
+        Collateral((Decimal256::from_ratio(self.0, 1u8) * rhs).to_uint_floor())
     }
 }
 
@@ -65,10 +64,13 @@ impl Display for Collateral {
     }
 }
 
+/// Number of outcome tokens.
+///
+/// Each outcome token entitles the holder to 1 unit of winnings if its result succeeds.
 #[derive(
     Clone, Serialize, Deserialize, JsonSchema, Debug, Copy, PartialEq, Eq, PartialOrd, Ord,
 )]
-pub struct Token(pub Decimal256);
+pub struct Token(pub Uint256);
 
 impl Add for Token {
     type Output = Token;
@@ -96,13 +98,13 @@ impl Mul<Decimal256> for Token {
     type Output = Token;
 
     fn mul(self, rhs: Decimal256) -> Self::Output {
-        Token(self.0 * rhs)
+        Token((Decimal256::from_ratio(self.0, 1u8) * rhs).to_uint_floor())
     }
 }
 
 impl MulAssign<Decimal256> for Token {
     fn mul_assign(&mut self, rhs: Decimal256) {
-        self.0 *= rhs;
+        *self = *self * rhs;
     }
 }
 
@@ -110,7 +112,7 @@ impl Div for Token {
     type Output = Decimal256;
 
     fn div(self, rhs: Self) -> Self::Output {
-        self.0 / rhs.0
+        Decimal256::from_ratio(self.0, rhs.0)
     }
 }
 
@@ -122,11 +124,15 @@ impl Display for Token {
 
 impl Token {
     pub fn zero() -> Self {
-        Token(Decimal256::zero())
+        Token(Uint256::zero())
     }
 
     pub fn is_zero(&self) -> bool {
         self.0.is_zero()
+    }
+
+    pub(crate) fn to_decimal256(&self) -> Decimal256 {
+        Decimal256::from_ratio(self.0, 1u8)
     }
 }
 
@@ -190,7 +196,7 @@ impl<'a> Prefixer<'a> for MarketId {
 #[derive(
     Clone, Serialize, Deserialize, JsonSchema, Debug, Copy, PartialEq, Eq, PartialOrd, Ord,
 )]
-pub struct OutcomeId(u8);
+pub struct OutcomeId(pub u8);
 impl OutcomeId {
     pub(crate) fn usize(&self) -> usize {
         self.0.into()
@@ -223,10 +229,10 @@ impl TryFrom<usize> for OutcomeId {
 }
 
 #[derive(Clone, Serialize, Deserialize, JsonSchema, Debug, Copy, PartialEq, Eq)]
-pub struct LpShare(pub Decimal256);
+pub struct LpShare(pub Uint256);
 impl LpShare {
     pub(crate) fn zero() -> LpShare {
-        LpShare(Decimal256::zero())
+        LpShare(Uint256::zero())
     }
 }
 
@@ -260,7 +266,7 @@ impl Mul<Decimal256> for LpShare {
 
 impl MulAssign<Decimal256> for LpShare {
     fn mul_assign(&mut self, rhs: Decimal256) {
-        self.0 *= rhs;
+        self.0 = (Decimal256::from_ratio(self.0, 1u8) * rhs).to_uint_floor();
     }
 }
 
@@ -268,6 +274,6 @@ impl Div for LpShare {
     type Output = Decimal256;
 
     fn div(self, rhs: Self) -> Self::Output {
-        self.0 / rhs.0
+        Decimal256::from_ratio(self.0, rhs.0)
     }
 }

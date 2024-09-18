@@ -1,6 +1,7 @@
-use cosmwasm_std::{BankMsg, CosmosMsg, Event};
+use cosmwasm_std::{BankMsg, CosmosMsg, Event, Uint256};
 
 use crate::{
+    cpmm::{Buy, Sell},
     prelude::*,
     util::{assert_is_admin, Funds},
 };
@@ -15,7 +16,11 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> R
             add_market(deps, env, *params, funds)
         }
         ExecuteMsg::Provide { id } => provide(deps, env, info, id, funds),
-        ExecuteMsg::Deposit { id, outcome } => deposit(deps, env, info, id, outcome, funds),
+        ExecuteMsg::Deposit {
+            id,
+            outcome,
+            liquidity,
+        } => deposit(deps, env, info, id, outcome, funds, liquidity),
         ExecuteMsg::Withdraw {
             id,
             outcome,
@@ -44,35 +49,50 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> R
     }
 }
 
-pub(crate) fn to_stored_outcome(
+pub struct InitialOutcomes {
+    pub outcomes: Vec<StoredOutcome>,
+    /// Tokens returned to the user
+    pub returned: Vec<Token>,
+}
+
+pub(crate) fn initial_outcomes(
     outcomes: Vec<OutcomeDef>,
-) -> Result<(Vec<StoredOutcome>, Collateral)> {
-    let mut total = Collateral::zero();
-    let outcomes = outcomes
-        .into_iter()
-        .enumerate()
-        .map(
-            |(
-                idx,
-                OutcomeDef {
-                    label,
-                    initial_amount,
-                },
-            )| {
-                total += initial_amount;
-                let id = OutcomeId::try_from(idx)?;
-                let pool_tokens = Token(Decimal256::from_ratio(initial_amount.0, 1u8));
-                Ok(StoredOutcome {
-                    id,
-                    label,
-                    pool_tokens,
-                    total_tokens: pool_tokens,
-                    wallets: 0,
-                })
-            },
-        )
-        .collect::<Result<_>>()?;
-    Ok((outcomes, total))
+    funds: Collateral,
+) -> Result<InitialOutcomes> {
+    let mut stored_outcomes = vec![];
+    let mut returned = vec![];
+
+    for (
+        idx,
+        OutcomeDef {
+            label,
+            initial_amount,
+        },
+    ) in outcomes.into_iter().enumerate()
+    {
+        if initial_amount.is_zero() {
+            return Err(Error::OutcomeWeightCannotBeZero);
+        }
+        if initial_amount.0 > funds.0 {
+            return Err(Error::OutcomeWeightCannotExceedFunds {
+                initial_amount,
+                funds,
+            });
+        }
+        let id = OutcomeId::try_from(idx)?;
+
+        stored_outcomes.push(StoredOutcome {
+            id,
+            label,
+            pool_tokens: initial_amount,
+            wallets: 0,
+        });
+        returned.push(Token(funds.0) - initial_amount);
+    }
+    Ok(InitialOutcomes {
+        outcomes: stored_outcomes,
+        returned,
+    })
 }
 
 fn add_market(
@@ -116,15 +136,15 @@ fn add_market(
         .map_or_else(MarketId::one, MarketId::next);
     LAST_MARKET_ID.save(deps.storage, &id)?;
     let arbitrator = deps.api.addr_validate(&arbitrator)?;
-    let (outcomes, total) = to_stored_outcome(outcomes)?;
-    if total != funds {
-        return Err(Error::IncorrectFundsPerOutcome {
-            provided: funds,
-            specified: total,
-        });
-    }
+    let InitialOutcomes { outcomes, returned } = initial_outcomes(outcomes, funds)?;
 
-    let lp_shares = LpShare(Decimal256::from_ratio(funds.0, 1u8));
+    // Initial LP share value is completely arbitrary. We take the largest token
+    // allocation and multiply by a million, chosen arbitrarily to avoid both overflows
+    // and rounding errors.
+    let lp_shares = LpShare(
+        outcomes.iter().map(|x| x.pool_tokens.0).max().unwrap() * Uint256::from(1_000_000u32),
+    );
+
     let house = deps.api.addr_validate(&house)?;
 
     let market = StoredMarket {
@@ -136,7 +156,7 @@ fn add_market(
         denom,
         deposit_fee,
         withdrawal_fee,
-        pool_size: total,
+        pool_size: funds,
         deposit_stop_date,
         withdrawal_stop_date,
         winner: None,
@@ -147,9 +167,7 @@ fn add_market(
     MARKETS.save(deps.storage, id, &market)?;
 
     ShareInfo {
-        outcomes: std::iter::repeat(Token::zero())
-            .take(total_outcomes)
-            .collect(),
+        outcomes: returned,
         shares: lp_shares,
         claimed_winnings: false,
     }
@@ -166,6 +184,7 @@ fn deposit(
     id: MarketId,
     outcome: OutcomeId,
     funds: Funds,
+    liquidity: Decimal256,
 ) -> Result<Response> {
     let mut market = StoredMarket::load(deps.storage, id)?;
 
@@ -179,16 +198,18 @@ fn deposit(
 
     let deposit_amount = funds.require_funds(&market.denom)?;
     let fee = Decimal256::from_ratio(deposit_amount.0, 1u8) * market.deposit_fee;
-    let fee = Collateral(Uint128::try_from(fee.to_uint_ceil())?);
+    let fee = Collateral(fee.to_uint_ceil());
     market
         .add_liquidity(fee)
         .assign_to(deps.storage, &market, &market.house)?;
     let funds = deposit_amount.checked_sub(fee)?;
-    let tokens = market.buy(outcome, funds)?;
+    let Buy { lp, tokens } = market.buy(outcome, funds, liquidity)?;
     let mut share_info = ShareInfo::load(deps.storage, &market, &info.sender)?
         .unwrap_or_else(|| ShareInfo::new(market.outcomes.len()));
 
     assert_eq!(share_info.outcomes.len(), market.outcomes.len());
+
+    share_info.shares += lp;
 
     let had_any_tokens = share_info.has_tokens();
 
@@ -236,16 +257,27 @@ fn provide(
     }
 
     let deposit_amount = funds.require_funds(&market.denom)?;
-    let shares = market.add_liquidity(deposit_amount);
+    let add_liquidity = market.add_liquidity(deposit_amount);
     MARKETS.save(deps.storage, market.id, &market)?;
-    let shares_str = shares.0.to_string();
-    shares.assign_to(deps.storage, &market, &info.sender)?;
-    Ok(Response::new().add_event(
+
+    let res = Response::new().add_event(
         Event::new("provide")
             .add_attribute("market-id", id.to_string())
             .add_attribute("deposit-amount", deposit_amount.to_string())
-            .add_attribute("shares", shares_str),
-    ))
+            .add_attribute("shares", add_liquidity.lp.to_string())
+            .add_attribute(
+                "new-user-tokens",
+                format!("{:?}", add_liquidity.returned_to_user),
+            )
+            .add_attribute(
+                "new-pool-tokens",
+                format!("{:?}", add_liquidity.added_to_pool),
+            ),
+    );
+
+    add_liquidity.assign_to(deps.storage, &market, &info.sender)?;
+
+    Ok(res)
 }
 
 fn withdraw(
@@ -285,7 +317,13 @@ fn withdraw(
 
     *user_tokens -= tokens;
 
-    if user_tokens.is_zero() {
+    let Sell { funds, returned } = market.sell(outcome, tokens)?;
+
+    for (idx, returned) in returned.into_iter().enumerate() {
+        share_info.outcomes[idx] += returned;
+    }
+
+    if share_info.get_outcome(&market, outcome)?.is_zero() {
         market.get_outcome_mut(outcome)?.wallets -= 1;
         if !share_info.has_tokens() {
             market.total_wallets -= 1;
@@ -294,10 +332,8 @@ fn withdraw(
 
     share_info.save(deps.storage, &market, &info.sender)?;
 
-    let funds = market.sell(outcome, tokens)?;
-
     let fee = Decimal256::from_ratio(funds.0, 1u8) * market.withdrawal_fee;
-    let fee = Collateral(Uint128::try_from(fee.to_uint_ceil())?);
+    let fee = Collateral(fee.to_uint_ceil());
     market
         .add_liquidity(fee)
         .assign_to(deps.storage, &market, &market.house)?;
@@ -316,7 +352,7 @@ fn withdraw(
             to_address: info.sender.into_string(),
             amount: vec![Coin {
                 denom: market.denom,
-                amount: funds.0,
+                amount: funds.0.try_into()?,
             }],
         })))
 }
@@ -376,7 +412,7 @@ fn collect(deps: DepsMut, info: MessageInfo, id: MarketId) -> Result<Response> {
         });
     }
     share_info.save(deps.storage, &market, &info.sender)?;
-    let winnings = market.winnings_for(winner, tokens)?;
+    let winnings = Collateral(tokens.0);
 
     Ok(Response::new()
         .add_event(
@@ -389,7 +425,7 @@ fn collect(deps: DepsMut, info: MessageInfo, id: MarketId) -> Result<Response> {
             to_address: info.sender.into_string(),
             amount: vec![Coin {
                 denom: market.denom,
-                amount: winnings.0,
+                amount: winnings.0.try_into()?,
             }],
         })))
 }

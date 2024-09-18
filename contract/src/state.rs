@@ -136,7 +136,6 @@ pub struct StoredOutcome {
     pub id: OutcomeId,
     pub label: String,
     pub pool_tokens: Token,
-    pub total_tokens: Token,
     /// Count of wallets holding tokens
     pub wallets: u32,
 }

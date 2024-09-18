@@ -37,7 +37,7 @@ impl Funds {
             }),
             Funds::Funds { denom, amount } => {
                 if denom == required_denom {
-                    Ok(Collateral(amount))
+                    Ok(Collateral(amount.into()))
                 } else {
                     Err(Error::IncorrectFundsDenom {
                         actual_denom: denom,
