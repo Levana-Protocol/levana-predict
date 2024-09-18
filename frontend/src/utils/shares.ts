@@ -2,7 +2,7 @@ import BigNumber from "bignumber.js"
 
 import type { Market, OutcomeId } from "@api/queries/Market"
 import type { Positions } from "@api/queries/Positions"
-import type { Coins } from "./coins"
+import { Coins } from "./coins"
 
 class Shares {
   static precision = 3
@@ -46,7 +46,10 @@ const getShares = (positions: Positions, outcomeId: OutcomeId): Shares => {
 }
 
 const getPotentialWinnings = (market: Market, positionSize: Shares): Coins => {
-  return market.poolSize.times(positionSize.value)
+  return Coins.fromUnits(
+    market.denom,
+    market.poolSize.getValue().times(positionSize.value),
+  )
 }
 
 export { Shares, getShares, getPotentialWinnings }
