@@ -4,7 +4,7 @@ import { queryOptions } from "@tanstack/react-query"
 import { MAINNET_NETWORK_ID } from "@config/chain"
 import { fetchQuerier } from "@api/querier"
 import { MS_IN_SECOND } from "@utils/time"
-import { type Denom, coinConfigs } from "@utils/coins"
+import { type Denom, USDC_DENOM, coinConfigs } from "@utils/coins"
 
 const COIN_PRICES_REFRESH_RATE = MS_IN_SECOND * 2
 const FACTORY_ADDRESS =
@@ -27,6 +27,7 @@ const coinPricesFromResponse = (response: CoinPricesResponse): CoinPrices => {
     const responseCoin = response.find(
       (coin) => coin.id === coinConfig.pythId,
     )?.price
+
     if (responseCoin) {
       priceEntries.push([
         denom,
@@ -34,6 +35,10 @@ const coinPricesFromResponse = (response: CoinPricesResponse): CoinPrices => {
           BigNumber(10).pow(responseCoin.expo),
         ),
       ])
+    } else {
+      if (denom === USDC_DENOM) {
+        priceEntries.push([denom, BigNumber(1)])
+      }
     }
   }
 
