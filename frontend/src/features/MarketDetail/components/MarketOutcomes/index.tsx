@@ -47,13 +47,6 @@ const MarketOutcomesContent = (props: { market: Market }) => {
             >
               {outcome.percentage.toFixed(1)}%
             </Typography>
-            <Typography
-              level="title-md"
-              textColor="text.secondary"
-              fontWeight={500}
-            >
-              {outcome.totalShares.toFormat(true)} bet
-            </Typography>
           </Box>
         ))}
       </Stack>
@@ -80,9 +73,6 @@ const MarketOutcomesPlaceholder = () => {
             </Typography>
             <Typography level="title-md" fontWeight={500}>
               0.0%
-            </Typography>
-            <Typography level="title-md" fontWeight={500}>
-              0.000 shares bet
             </Typography>
           </Box>
         ))}
