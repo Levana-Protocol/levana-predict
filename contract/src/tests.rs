@@ -708,4 +708,26 @@ fn test_cpmm_buy_sell(pool_one in 1..1000u32, pool_two in 1..1000u32, buy in 2..
     // assert!(diff1 < Decimal256::from_ratio(1u32, 10u32), "diff1 == {diff1} is too large");
     // assert!(diff2 < Decimal256::from_ratio(1u32, 10u32), "diff2 == {diff2} is too large");
 }
+
+#[test]
+fn test_later_purchases_more_expensive(buy1 in 100..10_000u64, buy2 in 100..10_000u64, outcome in 0..2u8) {
+    let app = Predict::new();
+
+    let tokens0 = app.query_tokens(&app.better, outcome).unwrap();
+    assert_eq!(tokens0, Token::zero());
+
+    app.place_bet(&app.better, outcome, buy1).unwrap();
+    let tokens1 = app.query_tokens(&app.better, outcome).unwrap();
+    assert!(!tokens1.is_zero());
+
+    app.place_bet(&app.better, outcome, buy2).unwrap();
+    let tokens2 = app.query_tokens(&app.better, outcome).unwrap();
+    assert!(tokens2 > tokens1);
+
+    let tokens2 = tokens2 - tokens1;
+
+    let price1 = Decimal256::from_ratio(buy1, tokens1.0);
+    let price2 = Decimal256::from_ratio(buy2, tokens2.0);
+    assert!(price1 < price2);
+}
 }

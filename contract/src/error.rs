@@ -112,4 +112,6 @@ pub enum Error {
     MaximumSellAmountExceeded,
     #[error("Insufficient pool liquidity for selling tokens currently")]
     InsufficientPoolLiquidityForSales,
+    #[error("Purchase too small and results in no tokens being transferred")]
+    PurchaseTooSmall,
 }

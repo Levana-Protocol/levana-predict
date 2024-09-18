@@ -218,6 +218,11 @@ fn deposit(
         .assign_to(deps.storage, &mut market, &house)?;
     let funds = deposit_amount.checked_sub(fee)?;
     let Buy { lp, tokens } = market.buy(outcome, funds, liquidity)?;
+
+    if tokens.is_zero() {
+        return Err(Error::PurchaseTooSmall);
+    }
+
     let mut share_info = ShareInfo::load(deps.storage, &market, &info.sender)?
         .unwrap_or_else(|| ShareInfo::new(market.outcomes.len()));
 
