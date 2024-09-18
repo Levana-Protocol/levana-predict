@@ -333,10 +333,6 @@ fn withdraw(
 
     let Sell { funds, returned } = market.sell(outcome, tokens)?;
 
-    for (idx, returned) in returned.into_iter().enumerate() {
-        share_info.outcomes[idx] += returned;
-    }
-
     if share_info.get_outcome(&market, outcome)?.is_zero() {
         market.get_outcome_mut(outcome)?.wallets -= 1;
         if !share_info.has_tokens() {
@@ -345,6 +341,23 @@ fn withdraw(
     }
 
     share_info.save(deps.storage, &market, &info.sender)?;
+
+    // We sent the returned dust to the house wallet instead to avoid
+    // leaving users with confusing small amounts.
+    if returned.iter().any(|token| !token.is_zero()) {
+        let house = market.house.clone();
+        let mut share_info = ShareInfo::load(deps.storage, &market, &house)?
+            .expect("Must have a holder record for the house");
+        for (idx, returned) in returned.into_iter().enumerate() {
+            if !returned.is_zero() {
+                if share_info.outcomes[idx].is_zero() {
+                    market.outcomes[idx].wallets += 1;
+                }
+                share_info.outcomes[idx] += returned;
+            }
+        }
+        share_info.save(deps.storage, &market, &house)?;
+    }
 
     let fee = Decimal256::from_ratio(funds.0, 1u8) * market.withdrawal_fee;
     let fee = Collateral(fee.to_uint_ceil());
