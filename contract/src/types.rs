@@ -11,10 +11,6 @@ use crate::prelude::*;
 #[derive(Clone, Serialize, Deserialize, JsonSchema, Debug, Copy, PartialEq, Eq)]
 pub struct Collateral(pub Uint256);
 impl Collateral {
-    pub(crate) fn zero() -> Self {
-        Collateral(Uint256::zero())
-    }
-
     pub(crate) fn checked_sub(&self, rhs: Collateral) -> Result<Self, OverflowError> {
         self.0.checked_sub(rhs.0).map(Collateral)
     }
@@ -39,6 +35,12 @@ impl Sub for Collateral {
 
     fn sub(self, rhs: Self) -> Self::Output {
         Collateral(self.0 - rhs.0)
+    }
+}
+
+impl SubAssign for Collateral {
+    fn sub_assign(&mut self, rhs: Self) {
+        self.0 -= rhs.0;
     }
 }
 
@@ -131,7 +133,7 @@ impl Token {
         self.0.is_zero()
     }
 
-    pub(crate) fn to_decimal256(&self) -> Decimal256 {
+    pub(crate) fn to_decimal256(self) -> Decimal256 {
         Decimal256::from_ratio(self.0, 1u8)
     }
 }
@@ -142,7 +144,7 @@ impl AddAssign for Token {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize, JsonSchema, Debug, Copy)]
+#[derive(Clone, Serialize, Deserialize, JsonSchema, Debug, Copy, PartialEq, Eq)]
 pub struct MarketId(pub u32);
 
 impl Display for MarketId {
@@ -233,6 +235,10 @@ pub struct LpShare(pub Uint256);
 impl LpShare {
     pub(crate) fn zero() -> LpShare {
         LpShare(Uint256::zero())
+    }
+
+    pub fn is_zero(self) -> bool {
+        self.0.is_zero()
     }
 }
 

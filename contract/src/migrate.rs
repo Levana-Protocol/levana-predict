@@ -1,7 +1,7 @@
 use crate::prelude::*;
 
 #[entry_point]
-pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> Result<Response> {
+pub fn migrate(deps: DepsMut, env: Env, _msg: MigrateMsg) -> Result<Response> {
     let current_version = cw2::get_contract_version(deps.storage)?;
     let current = current_version
         .version
@@ -29,6 +29,8 @@ pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> Result<Response> {
     }
 
     cw2::set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+
+    sanity(deps.storage, &env);
 
     Ok(Response::default())
 }

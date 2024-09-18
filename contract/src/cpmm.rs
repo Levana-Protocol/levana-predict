@@ -13,7 +13,7 @@ impl AddLiquidity {
     pub fn assign_to(
         self,
         storage: &mut dyn Storage,
-        market: &StoredMarket,
+        market: &mut StoredMarket,
         sender: &Addr,
     ) -> Result<()> {
         assert_eq!(market.outcomes.len(), self.returned_to_user.len());
@@ -25,8 +25,27 @@ impl AddLiquidity {
         let mut share_info = ShareInfo::load(storage, market, sender)?
             .unwrap_or_else(|| ShareInfo::new(market.outcomes.len()));
         share_info.shares += lp;
+
+        let mut had_tokens = false;
+        let mut has_tokens = false;
+
         for (outcome, tokens_mut) in share_info.outcomes.iter_mut().enumerate() {
-            *tokens_mut += returned_to_user[outcome];
+            let to_add = returned_to_user[outcome];
+            if tokens_mut.is_zero() {
+                if !to_add.is_zero() {
+                    market.outcomes[outcome].wallets += 1;
+                }
+            } else {
+                had_tokens = true;
+            }
+            *tokens_mut += to_add;
+            if !tokens_mut.is_zero() {
+                has_tokens = true;
+            }
+        }
+
+        if !had_tokens && has_tokens {
+            market.total_wallets += 1;
         }
         share_info.save(storage, market, sender)?;
         Ok(())
@@ -209,9 +228,9 @@ impl StoredMarket {
             _ => unreachable!(),
         };
 
-        Ok(Sell {
-            funds: Collateral(to_redeem),
-            returned,
-        })
+        let funds = Collateral(to_redeem);
+        self.pool_size -= funds;
+
+        Ok(Sell { funds, returned })
     }
 }
