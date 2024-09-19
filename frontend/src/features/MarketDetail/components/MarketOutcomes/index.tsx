@@ -63,7 +63,7 @@ const MarketOutcomesContent = (props: { market: Market }) => {
         </Typography>
         <Typography level="body-md" textColor="text.secondary">
           {market.totalWallets}{" "}
-          {market.totalWallets === 1 ? "participant" : "participant"}
+          {market.totalWallets === 1 ? "participant" : "participants"}
         </Typography>
       </Box>
     </>
