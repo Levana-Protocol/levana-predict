@@ -46,10 +46,7 @@ const getShares = (positions: Positions, outcomeId: OutcomeId): Shares => {
 }
 
 const getPotentialWinnings = (market: Market, positionSize: Shares): Coins => {
-  return Coins.fromUnits(
-    market.denom,
-    market.poolSize.getValue().times(positionSize.value),
-  )
+  return Coins.fromUnits(market.denom, positionSize.value)
 }
 
 export { Shares, getShares, getPotentialWinnings }

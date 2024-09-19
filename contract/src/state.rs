@@ -8,7 +8,7 @@ pub const LAST_MARKET_ID: Item<MarketId> = Item::new("last-market-id");
 
 pub const MARKETS: Map<MarketId, StoredMarket> = Map::new("markets");
 
-const HOLDERS: Map<(MarketId, &Addr), ShareInfo> = Map::new("holders");
+pub const HOLDERS: Map<(MarketId, &Addr), ShareInfo> = Map::new("holders");
 
 impl ShareInfo {
     pub fn load(
@@ -136,7 +136,6 @@ pub struct StoredOutcome {
     pub id: OutcomeId,
     pub label: String,
     pub pool_tokens: Token,
-    pub total_tokens: Token,
     /// Count of wallets holding tokens
     pub wallets: u32,
 }
