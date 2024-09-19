@@ -9,6 +9,7 @@ import type { StyleProps } from "@utils/styles"
 import { LoadableWidget } from "@lib/Loadable/Widget"
 import { useSuspenseCurrentMarket } from "@features/MarketDetail/utils"
 import { getPotentialWinnings } from "@utils/shares"
+import { pluralize } from "@utils/string"
 
 const LIQUIDITY_POOLS_URL =
   "https://levana-prediction.zendesk.com/hc/en-us/articles/29284778150555-Liquidity-pools-in-Levana-Predict"
@@ -95,7 +96,7 @@ const MyLiquidityContent = (props: {
           of the liquidity pool.
         </Typography>
         <Typography level="body-sm" textColor="text.secondary">
-          {market.lpWallets} liquidity provider{market.lpWallets !== 1 && "s"}
+          {pluralize("liquidity provider", market.lpWallets, true)}.
         </Typography>
         <Typography level="body-sm">
           The potential winnings from the pool will change over time as further
@@ -146,7 +147,7 @@ const MyLiquidityPlaceholder = () => {
           You own <Typography fontWeight={600}>0.000%</Typography> of the
           liquidity pool.
         </Typography>
-        <Typography level="body-sm">0 liquidity providers</Typography>
+        <Typography level="body-sm">0 liquidity providers.</Typography>
         <Typography level="body-sm">
           The potential winnings from the pool will change over time as further
           prediction activity occurs.{" "}
