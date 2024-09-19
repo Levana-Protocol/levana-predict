@@ -233,6 +233,9 @@ fn deposit(
     if !lp.is_zero() {
         if share_info.shares.is_zero() {
             market.lp_wallets += 1;
+            if !share_info.has_tokens() {
+                market.total_wallets += 1;
+            }
         }
         share_info.shares += lp;
     }
