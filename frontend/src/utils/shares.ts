@@ -113,4 +113,40 @@ const getOddsForOutcome = (
   return oddsForOutcome
 }
 
-export { Shares, getShares, getPotentialWinnings, getOddsForOutcome }
+const getSharesPurchased = (
+  market: Market,
+  selectedOutcome: OutcomeId,
+  buyAmount: Coins,
+): Shares => {
+  const selectedPool =
+    market.possibleOutcomes.find((outcome) => outcome.id === selectedOutcome)
+      ?.poolShares.units ?? BigNumber(0)
+
+  const invariant = market.possibleOutcomes.reduce(
+    (prod, outcome) => prod.times(outcome.poolShares.units),
+    BigNumber(1),
+  )
+
+  const newOutcomePools = market.possibleOutcomes
+    .filter((outcome) => outcome.id !== selectedOutcome)
+    .map((outcome) => outcome.poolShares.units.plus(buyAmount.units))
+
+  const newSelectedPool = newOutcomePools.reduce(
+    (prod, newPool) => prod.div(newPool),
+    invariant,
+  )
+
+  const purchasedShares = selectedPool
+    .plus(buyAmount.units)
+    .minus(newSelectedPool)
+
+  return Shares.fromCollateralUnits(market.denom, purchasedShares)
+}
+
+export {
+  Shares,
+  getShares,
+  getPotentialWinnings,
+  getOddsForOutcome,
+  getSharesPurchased,
+}

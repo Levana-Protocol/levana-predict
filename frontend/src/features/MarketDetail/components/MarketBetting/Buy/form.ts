@@ -40,10 +40,14 @@ const useMarketBuyForm = (market: Market) => {
         ? new USD(betAmount).toCoins(denom, price)
         : Coins.fromValue(denom, betAmount)
 
-      return placeBet.mutateAsync({
-        outcomeId: betOutcome,
-        coinsAmount: coinsAmount,
-      })
+      return placeBet
+        .mutateAsync({
+          outcomeId: betOutcome,
+          coinsAmount: coinsAmount,
+        })
+        .then(() => {
+          form.reset()
+        })
     } else {
       return Promise.reject()
     }
