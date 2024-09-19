@@ -125,10 +125,36 @@ const MyLiquidityPlaceholder = () => {
       <Typography level="title-md" fontWeight={600} sx={{ mb: 2 }}>
         My liquidity
       </Typography>
-      <Typography>
-        You own 0.000% of the liquidity pool.{" "}
-        <Link disabled>Learn more about liquidity pools.</Link>
-      </Typography>
+      <Stack direction="row" alignItems="center" gap={4}>
+        {[0, 1, 2].map((index) => (
+          <Box key={index}>
+            <Typography level="title-lg" fontWeight={600}>
+              Yes
+            </Typography>
+            <Typography level="title-md" fontWeight={600}>
+              0.000000 NTRN
+            </Typography>
+            <Typography level="title-sm" fontWeight={500} lineHeight={1}>
+              potential pool winnings
+            </Typography>
+          </Box>
+        ))}
+      </Stack>
+
+      <Box sx={{ mt: 3 }}>
+        <Typography level="body-sm">
+          You own <Typography fontWeight={600}>0.000%</Typography> of the
+          liquidity pool.
+        </Typography>
+        <Typography level="body-sm">0 liquidity providers</Typography>
+        <Typography level="body-sm">
+          The potential winnings from the pool will change over time as further
+          prediction activity occurs.{" "}
+        </Typography>
+        <Link sx={{ textDecoration: "underline" }} fontSize="sm" disabled>
+          Learn more about liquidity pools.
+        </Link>
+      </Box>
     </>
   )
 }
