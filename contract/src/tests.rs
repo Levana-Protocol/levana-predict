@@ -692,6 +692,17 @@ fn bet_with_liquidity() {
     // better.
 }
 
+#[test]
+fn cannot_bet_liquidity_of_one() {
+    let app = Predict::new();
+    app.place_bet_with(&app.better, 0, 1_000, "0.99".parse().unwrap())
+        .unwrap();
+    app.place_bet_with(&app.better, 0, 1_000, "1".parse().unwrap())
+        .unwrap_err();
+    app.place_bet_with(&app.better, 0, 1_000, "1.01".parse().unwrap())
+        .unwrap_err();
+}
+
 proptest! {
 #[test]
 fn test_cpmm_buy_sell(pool_one in 1..1000u32, pool_two in 1..1000u32, buy in 2..50u32) {

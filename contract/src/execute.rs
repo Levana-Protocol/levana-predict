@@ -199,6 +199,10 @@ fn deposit(
 ) -> Result<Response> {
     let mut market = StoredMarket::load(deps.storage, id)?;
 
+    if liquidity >= Decimal256::one() {
+        return Err(Error::LiquidityShareOfOneOrMore { liquidity });
+    }
+
     if env.block.time >= market.deposit_stop_date {
         return Err(Error::DepositsStopped {
             id,
@@ -342,7 +346,6 @@ fn withdraw(
     let Sell { funds, returned } = market.sell(outcome, tokens)?;
 
     if share_info.get_outcome(&market, outcome, false)?.is_zero() {
-        println!("here1");
         market.get_outcome_mut(outcome)?.wallets -= 1;
         if !share_info.has_tokens() && share_info.shares.is_zero() {
             market.total_wallets -= 1;
