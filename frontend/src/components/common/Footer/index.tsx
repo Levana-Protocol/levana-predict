@@ -2,7 +2,7 @@ import { useMemo } from "react"
 import { Link, Stack } from "@mui/joy"
 import { Link as RouterLink } from "react-router-dom"
 
-import { DESKTOP_BREAKPOINT } from "@utils/styles"
+import { DESKTOP_BREAKPOINT, mergeSx, stylesOnlyAt } from "@utils/styles"
 import { GithubIcon } from "@assets/icons/Github"
 
 const TERMS_OF_SERVICE_URL =
@@ -45,10 +45,16 @@ const Footer = () => {
   return (
     <Stack
       direction={{ xs: "column", md: "row" }}
-      justifyContent={{ sm: "flex-end" }}
+      justifyContent="center"
       alignItems="center"
       gap={2}
-      sx={{ mt: 4, p: { xs: 2, [DESKTOP_BREAKPOINT]: 3 } }}
+      sx={mergeSx(
+        {
+          mt: 8,
+          p: { xs: 2, [DESKTOP_BREAKPOINT]: 3 },
+        },
+        stylesOnlyAt("xs", { pb: 10 }),
+      )}
     >
       <Link
         component={RouterLink}
