@@ -51,6 +51,9 @@ const MyLiquidityContent = (props: {
       <Typography>
         You own {poolPortion.times(100).toFixed(3)}% of the liquidity pool.
       </Typography>
+      <Typography>
+        {market.lpWallets} liquidity provider{market.lpWallets !== 1 && "s"}
+      </Typography>
       <Stack direction="row" alignItems="center" gap={4}>
         {market.possibleOutcomes.map((outcome) => (
           <Box key={outcome.id}>
