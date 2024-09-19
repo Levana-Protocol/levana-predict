@@ -15,6 +15,7 @@ impl AddLiquidity {
         storage: &mut dyn Storage,
         market: &mut StoredMarket,
         sender: &Addr,
+        burn_half: bool,
     ) -> Result<()> {
         assert_eq!(market.outcomes.len(), self.returned_to_user.len());
         let AddLiquidity {
@@ -22,6 +23,12 @@ impl AddLiquidity {
             returned_to_user,
             added_to_pool: _,
         } = self;
+        let lp = if burn_half {
+            LpShare(lp.0 / Uint256::from(2u8))
+        } else {
+            lp
+        };
+        market.lp_shares += lp;
         let mut share_info = ShareInfo::load(storage, market, sender)?
             .unwrap_or_else(|| ShareInfo::new(market.outcomes.len()));
         share_info.shares += lp;
@@ -85,7 +92,6 @@ impl StoredMarket {
         }
 
         let new_shares = LpShare(funds.0 * self.lp_shares.0 / pool_weight.0);
-        self.lp_shares += new_shares;
 
         AddLiquidity {
             lp: new_shares,
@@ -114,6 +120,7 @@ impl StoredMarket {
             returned_to_user: mut pending_tokens,
             added_to_pool: _,
         } = self.add_liquidity(liquidity_funds);
+        self.lp_shares += lp;
 
         // Now we can add the remaining funds to the pool and mint an appropriate number of tokens.
         let funds = funds - liquidity_funds;

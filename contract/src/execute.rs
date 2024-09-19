@@ -219,7 +219,7 @@ fn deposit(
     let house = market.house.clone();
     market
         .add_liquidity(fee)
-        .assign_to(deps.storage, &mut market, &house)?;
+        .assign_to(deps.storage, &mut market, &house, true)?;
     let funds = deposit_amount.checked_sub(fee)?;
     let Buy { lp, tokens } = market.buy(outcome, funds, liquidity)?;
 
@@ -297,7 +297,7 @@ fn provide(
             ),
     );
 
-    add_liquidity.assign_to(deps.storage, &mut market, &info.sender)?;
+    add_liquidity.assign_to(deps.storage, &mut market, &info.sender, false)?;
     MARKETS.save(deps.storage, market.id, &market)?;
 
     Ok(res)
@@ -342,7 +342,7 @@ fn withdraw(
 
     let Sell { funds, returned } = market.sell(outcome, tokens)?;
 
-    if share_info.get_outcome(&market, outcome)?.is_zero() {
+    if share_info.get_outcome(&market, outcome, false)?.is_zero() {
         market.get_outcome_mut(outcome)?.wallets -= 1;
         if !share_info.has_tokens() {
             market.total_wallets -= 1;
@@ -373,7 +373,7 @@ fn withdraw(
     let house = market.house.clone();
     market
         .add_liquidity(fee)
-        .assign_to(deps.storage, &mut market, &house)?;
+        .assign_to(deps.storage, &mut market, &house, true)?;
     let funds = funds.checked_sub(fee)?;
     MARKETS.save(deps.storage, id, &market)?;
     Ok(Response::new()
@@ -441,7 +441,7 @@ fn collect(deps: &mut DepsMut, info: MessageInfo, id: MarketId) -> Result<Respon
         return Err(Error::AlreadyClaimedWinnings { id });
     }
     share_info.claimed_winnings = true;
-    let tokens = share_info.get_outcome(&market, winner)?;
+    let tokens = share_info.get_outcome(&market, winner, true)?;
     if tokens.is_zero() {
         return Err(Error::NoTokensFound {
             id,

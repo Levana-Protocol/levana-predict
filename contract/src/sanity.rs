@@ -83,6 +83,7 @@ pub fn sanity(store: &dyn Storage, env: &Env) {
             assert_eq!(tokens.0, pool_size.0);
         }
 
+        // FIXME modify check to include in all wallets if they have a liquidity share
         assert_eq!(computed_total_wallets, total_wallets);
 
         for outcome in &market_outcomes {
