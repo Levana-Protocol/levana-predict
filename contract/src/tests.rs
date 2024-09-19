@@ -745,6 +745,7 @@ fn test_cpmm_buy_sell(pool_one in 1..1000u32, pool_two in 1..1000u32, buy in 2..
         house: Addr::unchecked("house"),
         total_wallets: 0,
         lp_shares: LpShare::zero(),
+        lp_wallets: 0,
     };
     let yes_id = OutcomeId::from(0);
     let yes_tokens = stored.buy(yes_id, buy, Decimal256::zero()).unwrap();

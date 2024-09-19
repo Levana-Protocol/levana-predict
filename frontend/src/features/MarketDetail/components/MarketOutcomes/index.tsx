@@ -47,12 +47,23 @@ const MarketOutcomesContent = (props: { market: Market }) => {
             >
               {outcome.percentage.toFixed(1)}%
             </Typography>
+            <Typography
+              level="title-md"
+              textColor="text.secondary"
+              fontWeight={500}
+            >
+              {outcome.wallets} {outcome.wallets === 1 ? "holder" : "holders"}
+            </Typography>
           </Box>
         ))}
       </Stack>
       <Box sx={{ mt: 2 }}>
         <Typography level="body-md" textColor="text.secondary" fontWeight={600}>
           Prize pool size: {market.poolSize.toFormat(true)}
+        </Typography>
+        <Typography level="body-md" textColor="text.secondary">
+          {market.totalWallets}{" "}
+          {market.totalWallets === 1 ? "participant" : "participant"}
         </Typography>
       </Box>
     </>
