@@ -1,4 +1,4 @@
-import { Link, Typography } from "@mui/joy"
+import { Box, Link, Stack, Typography } from "@mui/joy"
 import { useSuspenseQuery } from "@tanstack/react-query"
 import { Link as RouterLink } from "react-router-dom"
 
@@ -8,6 +8,7 @@ import { type Positions, positionsQuery } from "@api/queries/Positions"
 import type { StyleProps } from "@utils/styles"
 import { LoadableWidget } from "@lib/Loadable/Widget"
 import { useSuspenseCurrentMarket } from "@features/MarketDetail/utils"
+import { getPotentialWinnings } from "@utils/shares"
 
 const LIQUIDITY_POOLS_URL =
   "https://levana-prediction.zendesk.com/hc/en-us/articles/29284778150555-Liquidity-pools-in-Levana-Predict"
@@ -40,7 +41,7 @@ const MyLiquidityContent = (props: {
   positions: Positions
 }) => {
   const { market, positions } = props
-  const poolPortion = positions.shares.value.div(market.lpShares).times(100)
+  const poolPortion = positions.shares.value.div(market.lpShares)
 
   return (
     <>
@@ -48,7 +49,46 @@ const MyLiquidityContent = (props: {
         My liquidity
       </Typography>
       <Typography>
-        You own {poolPortion.toFixed(3)}% of the liquidity pool.{" "}
+        You own {poolPortion.times(100).toFixed(3)}% of the liquidity pool.
+      </Typography>
+      <Typography>
+        {market.lpWallets} liquidity provider{market.lpWallets !== 1 && "s"}
+      </Typography>
+      <Stack direction="row" alignItems="center" gap={4}>
+        {market.possibleOutcomes.map((outcome) => (
+          <Box key={outcome.id}>
+            <Typography
+              level="title-lg"
+              fontWeight={600}
+              color={
+                outcome.label === "Yes"
+                  ? "success"
+                  : outcome.label === "No"
+                    ? "danger"
+                    : "neutral"
+              }
+            >
+              {outcome.label}
+            </Typography>
+            <Typography
+              level="title-md"
+              textColor="text.secondary"
+              fontWeight={500}
+            >
+              Potential winnings:{" "}
+              {getPotentialWinnings(
+                market,
+                outcome.poolShares.times(poolPortion),
+              ).toFormat(true)}
+            </Typography>
+          </Box>
+        ))}
+      </Stack>
+      <Typography style={{ margin: "2em 0 0 0", fontStyle: "italic" }}>
+        The potential winnings from the pool will change over time as further
+        prediction activity occurs.{" "}
+      </Typography>
+      <Typography>
         <Link
           component={RouterLink}
           to={LIQUIDITY_POOLS_URL}

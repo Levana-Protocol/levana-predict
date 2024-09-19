@@ -67,13 +67,6 @@ const MyPositionsContent = (props: {
               textColor="text.secondary"
               fontWeight={500}
             >
-              {getShares(positions, outcome.id).toFormat(true)}
-            </Typography>
-            <Typography
-              level="title-md"
-              textColor="text.secondary"
-              fontWeight={500}
-            >
               Potential winnings:{" "}
               {getPotentialWinnings(
                 market,
@@ -98,9 +91,6 @@ const MyPositionsPlaceholder = () => {
           <Box key={index}>
             <Typography level="title-lg" fontWeight={600}>
               Yes
-            </Typography>
-            <Typography level="title-md" fontWeight={500}>
-              0 shares
             </Typography>
             <Typography level="title-md" fontWeight={500}>
               Potential winnings: 0.000000 NTRN

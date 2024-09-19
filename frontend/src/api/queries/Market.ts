@@ -23,13 +23,13 @@ interface ResponseMarket {
   total_wallets: number
   pool_size: string
   lp_shares: string
+  lp_wallets: number
 }
 
 interface ResponseMarketOutcome {
   id: number
   label: string
   pool_tokens: string
-  total_tokens: string
   wallets: number
 }
 
@@ -48,13 +48,13 @@ interface Market {
   totalWallets: number
   poolSize: Coins
   lpShares: BigNumber
+  lpWallets: number
 }
 
 interface MarketOutcome {
   id: OutcomeId
   label: string
   poolShares: Shares
-  totalShares: Shares
   wallets: number
   /// This is the amount of collateral you'd have to bet on an outcome to receive 1 collateral of winnings.
   price: Coins
@@ -87,6 +87,9 @@ const marketFromResponse = (response: ResponseMarket): Market => {
     totalWallets: response.total_wallets,
     poolSize: Coins.fromUnits(response.denom, response.pool_size),
     lpShares: BigNumber(response.lp_shares),
+    // Checking for missing data is just for testing with older contracts.
+    // That code can be removed in the future.
+    lpWallets: response.lp_wallets || 1,
   }
 }
 
@@ -130,10 +133,9 @@ const outcomeFromResponse = (
     id: `${response.id}`,
     label: response.label,
     poolShares: Shares.fromValue(response.pool_tokens),
-    totalShares: Shares.fromValue(response.total_tokens),
     wallets: response.wallets,
     price: Coins.fromValue(market.denom, oddsForOutcome),
-    percentage: oddsForOutcome,
+    percentage: oddsForOutcome.times(100),
   }
 }
 

@@ -5,6 +5,10 @@ pub struct InstantiateMsg {
     pub admin: String,
 }
 
+fn default_liquidity_portion() -> Decimal256 {
+    Decimal256::from_ratio(1u8, 10u8)
+}
+
 #[derive(Clone, Serialize, Deserialize, JsonSchema, Debug)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
@@ -12,6 +16,9 @@ pub enum ExecuteMsg {
         params: Box<AddMarketParams>,
     },
     /// Provide liquidity to the liquidity pool
+    ///
+    /// Due to the nature of the CPMM model, providing liquidity
+    /// will generally result in receiving some tokens back as well.
     Provide {
         id: MarketId,
     },
@@ -19,6 +26,10 @@ pub enum ExecuteMsg {
     Deposit {
         id: MarketId,
         outcome: OutcomeId,
+        /// What portion of generated tokens should be
+        /// provided as liquidity.
+        #[serde(default = "default_liquidity_portion")]
+        liquidity: Decimal256,
     },
     /// Withdraw funds bet on an outcome
     Withdraw {
@@ -69,7 +80,12 @@ pub struct AddMarketParams {
 #[serde(rename_all = "snake_case")]
 pub struct OutcomeDef {
     pub label: String,
-    pub initial_amount: Collateral,
+    /// Initial number of tokens to leave in the pool.
+    ///
+    /// The ratios provided here will control the initial price.
+    ///
+    /// Each value must be less than the total collateral provided to start the market, and must be greater than zero.
+    pub initial_amount: Token,
 }
 
 #[derive(Clone, Serialize, Deserialize, JsonSchema, Debug)]

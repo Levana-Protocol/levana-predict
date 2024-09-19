@@ -8,7 +8,7 @@ pub const LAST_MARKET_ID: Item<MarketId> = Item::new("last-market-id");
 
 pub const MARKETS: Map<MarketId, StoredMarket> = Map::new("markets");
 
-const HOLDERS: Map<(MarketId, &Addr), ShareInfo> = Map::new("holders");
+pub const HOLDERS: Map<(MarketId, &Addr), ShareInfo> = Map::new("holders");
 
 impl ShareInfo {
     pub fn load(
@@ -38,7 +38,12 @@ impl ShareInfo {
         HOLDERS.save(store, (market.id, addr), self)
     }
 
-    pub(crate) fn get_outcome(&self, market: &StoredMarket, outcome: OutcomeId) -> Result<Token> {
+    pub(crate) fn get_outcome(
+        &self,
+        market: &StoredMarket,
+        outcome: OutcomeId,
+        include_pool: bool,
+    ) -> Result<Token> {
         let from_tokens =
             self.outcomes
                 .get(outcome.usize())
@@ -48,18 +53,22 @@ impl ShareInfo {
                     outcome_count: self.outcomes.len().to_string(),
                     outcome,
                 })?;
-        let from_pool = market
-            .outcomes
-            .get(outcome.usize())
-            .as_ref()
-            .ok_or_else(|| Error::InvalidOutcome {
-                id: market.id,
-                outcome_count: self.outcomes.len().to_string(),
-                outcome,
-            })?
-            .pool_tokens
-            * (self.shares / market.lp_shares);
-        Ok(from_tokens + from_pool)
+        if include_pool {
+            let from_pool = market
+                .outcomes
+                .get(outcome.usize())
+                .as_ref()
+                .ok_or_else(|| Error::InvalidOutcome {
+                    id: market.id,
+                    outcome_count: self.outcomes.len().to_string(),
+                    outcome,
+                })?
+                .pool_tokens
+                * (self.shares / market.lp_shares);
+            Ok(from_tokens + from_pool)
+        } else {
+            Ok(from_tokens)
+        }
     }
 
     pub(crate) fn get_outcome_mut(
@@ -100,6 +109,8 @@ pub struct StoredMarket {
     pub total_wallets: u32,
     /// Total shares across all wallets
     pub lp_shares: LpShare,
+    /// Number of wallets holding LP shares
+    pub lp_wallets: u32,
 }
 
 impl StoredMarket {
@@ -136,7 +147,6 @@ pub struct StoredOutcome {
     pub id: OutcomeId,
     pub label: String,
     pub pool_tokens: Token,
-    pub total_tokens: Token,
     /// Count of wallets holding tokens
     pub wallets: u32,
 }

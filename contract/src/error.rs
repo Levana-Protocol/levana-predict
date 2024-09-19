@@ -32,11 +32,6 @@ pub enum Error {
     MissingRequiredFunds { denom: String },
     #[error("The sender address is not the admin of the contract")]
     Unauthorized,
-    #[error("Incorrect funds specified per outcome. Total provided: {provided}. Total specified: {specified}.")]
-    IncorrectFundsPerOutcome {
-        provided: Collateral,
-        specified: Collateral,
-    },
     #[error("Deposit stop date ({deposit_stop_date}) is before the withdrawal stop date ({withdrawal_stop_date})")]
     DepositStopDateBeforeWithdrawalStop {
         withdrawal_stop_date: Timestamp,
@@ -104,4 +99,23 @@ pub enum Error {
     },
     #[error("Supported only 2 outcomes, received {total_outcomes}")]
     UnsupportedOutcomes { total_outcomes: usize },
+    #[error("Outcome weight cannot be zero")]
+    OutcomeWeightCannotBeZero,
+    #[error("Outcome weight cannot exceed funds, weight provided: {initial_amount}, total funds: {funds}")]
+    OutcomeWeightCannotExceedFunds {
+        initial_amount: Token,
+        funds: Collateral,
+    },
+    #[error("The requested operation would drop pool tokens to zero, which is not allowed")]
+    CannotDropPoolTokensToZero,
+    #[error("Maximum sell amount exceeded")]
+    MaximumSellAmountExceeded,
+    #[error("Insufficient pool liquidity for selling tokens currently")]
+    InsufficientPoolLiquidityForSales,
+    #[error("Purchase too small and results in no tokens being transferred")]
+    PurchaseTooSmall,
+    #[error(
+        "You specified a liquidity share of {liquidity}. Liquidity share must be less than 1."
+    )]
+    LiquidityShareOfOneOrMore { liquidity: Decimal256 },
 }

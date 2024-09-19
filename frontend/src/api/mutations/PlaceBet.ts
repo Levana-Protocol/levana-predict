@@ -1,4 +1,3 @@
-import BigNumber from "bignumber.js"
 import { useCosmWasmSigningClient } from "graz"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate"
@@ -12,12 +11,6 @@ import { BALANCES_KEYS } from "@api/queries/Balances"
 import type { Coins } from "@utils/coins"
 import { AppError, errorsMiddleware } from "@utils/errors"
 
-interface ProvideRequest {
-  provide: {
-    id: number
-  }
-}
-
 interface PlaceBetRequest {
   deposit: {
     id: number
@@ -30,20 +23,12 @@ interface PlaceBetArgs {
   coinsAmount: Coins
 }
 
-/// Hard-coded proportion of deposits that are provided as liquidity.
-const PROVIDE_PORTION = BigNumber("0.1")
-
 const putPlaceBet = (
   address: string,
   signer: SigningCosmWasmClient,
   marketId: MarketId,
   args: PlaceBetArgs,
 ) => {
-  const provideMsg: ProvideRequest = {
-    provide: {
-      id: Number(marketId),
-    },
-  }
   const depositMsg: PlaceBetRequest = {
     deposit: {
       id: Number(marketId),
@@ -51,20 +36,14 @@ const putPlaceBet = (
     },
   }
 
-  const provideAmount = args.coinsAmount.units.times(PROVIDE_PORTION)
-  const depositAmount = args.coinsAmount.units.minus(provideAmount)
-
   return querierBroadcastAndWait(address, signer, [
-    {
-      payload: provideMsg,
-      funds: [
-        { denom: args.coinsAmount.denom, amount: provideAmount.toFixed(0) },
-      ],
-    },
     {
       payload: depositMsg,
       funds: [
-        { denom: args.coinsAmount.denom, amount: depositAmount.toFixed(0) },
+        {
+          denom: args.coinsAmount.denom,
+          amount: args.coinsAmount.units.toFixed(0),
+        },
       ],
     },
   ])

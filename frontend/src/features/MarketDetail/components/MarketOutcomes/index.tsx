@@ -52,7 +52,7 @@ const MarketOutcomesContent = (props: { market: Market }) => {
               textColor="text.secondary"
               fontWeight={500}
             >
-              {outcome.totalShares.toFormat(true)} bet
+              {outcome.wallets} {outcome.wallets === 1 ? "holder" : "holders"}
             </Typography>
           </Box>
         ))}
@@ -60,6 +60,10 @@ const MarketOutcomesContent = (props: { market: Market }) => {
       <Box sx={{ mt: 2 }}>
         <Typography level="body-md" textColor="text.secondary" fontWeight={600}>
           Prize pool size: {market.poolSize.toFormat(true)}
+        </Typography>
+        <Typography level="body-md" textColor="text.secondary">
+          {market.totalWallets}{" "}
+          {market.totalWallets === 1 ? "participant" : "participant"}
         </Typography>
       </Box>
     </>
@@ -80,9 +84,6 @@ const MarketOutcomesPlaceholder = () => {
             </Typography>
             <Typography level="title-md" fontWeight={500}>
               0.0%
-            </Typography>
-            <Typography level="title-md" fontWeight={500}>
-              0.000 shares bet
             </Typography>
           </Box>
         ))}
