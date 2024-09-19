@@ -170,11 +170,8 @@ fn add_market(
         withdrawal_stop_date,
         winner: None,
         house,
-        total_wallets: if returned.iter().any(|token| !token.is_zero()) {
-            1
-        } else {
-            0
-        },
+        // Always have 1 wallet: the house
+        total_wallets: 1,
         lp_shares,
     };
     MARKETS.save(deps.storage, id, &market)?;
@@ -230,7 +227,7 @@ fn deposit(
 
     share_info.shares += lp;
 
-    let had_any_tokens = share_info.has_tokens();
+    let had_any_tokens = share_info.has_tokens() || !share_info.shares.is_zero();
 
     let outcome_tokens = share_info.get_outcome_mut(id, outcome).unwrap();
     let had_these_tokens = !outcome_tokens.is_zero();
@@ -341,7 +338,7 @@ fn withdraw(
     if share_info.get_outcome(&market, outcome, false)?.is_zero() {
         println!("here1");
         market.get_outcome_mut(outcome)?.wallets -= 1;
-        if !share_info.has_tokens() {
+        if !share_info.has_tokens() && share_info.shares.is_zero() {
             market.total_wallets -= 1;
         }
     }

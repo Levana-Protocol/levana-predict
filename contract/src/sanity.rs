@@ -73,7 +73,7 @@ pub fn sanity(store: &dyn Storage, env: &Env) {
                 }
             }
 
-            if has_tokens {
+            if has_tokens || !shares.is_zero() {
                 computed_total_wallets += 1;
             }
         }
@@ -83,17 +83,10 @@ pub fn sanity(store: &dyn Storage, env: &Env) {
             assert_eq!(tokens.0, pool_size.0);
         }
 
-        // FIXME modify check to include in all wallets if they have a liquidity share
         assert_eq!(computed_total_wallets, total_wallets);
 
         for outcome in &market_outcomes {
             assert_eq!(computed_wallets[outcome.id.usize()], outcome.wallets);
         }
-    }
-}
-
-impl LpShare {
-    fn is_zero(self) -> bool {
-        self.0.is_zero()
     }
 }
