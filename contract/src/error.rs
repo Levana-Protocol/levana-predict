@@ -114,4 +114,8 @@ pub enum Error {
     InsufficientPoolLiquidityForSales,
     #[error("Purchase too small and results in no tokens being transferred")]
     PurchaseTooSmall,
+    #[error(
+        "You specified a liquidity share of {liquidity}. Liquidity share must be less than 1."
+    )]
+    LiquidityShareOfOneOrMore { liquidity: Decimal256 },
 }

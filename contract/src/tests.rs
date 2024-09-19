@@ -165,13 +165,22 @@ impl Predict {
     }
 
     fn place_bet(&self, sender: &Addr, outcome: u8, funds: u64) -> AnyResult<AppResponse> {
+        self.place_bet_with(sender, outcome, funds, Decimal256::zero())
+    }
+
+    fn place_bet_with(
+        &self,
+        sender: &Addr,
+        outcome: u8,
+        funds: u64,
+        liquidity: Decimal256,
+    ) -> AnyResult<AppResponse> {
         self.execute(
             sender,
             &ExecuteMsg::Deposit {
                 id: self.id,
                 outcome: outcome.into(),
-                // FIXME add tests where this isn't 0
-                liquidity: Decimal256::zero(),
+                liquidity,
             },
             Some(funds),
         )
@@ -641,6 +650,17 @@ fn change_admin() {
 
     let global_info = app.query_global_info().unwrap();
     assert_eq!(global_info.admin, app.better);
+}
+
+#[test]
+fn cannot_bet_liquidity_of_one() {
+    let app = Predict::new();
+    app.place_bet_with(&app.better, 0, 1_000, "0.99".parse().unwrap())
+        .unwrap();
+    app.place_bet_with(&app.better, 0, 1_000, "1".parse().unwrap())
+        .unwrap_err();
+    app.place_bet_with(&app.better, 0, 1_000, "1.01".parse().unwrap())
+        .unwrap_err();
 }
 
 proptest! {

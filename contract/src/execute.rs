@@ -201,6 +201,10 @@ fn deposit(
 ) -> Result<Response> {
     let mut market = StoredMarket::load(deps.storage, id)?;
 
+    if liquidity >= Decimal256::one() {
+        return Err(Error::LiquidityShareOfOneOrMore { liquidity });
+    }
+
     if env.block.time >= market.deposit_stop_date {
         return Err(Error::DepositsStopped {
             id,
