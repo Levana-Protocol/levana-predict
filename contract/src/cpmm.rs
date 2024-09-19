@@ -158,6 +158,10 @@ impl StoredMarket {
     /// Burns the given number of tokens for the given outcome.
     ///
     /// Returns the amount of liquidity freed up.
+    ///
+    /// Please see the repository's
+    /// [selling/withdrawing collateral](https://github.com/Levana-Protocol/levana-predict/blob/main/docs/selling-withdrawing-collateral.md)
+    /// document for more information.
     pub fn sell(&mut self, selected_outcome: OutcomeId, tokens: Token) -> Result<Sell> {
         assert!(self.outcomes.len() == 2);
 
