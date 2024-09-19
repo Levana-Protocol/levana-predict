@@ -3,7 +3,8 @@ use cosmwasm_std::to_json_binary;
 use crate::prelude::*;
 
 #[entry_point]
-pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> Result<Binary> {
+pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> Result<Binary> {
+    sanity(deps.storage, &env);
     match msg {
         QueryMsg::GlobalInfo {} => to_json_binary(&global_info(deps)?),
         QueryMsg::Market { id } => to_json_binary(&market(deps, id)?),

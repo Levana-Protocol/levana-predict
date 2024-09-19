@@ -94,6 +94,9 @@ const MyLiquidityContent = (props: {
           </Typography>{" "}
           of the liquidity pool.
         </Typography>
+        <Typography level="body-sm" textColor="text.secondary">
+          {market.lpWallets} liquidity provider{market.lpWallets !== 1 && "s"}
+        </Typography>
         <Typography level="body-sm">
           The potential winnings from the pool will change over time as further
           prediction activity occurs.{" "}

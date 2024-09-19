@@ -9,6 +9,8 @@ mod instantiate;
 mod migrate;
 mod prelude;
 mod query;
+#[cfg(debug_assertions)]
+mod sanity;
 mod state;
 #[cfg(test)]
 mod tests;

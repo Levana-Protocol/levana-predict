@@ -7,46 +7,55 @@ use crate::{
 };
 
 #[entry_point]
-pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> Result<Response> {
+pub fn execute(
+    mut deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    msg: ExecuteMsg,
+) -> Result<Response> {
+    sanity(deps.storage, &env);
     let funds = Funds::from_message_info(&info)?;
 
-    match msg {
+    let res = match msg {
         ExecuteMsg::AddMarket { params } => {
             assert_is_admin(deps.storage, &info)?;
-            add_market(deps, env, *params, funds)
+            add_market(&mut deps, &env, *params, funds)
         }
-        ExecuteMsg::Provide { id } => provide(deps, env, info, id, funds),
+        ExecuteMsg::Provide { id } => provide(&mut deps, &env, info, id, funds),
         ExecuteMsg::Deposit {
             id,
             outcome,
             liquidity,
-        } => deposit(deps, env, info, id, outcome, funds, liquidity),
+        } => deposit(&mut deps, &env, info, id, outcome, funds, liquidity),
         ExecuteMsg::Withdraw {
             id,
             outcome,
             tokens,
         } => {
             funds.require_none()?;
-            withdraw(deps, env, info, id, outcome, tokens)
+            withdraw(&mut deps, &env, info, id, outcome, tokens)
         }
         ExecuteMsg::SetWinner { id, outcome } => {
             funds.require_none()?;
-            set_winner(deps, env, info, id, outcome)
+            set_winner(&mut deps, &env, info, id, outcome)
         }
         ExecuteMsg::Collect { id } => {
             funds.require_none()?;
-            collect(deps, info, id)
+            collect(&mut deps, info, id)
         }
         ExecuteMsg::AppointAdmin { addr } => {
             funds.require_none()?;
             assert_is_admin(deps.storage, &info)?;
-            appoint_admin(deps, addr)
+            appoint_admin(&mut deps, addr)
         }
         ExecuteMsg::AcceptAdmin {} => {
             funds.require_none()?;
-            accept_admin(deps, info)
+            accept_admin(&mut deps, info)
         }
-    }
+    }?;
+
+    sanity(deps.storage, &env);
+    Ok(res)
 }
 
 pub struct InitialOutcomes {
@@ -85,7 +94,7 @@ pub(crate) fn initial_outcomes(
             id,
             label,
             pool_tokens: initial_amount,
-            wallets: 0,
+            wallets: if initial_amount.0 == funds.0 { 0 } else { 1 },
         });
         returned.push(Token(funds.0) - initial_amount);
     }
@@ -96,8 +105,8 @@ pub(crate) fn initial_outcomes(
 }
 
 fn add_market(
-    deps: DepsMut,
-    env: Env,
+    deps: &mut DepsMut,
+    env: &Env,
     AddMarketParams {
         title,
         description,
@@ -161,8 +170,10 @@ fn add_market(
         withdrawal_stop_date,
         winner: None,
         house,
-        total_wallets: 0,
         lp_shares,
+        // Always have 1 wallet: the house
+        total_wallets: 1,
+        lp_wallets: 1,
     };
     MARKETS.save(deps.storage, id, &market)?;
 
@@ -178,8 +189,8 @@ fn add_market(
 }
 
 fn deposit(
-    deps: DepsMut,
-    env: Env,
+    deps: &mut DepsMut,
+    env: &Env,
     info: MessageInfo,
     id: MarketId,
     outcome: OutcomeId,
@@ -187,6 +198,10 @@ fn deposit(
     liquidity: Decimal256,
 ) -> Result<Response> {
     let mut market = StoredMarket::load(deps.storage, id)?;
+
+    if liquidity >= Decimal256::one() {
+        return Err(Error::LiquidityShareOfOneOrMore { liquidity });
+    }
 
     if env.block.time >= market.deposit_stop_date {
         return Err(Error::DepositsStopped {
@@ -199,19 +214,33 @@ fn deposit(
     let deposit_amount = funds.require_funds(&market.denom)?;
     let fee = Decimal256::from_ratio(deposit_amount.0, 1u8) * market.deposit_fee;
     let fee = Collateral(fee.to_uint_ceil());
+    let house = market.house.clone();
     market
         .add_liquidity(fee)
-        .assign_to(deps.storage, &market, &market.house)?;
+        .assign_to(deps.storage, &mut market, &house, true)?;
     let funds = deposit_amount.checked_sub(fee)?;
     let Buy { lp, tokens } = market.buy(outcome, funds, liquidity)?;
+
+    if tokens.is_zero() {
+        return Err(Error::PurchaseTooSmall);
+    }
+
     let mut share_info = ShareInfo::load(deps.storage, &market, &info.sender)?
         .unwrap_or_else(|| ShareInfo::new(market.outcomes.len()));
 
     assert_eq!(share_info.outcomes.len(), market.outcomes.len());
 
-    share_info.shares += lp;
+    if !lp.is_zero() {
+        if share_info.shares.is_zero() {
+            market.lp_wallets += 1;
+            if !share_info.has_tokens() {
+                market.total_wallets += 1;
+            }
+        }
+        share_info.shares += lp;
+    }
 
-    let had_any_tokens = share_info.has_tokens();
+    let had_any_tokens = share_info.has_tokens() || !share_info.shares.is_zero();
 
     let outcome_tokens = share_info.get_outcome_mut(id, outcome).unwrap();
     let had_these_tokens = !outcome_tokens.is_zero();
@@ -240,8 +269,8 @@ fn deposit(
 }
 
 fn provide(
-    deps: DepsMut,
-    env: Env,
+    deps: &mut DepsMut,
+    env: &Env,
     info: MessageInfo,
     id: MarketId,
     funds: Funds,
@@ -258,7 +287,6 @@ fn provide(
 
     let deposit_amount = funds.require_funds(&market.denom)?;
     let add_liquidity = market.add_liquidity(deposit_amount);
-    MARKETS.save(deps.storage, market.id, &market)?;
 
     let res = Response::new().add_event(
         Event::new("provide")
@@ -275,14 +303,15 @@ fn provide(
             ),
     );
 
-    add_liquidity.assign_to(deps.storage, &market, &info.sender)?;
+    add_liquidity.assign_to(deps.storage, &mut market, &info.sender, false)?;
+    MARKETS.save(deps.storage, market.id, &market)?;
 
     Ok(res)
 }
 
 fn withdraw(
-    deps: DepsMut,
-    env: Env,
+    deps: &mut DepsMut,
+    env: &Env,
     info: MessageInfo,
     id: MarketId,
     outcome: OutcomeId,
@@ -319,24 +348,38 @@ fn withdraw(
 
     let Sell { funds, returned } = market.sell(outcome, tokens)?;
 
-    for (idx, returned) in returned.into_iter().enumerate() {
-        share_info.outcomes[idx] += returned;
-    }
-
-    if share_info.get_outcome(&market, outcome)?.is_zero() {
+    if share_info.get_outcome(&market, outcome, false)?.is_zero() {
         market.get_outcome_mut(outcome)?.wallets -= 1;
-        if !share_info.has_tokens() {
+        if !share_info.has_tokens() && share_info.shares.is_zero() {
             market.total_wallets -= 1;
         }
     }
 
     share_info.save(deps.storage, &market, &info.sender)?;
 
+    // We sent the returned dust to the house wallet instead to avoid
+    // leaving users with confusing small amounts.
+    if returned.iter().any(|token| !token.is_zero()) {
+        let house = market.house.clone();
+        let mut share_info = ShareInfo::load(deps.storage, &market, &house)?
+            .expect("Must have a holder record for the house");
+        for (idx, returned) in returned.into_iter().enumerate() {
+            if !returned.is_zero() {
+                if share_info.outcomes[idx].is_zero() {
+                    market.outcomes[idx].wallets += 1;
+                }
+                share_info.outcomes[idx] += returned;
+            }
+        }
+        share_info.save(deps.storage, &market, &house)?;
+    }
+
     let fee = Decimal256::from_ratio(funds.0, 1u8) * market.withdrawal_fee;
     let fee = Collateral(fee.to_uint_ceil());
+    let house = market.house.clone();
     market
         .add_liquidity(fee)
-        .assign_to(deps.storage, &market, &market.house)?;
+        .assign_to(deps.storage, &mut market, &house, true)?;
     let funds = funds.checked_sub(fee)?;
     MARKETS.save(deps.storage, id, &market)?;
     Ok(Response::new()
@@ -358,8 +401,8 @@ fn withdraw(
 }
 
 fn set_winner(
-    deps: DepsMut,
-    env: Env,
+    deps: &mut DepsMut,
+    env: &Env,
     info: MessageInfo,
     id: MarketId,
     outcome: OutcomeId,
@@ -395,7 +438,7 @@ fn set_winner(
     ))
 }
 
-fn collect(deps: DepsMut, info: MessageInfo, id: MarketId) -> Result<Response> {
+fn collect(deps: &mut DepsMut, info: MessageInfo, id: MarketId) -> Result<Response> {
     let market = StoredMarket::load(deps.storage, id)?;
     let winner = market.winner.ok_or(Error::NoWinnerSet { id })?;
     let mut share_info = ShareInfo::load(deps.storage, &market, &info.sender)?
@@ -404,7 +447,7 @@ fn collect(deps: DepsMut, info: MessageInfo, id: MarketId) -> Result<Response> {
         return Err(Error::AlreadyClaimedWinnings { id });
     }
     share_info.claimed_winnings = true;
-    let tokens = share_info.get_outcome(&market, winner)?;
+    let tokens = share_info.get_outcome(&market, winner, true)?;
     if tokens.is_zero() {
         return Err(Error::NoTokensFound {
             id,
@@ -430,14 +473,14 @@ fn collect(deps: DepsMut, info: MessageInfo, id: MarketId) -> Result<Response> {
         })))
 }
 
-fn appoint_admin(deps: DepsMut, addr: String) -> Result<Response> {
+fn appoint_admin(deps: &mut DepsMut, addr: String) -> Result<Response> {
     let addr = deps.api.addr_validate(&addr)?;
     APPOINTED_ADMIN.save(deps.storage, &addr)?;
     Ok(Response::new()
         .add_event(Event::new("appoint-admin").add_attribute("new-admin", addr.into_string())))
 }
 
-fn accept_admin(deps: DepsMut, info: MessageInfo) -> Result<Response> {
+fn accept_admin(deps: &mut DepsMut, info: MessageInfo) -> Result<Response> {
     let appointed = APPOINTED_ADMIN
         .may_load(deps.storage)?
         .ok_or(Error::NoAppointedAdmin {})?;
