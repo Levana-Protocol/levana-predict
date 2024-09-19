@@ -20,6 +20,7 @@ pub fn sanity(store: &dyn Storage, env: &Env) {
                 house,
                 total_wallets,
                 lp_shares,
+                lp_wallets,
             },
         ) = market.unwrap();
 
@@ -42,6 +43,7 @@ pub fn sanity(store: &dyn Storage, env: &Env) {
             .collect::<Vec<_>>();
         let mut computed_shares = LpShare::zero();
         let mut computed_total_wallets = 0;
+        let mut computed_lp_wallets = 0;
         let mut computed_wallets = std::iter::repeat(0)
             .take(market_outcomes.len())
             .collect::<Vec<_>>();
@@ -76,6 +78,10 @@ pub fn sanity(store: &dyn Storage, env: &Env) {
             if has_tokens || !shares.is_zero() {
                 computed_total_wallets += 1;
             }
+
+            if !shares.is_zero() {
+                computed_lp_wallets += 1;
+            }
         }
 
         assert_eq!(computed_shares, lp_shares);
@@ -84,6 +90,7 @@ pub fn sanity(store: &dyn Storage, env: &Env) {
         }
 
         assert_eq!(computed_total_wallets, total_wallets);
+        assert_eq!(computed_lp_wallets, lp_wallets);
 
         for outcome in &market_outcomes {
             assert_eq!(computed_wallets[outcome.id.usize()], outcome.wallets);

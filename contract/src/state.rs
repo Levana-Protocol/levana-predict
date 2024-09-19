@@ -109,6 +109,8 @@ pub struct StoredMarket {
     pub total_wallets: u32,
     /// Total shares across all wallets
     pub lp_shares: LpShare,
+    /// Number of wallets holding LP shares
+    pub lp_wallets: u32,
 }
 
 impl StoredMarket {

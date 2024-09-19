@@ -28,9 +28,17 @@ impl AddLiquidity {
         } else {
             lp
         };
+        if lp.is_zero() {
+            return Ok(());
+        }
         market.lp_shares += lp;
         let mut share_info = ShareInfo::load(storage, market, sender)?
             .unwrap_or_else(|| ShareInfo::new(market.outcomes.len()));
+
+        if share_info.shares.is_zero() {
+            market.lp_wallets += 1;
+        }
+
         share_info.shares += lp;
 
         let mut had_tokens = false;

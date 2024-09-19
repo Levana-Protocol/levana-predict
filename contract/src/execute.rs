@@ -170,9 +170,10 @@ fn add_market(
         withdrawal_stop_date,
         winner: None,
         house,
+        lp_shares,
         // Always have 1 wallet: the house
         total_wallets: 1,
-        lp_shares,
+        lp_wallets: 1,
     };
     MARKETS.save(deps.storage, id, &market)?;
 
@@ -225,7 +226,12 @@ fn deposit(
 
     assert_eq!(share_info.outcomes.len(), market.outcomes.len());
 
-    share_info.shares += lp;
+    if !lp.is_zero() {
+        if share_info.shares.is_zero() {
+            market.lp_wallets += 1;
+        }
+        share_info.shares += lp;
+    }
 
     let had_any_tokens = share_info.has_tokens() || !share_info.shares.is_zero();
 
