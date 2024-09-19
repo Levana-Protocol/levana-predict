@@ -1,61 +1,46 @@
-import { axiosClient } from "@config/queries"
-import { Typography } from "@mui/joy"
-import { queryOptions, useQuery } from "@tanstack/react-query"
 import { useEffect, type PropsWithChildren } from "react"
+import { Typography } from "@mui/joy"
+import { match, P } from "ts-pattern"
+import { useQuery } from "@tanstack/react-query"
 
-const GEOBLOCK_KEY = ["geoblock"] as const
+import { geoblockQuery } from "@api/queries/Geoblock"
+import { BasePage } from "@common/BasePage"
 
-const fetchGeoblock = async (): Promise<"allowed" | "blocked"> => {
-  const res = await axiosClient.get("https://geoblocked.levana.finance")
-  if (res.status !== 200) {
-    throw new Error("Geoblock endpoint did not return a successful response")
-  }
-  if (
-    typeof res.data === "object" &&
-    "allowed" in res.data &&
-    typeof res.data.allowed === "boolean"
-  ) {
-    return res.data.allowed ? "allowed" : "blocked"
-  }
-  throw new Error("Invalid JSON response from geoblock endpoint")
-}
-
-const geoblockQuery = queryOptions({
-  queryKey: GEOBLOCK_KEY,
-  queryFn: () => fetchGeoblock(),
-})
+const RESTRICTED_URL = "https://restricted.levana.finance"
 
 const Geoblock = (props: PropsWithChildren) => {
-  const res = useQuery(geoblockQuery)
+  const { children } = props
+  const geoblock = useQuery(geoblockQuery)
 
-  switch (res.status) {
-    case "pending":
-      return <Typography>Checking geoblock status...</Typography>
-    case "error":
-      return (
-        <Typography>
-          Error loading geoblock status: {res.error.message}
-        </Typography>
-      )
-    case "success": {
-      switch (res.data) {
-        case "allowed":
-          return props.children
-        case "blocked":
-          return <RedirectToRestricted />
-      }
-    }
-  }
+  return match(geoblock)
+    .with({ status: "success", data: "allowed" }, () => children)
+    .with({ status: "success", data: "blocked" }, () => (
+      <RedirectToRestricted />
+    ))
+    .with({ status: "error", error: { message: P.select() } }, (error) => (
+      <BasePage>
+        <Typography>Error loading geoblock status: {error}</Typography>
+      </BasePage>
+    ))
+    .with({ status: "pending" }, () => (
+      <BasePage>
+        <Typography>Checking geoblock status...</Typography>
+      </BasePage>
+    ))
+    .exhaustive()
 }
 
 const RedirectToRestricted = () => {
   useEffect(() => {
-    window.location.href = "https://restricted.levana.finance"
+    window.location.href = RESTRICTED_URL
   }, [])
+
   return (
-    <Typography>
-      Levana Predict is not available in your country, redirecting...
-    </Typography>
+    <BasePage>
+      <Typography>
+        Levana Predict is not available in your country, redirecting...
+      </Typography>
+    </BasePage>
   )
 }
 
