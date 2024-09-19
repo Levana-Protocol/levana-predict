@@ -701,6 +701,10 @@ const ThemeProvider = (props: PropsWithChildren) => {
             flexWrap: "nowrap",
           },
 
+          ".notistack-SnackbarContainer": {
+            zIndex: 1000000,
+          },
+
           ".notistack-Snackbar": {
             minWidth: 0,
           },
