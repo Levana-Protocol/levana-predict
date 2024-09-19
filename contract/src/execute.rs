@@ -339,7 +339,6 @@ fn withdraw(
     let Sell { funds, returned } = market.sell(outcome, tokens)?;
 
     if share_info.get_outcome(&market, outcome, false)?.is_zero() {
-        println!("here1");
         market.get_outcome_mut(outcome)?.wallets -= 1;
         if !share_info.has_tokens() {
             market.total_wallets -= 1;
