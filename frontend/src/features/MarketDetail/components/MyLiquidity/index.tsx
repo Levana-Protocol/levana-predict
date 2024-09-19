@@ -6,10 +6,10 @@ import { useCurrentAccount } from "@config/chain"
 import type { Market } from "@api/queries/Market"
 import { type Positions, positionsQuery } from "@api/queries/Positions"
 import type { StyleProps } from "@utils/styles"
-import { LoadableWidget } from "@lib/Loadable/Widget"
-import { useSuspenseCurrentMarket } from "@features/MarketDetail/utils"
 import { getPotentialWinnings } from "@utils/shares"
 import { pluralize } from "@utils/string"
+import { LoadableWidget } from "@lib/Loadable/Widget"
+import { useSuspenseCurrentMarket } from "@features/MarketDetail/utils"
 
 const LIQUIDITY_POOLS_URL =
   "https://levana-prediction.zendesk.com/hc/en-us/articles/29284778150555-Liquidity-pools-in-Levana-Predict"
