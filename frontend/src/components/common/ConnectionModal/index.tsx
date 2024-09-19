@@ -22,6 +22,7 @@ const CONNECTION_MODAL_KEY = "connection_modal"
 const presentConnectionModal = () => {
   present(CONNECTION_MODAL_KEY, <ConnectionModal />)
 }
+
 const dismissConnectionModal = () => {
   dismiss(CONNECTION_MODAL_KEY)
 }

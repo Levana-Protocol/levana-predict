@@ -28,7 +28,7 @@ const useMarketSellForm = (market: Market) => {
     const sellOutcome = formValues.sellOutcome
 
     if (sellAmount && sellOutcome) {
-      const sharesAmount = Shares.fromValue(sellAmount)
+      const sharesAmount = Shares.fromCollateralValue(market.denom, sellAmount)
       return cancelBet.mutateAsync({
         outcomeId: sellOutcome,
         sharesAmount: sharesAmount,

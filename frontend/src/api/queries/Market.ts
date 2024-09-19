@@ -5,9 +5,9 @@ import lvnLogo from "@assets/brand/logo.png"
 import { NETWORK_ID } from "@config/chain"
 import { CONTRACT_ADDRESS } from "@config/environment"
 import { fetchQuerier } from "@api/querier"
-import { Nanoseconds, sleep } from "@utils/time"
+import { Nanoseconds } from "@utils/time"
 import { Coins } from "@utils/coins"
-import { Shares } from "@utils/shares"
+import { getOddsForOutcome, Shares } from "@utils/shares"
 
 interface ResponseMarket {
   id: number
@@ -65,7 +65,7 @@ type OutcomeId = string
 
 const marketFromResponse = (response: ResponseMarket): Market => {
   const outcomes = response.outcomes.map((outcome) =>
-    outcomeFromResponse(response, outcome),
+    outcomeFromResponse(outcome, response),
   )
   return {
     id: `${response.id}`,
@@ -89,54 +89,26 @@ const marketFromResponse = (response: ResponseMarket): Market => {
 }
 
 const outcomeFromResponse = (
-  market: ResponseMarket,
   response: ResponseMarketOutcome,
+  market: ResponseMarket,
 ): MarketOutcome => {
-  let totalPoolTokens = BigNumber(0)
-  for (const outcome of market.outcomes) {
-    totalPoolTokens = totalPoolTokens.plus(outcome.pool_tokens)
-  }
-
-  // Taken from: https://docs.gnosis.io/conditionaltokens/docs/introduction3/
-  // oddsWeightForOutcome = product(numOutcomeTokensInInventoryForOtherOutcome for every otherOutcome)
-  // oddsForOutcome = oddsWeightForOutcome / sum(oddsWeightForOutcome for every outcome)
-
-  const oddsWeights = []
-  let totalOddsWeights = BigNumber(0)
-  let totalProduct = BigNumber(1)
-  for (let i = 0; i < market.outcomes.length; ++i) {
-    totalProduct = totalProduct.times(market.outcomes[i].pool_tokens)
-    let oddsWeight = BigNumber(1)
-    for (let j = 0; j < market.outcomes.length; ++j) {
-      if (i !== j) {
-        oddsWeight = oddsWeight.times(market.outcomes[j].pool_tokens)
-      }
-    }
-    oddsWeights.push(oddsWeight)
-    totalOddsWeights = totalOddsWeights.plus(oddsWeight)
-  }
-  const oddsForOutcome = totalProduct
-    .div(response.pool_tokens)
-    .div(totalOddsWeights)
-  let oddsWeightForOutcome = BigNumber(1)
-  for (const outcome of market.outcomes) {
-    oddsWeightForOutcome = oddsWeightForOutcome.times(outcome.pool_tokens)
-  }
-  oddsWeightForOutcome = oddsWeightForOutcome.div(response.pool_tokens)
+  const oddsForOutcome = getOddsForOutcome(
+    response.pool_tokens,
+    market.outcomes.map((outcome) => outcome.pool_tokens),
+  )
 
   return {
     id: `${response.id}`,
     label: response.label,
-    poolShares: Shares.fromValue(response.pool_tokens),
+    poolShares: Shares.fromCollateralUnits(market.denom, response.pool_tokens),
     wallets: response.wallets,
     price: Coins.fromValue(market.denom, oddsForOutcome),
     percentage: oddsForOutcome.times(100),
   }
 }
 
-const fetchMarket = async (marketId: MarketId): Promise<Market> => {
-  await sleep(3000)
-  return await fetchQuerier("/v1/predict/market", marketFromResponse, {
+const fetchMarket = (marketId: MarketId): Promise<Market> => {
+  return fetchQuerier("/v1/predict/market", marketFromResponse, {
     network: NETWORK_ID,
     contract: CONTRACT_ADDRESS,
     market_id: marketId,

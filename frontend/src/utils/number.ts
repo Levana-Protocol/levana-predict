@@ -27,7 +27,7 @@ const getPercentage = (
     return 0
   } else {
     const bigValue = BigNumber(value)
-    return Number(bigValue.dividedBy(bigTotal).times(100).toFormat(2))
+    return Number(bigValue.dividedBy(bigTotal).times(100).toFixed())
   }
 }
 

@@ -142,8 +142,12 @@ const CoinsAmountField = (props: CoinsAmountFieldProps) => {
       rules={{
         required: "This field is required",
         validate: (fieldValue: string) => {
-          if (fieldValue) {
-            const value = new BigNumber(fieldValue)
+          if (fieldValue && price) {
+            const isToggled = form.getValues()[toggledFieldName] as boolean
+            const value = isToggled
+              ? new USD(fieldValue).toCoins(denom, price).getValue()
+              : Coins.fromValue(denom, fieldValue).getValue()
+
             if (!value.gt(0)) {
               return `${coinConfig.symbol} amount has to be greater than 0`
             } else if (balance && value.gt(balance.getValue())) {

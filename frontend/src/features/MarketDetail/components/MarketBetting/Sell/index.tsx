@@ -12,7 +12,7 @@ import { SharesAmountField } from "../SharesAmountField"
 const MarketSellForm = (props: { market: Market }) => {
   const { market } = props
   const account = useCurrentAccount()
-  const positions = useQuery(positionsQuery(account.bech32Address, market.id))
+  const positions = useQuery(positionsQuery(account.bech32Address, market))
 
   const { form, canSubmit, onSubmit, outcome } = useMarketSellForm(market)
   const sharesBalance = outcome

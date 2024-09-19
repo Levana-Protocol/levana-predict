@@ -5,6 +5,7 @@ import { useCurrentAccount } from "@config/chain"
 import type { Market } from "@api/queries/Market"
 import { positionsQuery } from "@api/queries/Positions"
 import { useClaimEarnings } from "@api/mutations/ClaimEarnings"
+import { getShares } from "@utils/shares"
 
 const useMarketClaimForm = (market: Market) => {
   const form = useForm()
@@ -12,13 +13,13 @@ const useMarketClaimForm = (market: Market) => {
   const claimEarnings = useClaimEarnings(market.id)
 
   const account = useCurrentAccount()
-  const positions = useQuery(positionsQuery(account.bech32Address, market.id))
+  const positions = useQuery(positionsQuery(account.bech32Address, market))
 
   const hasEarnings =
     market.winnerOutcome !== undefined &&
     !!positions.data &&
     !positions.data.claimed &&
-    !!positions.data.outcomes.get(market.winnerOutcome.id)?.value?.gt(0)
+    getShares(positions.data, market.winnerOutcome.id).units.gt(0)
 
   const onSubmit = () => {
     return claimEarnings.mutateAsync()

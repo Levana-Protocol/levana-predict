@@ -34,7 +34,7 @@ const putCancelBet = (
     withdraw: {
       id: Number(marketId),
       outcome: Number(args.outcomeId),
-      tokens: args.sharesAmount.value.toFixed(),
+      tokens: args.sharesAmount.units.toFixed(),
     },
   }
 

@@ -54,7 +54,7 @@ const SharesAmountField = (props: SharesAmountFieldProps) => {
     if (!balance || !formValue) {
       return 0
     } else {
-      return getPercentage(BigNumber(formValue), balance.value)
+      return getPercentage(BigNumber(formValue), balance.getValue())
     }
   }, [formValue, balance])
 
@@ -106,7 +106,7 @@ const SharesAmountField = (props: SharesAmountFieldProps) => {
             const value = new BigNumber(fieldValue)
             if (!value.gt(0)) {
               return "Shares amount has to be greater than 0"
-            } else if (balance && value.gt(balance.value)) {
+            } else if (balance && value.gt(balance.getValue())) {
               return "You don't have enough shares"
             }
           }

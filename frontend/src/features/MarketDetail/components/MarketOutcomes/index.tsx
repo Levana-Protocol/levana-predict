@@ -1,4 +1,4 @@
-import { Box, Stack, Typography } from "@mui/joy"
+import { Box, Chip, Stack, Typography } from "@mui/joy"
 
 import type { Market } from "@api/queries/Market"
 import type { StyleProps } from "@utils/styles"
@@ -43,7 +43,7 @@ const MarketOutcomesContent = (props: { market: Market }) => {
             <Typography
               level="title-md"
               textColor="text.secondary"
-              fontWeight={500}
+              fontWeight={600}
             >
               {outcome.percentage.toFixed(1)}%
             </Typography>
@@ -51,9 +51,15 @@ const MarketOutcomesContent = (props: { market: Market }) => {
         ))}
       </Stack>
       <Box sx={{ mt: 2 }}>
-        <Typography level="body-md" textColor="text.secondary" fontWeight={600}>
+        <Chip
+          variant="solid"
+          color="neutral"
+          sx={{
+            background: "linear-gradient(90deg, #894DBD -1.61%, #5654BD 100%)",
+          }}
+        >
           Prize pool size: {market.poolSize.toFormat(true)}
-        </Typography>
+        </Chip>
       </Box>
     </>
   )
@@ -71,16 +77,14 @@ const MarketOutcomesPlaceholder = () => {
             <Typography level="title-lg" fontWeight={600}>
               {outcome} - 0.000
             </Typography>
-            <Typography level="title-md" fontWeight={500}>
+            <Typography level="title-md" fontWeight={600}>
               0.0%
             </Typography>
           </Box>
         ))}
       </Stack>
       <Box sx={{ mt: 2 }}>
-        <Typography level="body-md" fontWeight={600}>
-          Prize pool size: 0.000000 NTRN
-        </Typography>
+        <Chip variant="solid">Prize pool size: 0.000000 NTRN</Chip>
       </Box>
     </>
   )

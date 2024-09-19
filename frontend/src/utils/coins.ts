@@ -245,8 +245,8 @@ const getCoinConfig = (denom: Denom): CoinConfig => {
 abstract class Asset {
   public symbol: string
   public units: BigNumber
-  protected exponent: number
-  protected maxDecimalPlaces: number
+  public exponent: number
+  public maxDecimalPlaces: number
 
   constructor(
     symbol: string,
@@ -262,6 +262,10 @@ abstract class Asset {
 
   toInput(): string {
     return this.getValue().decimalPlaces(this.maxDecimalPlaces).toFixed()
+  }
+
+  toFullPrecision(withSuffix: boolean): string {
+    return `${this.getValue().toFormat(this.exponent)}${withSuffix ? ` ${this.symbol}` : ""}`
   }
 
   getValue(): BigNumber {
@@ -296,16 +300,12 @@ class Coins extends Asset {
     return `${formatted}${withSuffix ? ` ${this.symbol}` : ""}`
   }
 
-  toFullPrecision(withSuffix: boolean): string {
-    return `${this.getValue().toFormat(this.exponent)}${withSuffix ? ` ${this.symbol}` : ""}`
-  }
-
-  static fromUnits(denom: string, units: BigNumber.Value): Coins {
+  static fromUnits(denom: Denom, units: BigNumber.Value): Coins {
     const coinConfig = getCoinConfig(denom)
     return new Coins(coinConfig.symbol, denom, units, coinConfig.exponent)
   }
 
-  static fromValue(denom: string, value: BigNumber.Value): Coins {
+  static fromValue(denom: Denom, value: BigNumber.Value): Coins {
     const coinConfig = getCoinConfig(denom)
     const units = valueToUnits(value, coinConfig.exponent)
     return Coins.fromUnits(denom, units)
