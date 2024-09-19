@@ -165,13 +165,22 @@ impl Predict {
     }
 
     fn place_bet(&self, sender: &Addr, outcome: u8, funds: u64) -> AnyResult<AppResponse> {
+        self.place_bet_with(sender, outcome, funds, Decimal256::zero())
+    }
+
+    fn place_bet_with(
+        &self,
+        sender: &Addr,
+        outcome: u8,
+        funds: u64,
+        liquidity: Decimal256,
+    ) -> AnyResult<AppResponse> {
         self.execute(
             sender,
             &ExecuteMsg::Deposit {
                 id: self.id,
                 outcome: outcome.into(),
-                // FIXME add tests where this isn't 0
-                liquidity: Decimal256::zero(),
+                liquidity,
             },
             Some(funds),
         )
@@ -192,15 +201,19 @@ impl Predict {
         self.query(&QueryMsg::GlobalInfo {})
     }
 
+    fn query_holder(&self, better: &Addr) -> StdResult<PositionsResp> {
+        self.query(&QueryMsg::Positions {
+            id: self.id,
+            addr: better.to_string(),
+        })
+    }
+
     fn query_tokens(&self, better: &Addr, outcome: u8) -> StdResult<Token> {
         let PositionsResp {
             outcomes,
             claimed_winnings: _,
             shares: _,
-        } = self.query(&QueryMsg::Positions {
-            id: self.id,
-            addr: better.to_string(),
-        })?;
+        } = self.query_holder(better)?;
         outcomes
             .get(usize::from(outcome))
             .copied()
@@ -641,6 +654,42 @@ fn change_admin() {
 
     let global_info = app.query_global_info().unwrap();
     assert_eq!(global_info.admin, app.better);
+}
+
+#[test]
+fn bet_with_liquidity() {
+    let app = Predict::new();
+
+    // Better places a bet that includes providing liquidity.
+    // Confirm that the number of shares held by the house increases.
+    let house_shares1 = app.query_holder(&app.house).unwrap().shares;
+    app.place_bet(&app.better, 0, 1_000).unwrap();
+    let house_shares2 = app.query_holder(&app.house).unwrap().shares;
+    assert!(house_shares2 > house_shares1);
+
+    // The better shouldn't have any LP shares yet. Now do another bet
+    // that includes providing liquidity.
+    assert_eq!(
+        app.query_holder(&app.better).unwrap().shares,
+        LpShare::zero()
+    );
+    app.place_bet_with(&app.better, 0, 1_000, "0.1".parse().unwrap())
+        .unwrap();
+    assert_ne!(
+        app.query_holder(&app.better).unwrap().shares,
+        LpShare::zero()
+    );
+
+    // The house's LP token count should have gone up
+    let house_shares3 = app.query_holder(&app.house).unwrap().shares;
+    assert!(house_shares3 > house_shares2);
+
+    // Rusty: I'd originally intended to write a test showing that the LP share value
+    // for the better went up. However, after implementing such a test, I realized
+    // (through failing tests) that you can't compare based on the number of tokens
+    // per LP share, since the balance of tokens within the pool changes from each
+    // buy or sell action. Leaving this test as-is unless we can come up with something
+    // better.
 }
 
 proptest! {

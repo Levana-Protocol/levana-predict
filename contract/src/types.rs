@@ -230,7 +230,9 @@ impl TryFrom<usize> for OutcomeId {
     }
 }
 
-#[derive(Clone, Serialize, Deserialize, JsonSchema, Debug, Copy, PartialEq, Eq)]
+#[derive(
+    Clone, Serialize, Deserialize, JsonSchema, Debug, Copy, PartialEq, Eq, PartialOrd, Ord,
+)]
 pub struct LpShare(pub Uint256);
 impl LpShare {
     pub(crate) fn zero() -> LpShare {
