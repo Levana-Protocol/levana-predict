@@ -236,10 +236,6 @@ impl LpShare {
     pub(crate) fn zero() -> LpShare {
         LpShare(Uint256::zero())
     }
-
-    pub fn is_zero(self) -> bool {
-        self.0.is_zero()
-    }
 }
 
 impl Display for LpShare {
