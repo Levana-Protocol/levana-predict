@@ -5,6 +5,7 @@ use cw_multi_test::{error::AnyResult, App, AppResponse, ContractWrapper, Executo
 use proptest::prelude::*;
 
 use crate::{
+    cpmm::Buy,
     execute::{initial_outcomes, InitialOutcomes},
     prelude::*,
 };
@@ -703,6 +704,51 @@ fn cannot_bet_liquidity_of_one() {
         .unwrap_err();
 }
 
+#[test]
+fn precise_numbers1() {
+    let ts = Timestamp::from_nanos(1_000_000_202);
+    let mut stored = StoredMarket {
+        id: MarketId::one(),
+        title: "ATOM_USDT".to_owned(),
+        description: "Some desc".to_owned(),
+        arbitrator: Addr::unchecked("arbitrator"),
+        outcomes: vec![
+            StoredOutcome {
+                id: OutcomeId(0),
+                label: "Yes".to_owned(),
+                pool_tokens: Token(Uint256::from_u128(1161329)),
+                wallets: 1,
+            },
+            StoredOutcome {
+                id: OutcomeId(1),
+                label: "No".to_owned(),
+                pool_tokens: Token(Uint256::from_u128(1518053)),
+                wallets: 1,
+            },
+        ],
+        denom: DENOM.to_owned(),
+        deposit_fee: "0.01".parse().unwrap(),
+        withdrawal_fee: "0.01".parse().unwrap(),
+        pool_size: Collateral(Uint256::from_u128(10_000_000)),
+        deposit_stop_date: ts.plus_days(2),
+        withdrawal_stop_date: ts.plus_days(1),
+        winner: None,
+        house: Addr::unchecked("house"),
+        total_wallets: 0,
+        lp_shares: LpShare::zero(),
+        lp_wallets: 0,
+    };
+    let Buy { lp: _, tokens } = stored
+        .buy(
+            OutcomeId(1),
+            // 1 million units, with the 1% fee removed
+            Collateral(Uint256::from_u128(1_000_000 * 99 / 100)),
+            "0.1".parse().unwrap(),
+        )
+        .unwrap();
+    assert_eq!(tokens.0, Uint256::from_u128(1578210));
+}
+
 proptest! {
 #[test]
 fn test_cpmm_buy_sell(pool_one in 1..1000u32, pool_two in 1..1000u32, buy in 2..50u32) {
@@ -790,5 +836,18 @@ fn test_later_purchases_more_expensive(buy1 in 100..10_000u64, buy2 in 100..10_0
     let price1 = Decimal256::from_ratio(buy1, tokens1.0);
     let price2 = Decimal256::from_ratio(buy2, tokens2.0);
     assert!(price1 < price2);
+}
+
+#[test]
+fn withdraw_no_dust(buy0 in 1_000..10_000u64, buy1 in 1_000..10_000u64) {
+    let app = Predict::new();
+
+    app.place_bet(&app.better, 0, buy0).unwrap();
+    app.place_bet(&app.better, 1, buy1).unwrap();
+    let tokens = app.query_tokens(&app.better, 1).unwrap();
+    assert_ne!(tokens, Token::zero());
+    app.withdraw(&app.better, 1, tokens).unwrap();
+    let tokens = app.query_tokens(&app.better, 1).unwrap();
+    assert_eq!(tokens, Token::zero());
 }
 }

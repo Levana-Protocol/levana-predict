@@ -311,6 +311,11 @@ class Coins extends Asset {
     return Coins.fromUnits(denom, units)
   }
 
+  minus(value: Coins): Coins {
+    const newUnits = this.units.minus(value.units)
+    return Coins.fromUnits(this.denom, newUnits)
+  }
+
   times(value: BigNumber.Value): Coins {
     const newUnits = this.units.times(value)
     return Coins.fromUnits(this.denom, newUnits)

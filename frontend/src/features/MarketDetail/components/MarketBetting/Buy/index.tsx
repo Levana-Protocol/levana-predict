@@ -3,7 +3,7 @@ import { FormProvider } from "react-hook-form"
 import { useQuery } from "@tanstack/react-query"
 
 import { useCurrentAccount } from "@config/chain"
-import type { Market } from "@api/queries/Market"
+import type { Market, OutcomeId } from "@api/queries/Market"
 import { balancesQuery } from "@api/queries/Balances"
 import { coinPricesQuery } from "@api/queries/Prices"
 import { OutcomeField } from "../OutcomeField"
@@ -56,20 +56,55 @@ const MarketBuyForm = (props: { market: Market }) => {
           {form.formState.isSubmitting ? "Placing bet..." : "Place bet"}
         </Button>
 
-        <Stack direction="row" justifyContent="space-between">
-          <Typography level="body-sm">Estimated shares</Typography>
-          <Typography level="body-sm">
-            {coinsAmount && formValues.betOutcome
-              ? getSharesPurchased(
-                  market,
-                  formValues.betOutcome,
-                  coinsAmount,
-                ).toFormat(false)
-              : "-"}
-          </Typography>
-        </Stack>
+        {coinsAmount && formValues.betOutcome && (
+          <ShowSharesPurchased
+            market={market}
+            betOutcome={formValues.betOutcome}
+            coinsAmount={coinsAmount}
+          />
+        )}
       </Stack>
     </FormProvider>
+  )
+}
+
+interface ShowSharesPurchasedProps {
+  market: Market
+  betOutcome: OutcomeId
+  coinsAmount: Coins
+}
+
+const ShowSharesPurchased = (props: ShowSharesPurchasedProps) => {
+  const { outcome, fees, liquidity } = props.betOutcome
+    ? (() => {
+        const { outcome, fees, liquidity } = getSharesPurchased(
+          props.market,
+          props.betOutcome,
+          props.coinsAmount,
+        )
+        return {
+          outcome: outcome.toFormat(false),
+          fees: fees.toFormat(true),
+          liquidity: liquidity.toFormat(true),
+        }
+      })()
+    : { outcome: "-", fees: "-", liquidity: "-" }
+
+  return (
+    <>
+      <Stack direction="row" justifyContent="space-between">
+        <Typography level="body-sm">Estimated shares</Typography>
+        <Typography level="body-sm">{outcome}</Typography>
+      </Stack>
+      <Stack direction="row" justifyContent="space-between">
+        <Typography level="body-sm">Liquidity deposit</Typography>
+        <Typography level="body-sm">{liquidity}</Typography>
+      </Stack>
+      <Stack direction="row" justifyContent="space-between">
+        <Typography level="body-sm">Fees</Typography>
+        <Typography level="body-sm">{fees}</Typography>
+      </Stack>
+    </>
   )
 }
 

@@ -11,10 +11,13 @@ import { BALANCES_KEYS } from "@api/queries/Balances"
 import type { Coins } from "@utils/coins"
 import { AppError, errorsMiddleware } from "@utils/errors"
 
+export const LIQUDITY_PORTION = "0.1"
+
 interface PlaceBetRequest {
   deposit: {
     id: number
     outcome: number
+    liquidity: string
   }
 }
 
@@ -33,6 +36,7 @@ const putPlaceBet = (
     deposit: {
       id: Number(marketId),
       outcome: Number(args.outcomeId),
+      liquidity: LIQUDITY_PORTION,
     },
   }
 

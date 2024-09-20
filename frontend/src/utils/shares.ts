@@ -10,6 +10,7 @@ import {
   type Denom,
 } from "./coins"
 import { formatToSignificantDigits, unitsToValue, valueToUnits } from "./number"
+import { LIQUDITY_PORTION } from "@api/mutations/PlaceBet"
 
 class Shares extends Asset {
   static symbol = "shares"
@@ -113,34 +114,99 @@ const getOddsForOutcome = (
   return oddsForOutcome
 }
 
+interface PoolSize {
+  pool: BigNumber[]
+  returned: BigNumber[]
+}
+
+interface SharesPurchased {
+  outcome: Shares
+  liquidity: Coins
+  fees: Coins
+}
+
+const addToPool = (poolInit: BigNumber[], amount: BigNumber): PoolSize => {
+  const poolWeight = poolInit.reduce(
+    (prev, curr) => (prev.isGreaterThan(curr) ? prev : curr),
+    BigNumber(0),
+  )
+  const pool = []
+  const returned = []
+  for (let i = 0; i < poolInit.length; ++i) {
+    const init = poolInit[i]
+    const added = amount
+      .times(init)
+      .div(poolWeight)
+      .integerValue(BigNumber.ROUND_DOWN)
+    pool.push(init.plus(added))
+    returned.push(amount.minus(added))
+  }
+  return { pool, returned }
+}
+
 const getSharesPurchased = (
   market: Market,
-  selectedOutcome: OutcomeId,
-  buyAmount: Coins,
-): Shares => {
-  const selectedPool =
-    market.possibleOutcomes.find((outcome) => outcome.id === selectedOutcome)
-      ?.poolShares.units ?? BigNumber(0)
+  selectedOutcomeString: OutcomeId,
+  buyAmountTotalCoins: Coins,
+): SharesPurchased => {
+  // To calculate the shares properly, we need to follow the same steps as
+  // are taken by the contract, namely:
+  //
+  // 1. Take off the fee and add it to the liquidity pool,
+  //    ignoring returned tokens (they go to the house).
+  //
+  // 2. Take off the liquidity portion and add it to the pool.
+  //    Keep any leftover tokens from that for the swap step.
+  //
+  // 3. Swap all returned tokens from (2) plus minted tokens from the
+  //    remaining buy amount for the selected token.
 
-  const invariant = market.possibleOutcomes.reduce(
-    (prod, outcome) => prod.times(outcome.poolShares.units),
+  // Step 0: convert all values to raw integers
+  const selectedOutcome = Number.parseInt(selectedOutcomeString)
+  const buyAmountTotal = buyAmountTotalCoins.units
+  const poolBeforeFees = market.possibleOutcomes.map(
+    (outcome) => outcome.poolShares.units,
+  )
+
+  // Step 1: take off the fees and add to pool
+  const fees = buyAmountTotal
+    .times(market.depositFee)
+    .integerValue(BigNumber.ROUND_DOWN)
+  const buyAmountWithoutFees = buyAmountTotal.minus(fees)
+  const { pool: poolAfterFees } = addToPool(poolBeforeFees, fees)
+
+  // Step 2: take off the liquidity, add to pool, prepare to use the remainder
+  const liquidity = buyAmountWithoutFees
+    .times(BigNumber(LIQUDITY_PORTION))
+    .integerValue(BigNumber.ROUND_DOWN)
+  const buyAmount = buyAmountWithoutFees.minus(liquidity)
+  const { pool, returned } = addToPool(poolAfterFees, liquidity)
+  const invariantStep2 = pool.reduce(
+    (prod, outcome) => prod.times(outcome),
     BigNumber(1),
   )
 
-  const newOutcomePools = market.possibleOutcomes
-    .filter((outcome) => outcome.id !== selectedOutcome)
-    .map((outcome) => outcome.poolShares.units.plus(buyAmount.units))
+  // Step 3: add the new tokens to the pool and then adjust to match
+  // the invariant
+  let invariant = BigNumber(1)
+  let productOthers = BigNumber(1)
+  for (let i = 0; i < pool.length; ++i) {
+    invariant = invariant.times(pool[i])
+    pool[i] = pool[i].plus(buyAmount).plus(returned[i])
+    if (i !== selectedOutcome) {
+      productOthers = productOthers.times(pool[i])
+    }
+  }
+  const selectedPool = invariantStep2
+    .div(productOthers)
+    .integerValue(BigNumber.ROUND_DOWN)
+  const purchasedShares = pool[selectedOutcome].minus(selectedPool)
 
-  const newSelectedPool = newOutcomePools.reduce(
-    (prod, newPool) => prod.div(newPool),
-    invariant,
-  )
-
-  const purchasedShares = selectedPool
-    .plus(buyAmount.units)
-    .minus(newSelectedPool)
-
-  return Shares.fromCollateralUnits(market.denom, purchasedShares)
+  return {
+    outcome: Shares.fromCollateralUnits(market.denom, purchasedShares),
+    liquidity: Coins.fromUnits(buyAmountTotalCoins.denom, liquidity),
+    fees: Coins.fromUnits(buyAmountTotalCoins.denom, fees),
+  }
 }
 
 export {
@@ -150,3 +216,4 @@ export {
   getOddsForOutcome,
   getSharesPurchased,
 }
+export type { SharesPurchased }
