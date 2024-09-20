@@ -4,6 +4,7 @@ import { Outlet, ScrollRestoration } from "react-router-dom"
 import { Navbar } from "@common/Navbar"
 import { Footer } from "@common/Footer"
 import { Geoblock } from "@common/Geoblock"
+import { TermsDisclaimer } from "@common/TermsDisclaimer"
 
 const App = () => {
   return (
@@ -13,6 +14,8 @@ const App = () => {
         <Outlet />
       </Geoblock>
       <Footer />
+
+      <TermsDisclaimer />
       <ScrollRestoration />
     </Stack>
   )

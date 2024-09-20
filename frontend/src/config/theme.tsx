@@ -237,6 +237,10 @@ const theme = extendTheme({
     lg: ".75rem",
     xl: "1.5rem",
   },
+  zIndex: {
+    modal: 1000000,
+    tooltip: 1000300,
+  },
   components: {
     JoyAlert: {
       defaultProps: {
@@ -702,7 +706,7 @@ const ThemeProvider = (props: PropsWithChildren) => {
           },
 
           ".notistack-SnackbarContainer": {
-            zIndex: 1000000,
+            zIndex: 1000600,
           },
 
           ".notistack-Snackbar": {
