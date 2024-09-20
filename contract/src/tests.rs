@@ -444,26 +444,25 @@ fn deposit_fees_check() {
 fn withdrawal_fees_check() {
     let app = Predict::new();
 
+    let market = app.query_latest_market().unwrap();
+    let initial_pool_size = market.pool_size;
     let bet_amount = 1000u64;
     app.place_bet(&app.better, 0, bet_amount).unwrap();
 
-    // TODO come back to this later
-    // let initial_balance = app.query_balance(&app.better).unwrap();
     let tokens = app.query_tokens(&app.better, 0).unwrap();
-    // let market = app.query_latest_market().unwrap();
-    // let fees = market.withdrawal_fee * Decimal256::from_ratio(bet_amount, 1u64);
-    // let fees: Uint128 = fees.to_uint_ceil().try_into().unwrap();
+    let market = app.query_latest_market().unwrap();
+    let fees = market.withdrawal_fee * Decimal256::from_ratio(bet_amount, 1u64);
+    let fees: Uint256 = fees.to_uint_ceil();
 
     app.withdraw(&app.better, 0, tokens).unwrap();
-    // let final_balance = app.query_balance(&app.better).unwrap();
-    // let withdraw_amount = final_balance.checked_sub(initial_balance).unwrap();
-    // let total_fees = Uint128::from(bet_amount)
-    //     .checked_sub(withdraw_amount)
-    //     .unwrap();
+    let market = app.query_latest_market().unwrap();
+    let pool_size_after_withdraw = market.pool_size;
+    let diff = pool_size_after_withdraw - initial_pool_size;
+    // We know from previous test that 10 is the deposit fee
+    let diff = diff - Collateral(10u32.into());
 
-    // We know that deposit fees is 10 from the previous test
-    // let withdrawal_fees = total_fees.checked_sub(Uint128::from(10u8)).unwrap();
-    // assert_eq!(fees, withdrawal_fees);
+    // Since withdrawal fee is more than deposit fee
+    assert!(diff.0 > fees);
 }
 
 #[test]
