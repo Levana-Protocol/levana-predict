@@ -22,7 +22,9 @@ const useMarketClaimForm = (market: Market) => {
     getShares(positions.data, market.winnerOutcome.id).units.gt(0)
 
   const onSubmit = () => {
-    return claimEarnings.mutateAsync()
+    return claimEarnings.mutateAsync().then(() => {
+      form.reset()
+    })
   }
 
   const canSubmit =
