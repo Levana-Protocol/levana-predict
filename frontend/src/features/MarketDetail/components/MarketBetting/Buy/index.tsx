@@ -6,12 +6,12 @@ import { useCurrentAccount } from "@config/chain"
 import type { Market, OutcomeId } from "@api/queries/Market"
 import { balancesQuery } from "@api/queries/Balances"
 import { coinPricesQuery } from "@api/queries/Prices"
-import { OutcomeField } from "../OutcomeField"
-import { CoinsAmountField } from "../CoinsAmountField"
-import { useMarketBuyForm } from "./form"
-import { getSharesPurchased } from "@utils/shares"
+import { getPurchaseResult } from "@utils/shares"
 import { useLatestFormValues } from "@utils/forms"
 import { Coins, USD } from "@utils/coins"
+import { useMarketBuyForm } from "./form"
+import { OutcomeField } from "../OutcomeField"
+import { CoinsAmountField } from "../CoinsAmountField"
 
 const MarketBuyForm = (props: { market: Market }) => {
   const { market } = props
@@ -56,13 +56,11 @@ const MarketBuyForm = (props: { market: Market }) => {
           {form.formState.isSubmitting ? "Placing bet..." : "Place bet"}
         </Button>
 
-        {coinsAmount && formValues.betOutcome && (
-          <ShowSharesPurchased
-            market={market}
-            betOutcome={formValues.betOutcome}
-            coinsAmount={coinsAmount}
-          />
-        )}
+        <ShowSharesPurchased
+          market={market}
+          betOutcome={formValues.betOutcome ?? undefined}
+          coinsAmount={coinsAmount}
+        />
       </Stack>
     </FormProvider>
   )
@@ -70,39 +68,36 @@ const MarketBuyForm = (props: { market: Market }) => {
 
 interface ShowSharesPurchasedProps {
   market: Market
-  betOutcome: OutcomeId
-  coinsAmount: Coins
+  betOutcome: OutcomeId | undefined
+  coinsAmount: Coins | undefined
 }
 
 const ShowSharesPurchased = (props: ShowSharesPurchasedProps) => {
-  const { outcome, fees, liquidity } = props.betOutcome
-    ? (() => {
-        const { outcome, fees, liquidity } = getSharesPurchased(
-          props.market,
-          props.betOutcome,
-          props.coinsAmount,
-        )
-        return {
-          outcome: outcome.toFormat(false),
-          fees: fees.toFormat(true),
-          liquidity: liquidity.toFormat(true),
-        }
-      })()
-    : { outcome: "-", fees: "-", liquidity: "-" }
+  const { market, betOutcome, coinsAmount } = props
+  const purchaseResult =
+    betOutcome !== undefined && coinsAmount !== undefined
+      ? getPurchaseResult(market, betOutcome, coinsAmount)
+      : undefined
 
   return (
     <>
       <Stack direction="row" justifyContent="space-between">
         <Typography level="body-sm">Estimated shares</Typography>
-        <Typography level="body-sm">{outcome}</Typography>
+        <Typography level="body-sm">
+          {purchaseResult?.shares.toFormat(false) ?? "-"}
+        </Typography>
       </Stack>
       <Stack direction="row" justifyContent="space-between">
         <Typography level="body-sm">Liquidity deposit</Typography>
-        <Typography level="body-sm">{liquidity}</Typography>
+        <Typography level="body-sm">
+          {purchaseResult?.liquidity.toFormat(true) ?? "-"}
+        </Typography>
       </Stack>
       <Stack direction="row" justifyContent="space-between">
         <Typography level="body-sm">Fees</Typography>
-        <Typography level="body-sm">{fees}</Typography>
+        <Typography level="body-sm">
+          {purchaseResult?.liquidity.toFormat(true) ?? "-"}
+        </Typography>
       </Stack>
     </>
   )

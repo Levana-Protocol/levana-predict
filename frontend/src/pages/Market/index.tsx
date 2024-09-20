@@ -26,16 +26,16 @@ const MarketPage = () => {
             xs: buildGridAreas([
               "title",
               "outcomes",
-              "positions",
-              "liquidity",
+              ...(account.isConnected ? ["positions", "liquidity"] : []),
               "description",
               "betting",
             ]),
             md: buildGridAreas([
               "title betting",
               "outcomes betting",
-              "positions betting",
-              "liquidity betting",
+              ...(account.isConnected
+                ? ["positions betting", "liquidity betting"]
+                : []),
               "description betting",
               "rest betting",
             ]),

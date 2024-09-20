@@ -2,6 +2,7 @@ import BigNumber from "bignumber.js"
 
 import type { Market, OutcomeId } from "@api/queries/Market"
 import type { Positions } from "@api/queries/Positions"
+import { LIQUDITY_PORTION } from "@api/mutations/PlaceBet"
 import {
   Asset,
   Coins,
@@ -10,7 +11,6 @@ import {
   type Denom,
 } from "./coins"
 import { formatToSignificantDigits, unitsToValue, valueToUnits } from "./number"
-import { LIQUDITY_PORTION } from "@api/mutations/PlaceBet"
 
 class Shares extends Asset {
   static symbol = "shares"
@@ -119,8 +119,8 @@ interface PoolSize {
   returned: BigNumber[]
 }
 
-interface SharesPurchased {
-  outcome: Shares
+interface PurchaseResult {
+  shares: Shares
   liquidity: Coins
   fees: Coins
 }
@@ -144,11 +144,11 @@ const addToPool = (poolInit: BigNumber[], amount: BigNumber): PoolSize => {
   return { pool, returned }
 }
 
-const getSharesPurchased = (
+const getPurchaseResult = (
   market: Market,
   selectedOutcomeString: OutcomeId,
   buyAmountTotalCoins: Coins,
-): SharesPurchased => {
+): PurchaseResult => {
   // To calculate the shares properly, we need to follow the same steps as
   // are taken by the contract, namely:
   //
@@ -203,7 +203,7 @@ const getSharesPurchased = (
   const purchasedShares = pool[selectedOutcome].minus(selectedPool)
 
   return {
-    outcome: Shares.fromCollateralUnits(market.denom, purchasedShares),
+    shares: Shares.fromCollateralUnits(market.denom, purchasedShares),
     liquidity: Coins.fromUnits(buyAmountTotalCoins.denom, liquidity),
     fees: Coins.fromUnits(buyAmountTotalCoins.denom, fees),
   }
@@ -211,9 +211,9 @@ const getSharesPurchased = (
 
 export {
   Shares,
+  type PurchaseResult,
   getShares,
   getPotentialWinnings,
   getOddsForOutcome,
-  getSharesPurchased,
+  getPurchaseResult,
 }
-export type { SharesPurchased }
