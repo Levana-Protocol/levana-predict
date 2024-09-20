@@ -452,7 +452,7 @@ fn withdrawal_fees_check() {
     let tokens = app.query_tokens(&app.better, 0).unwrap();
     let market = app.query_latest_market().unwrap();
     let fees = market.withdrawal_fee * Decimal256::from_ratio(bet_amount, 1u64);
-    let fees: Uint256 = fees.to_uint_ceil().try_into().unwrap();
+    let fees: Uint256 = fees.to_uint_ceil();
 
     app.withdraw(&app.better, 0, tokens).unwrap();
     let market = app.query_latest_market().unwrap();
