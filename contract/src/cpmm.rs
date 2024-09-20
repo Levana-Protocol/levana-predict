@@ -75,6 +75,7 @@ pub struct Buy {
 }
 
 #[must_use]
+#[derive(Debug)]
 pub struct Sell {
     /// Funds the user will receive for the sale
     pub funds: Collateral,

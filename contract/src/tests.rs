@@ -1,4 +1,4 @@
-use std::cell::RefCell;
+use std::{cell::RefCell, str::FromStr};
 
 use cosmwasm_std::{Addr, Uint256};
 use cw_multi_test::{error::AnyResult, App, AppResponse, ContractWrapper, Executor};
@@ -417,27 +417,26 @@ fn winning_bet() {
 fn deposit_fees_check() {
     let app = Predict::new();
 
+    let house_yes_tokens = app.query_tokens(&app.house, 0).unwrap();
+    let house_no_tokens = app.query_tokens(&app.house, 1).unwrap();
     let before_market = app.query_latest_market().unwrap();
+    let before_lp_shares = before_market.lp_shares;
+    let lp_share_value = before_lp_shares.0 / (house_yes_tokens.0 + house_no_tokens.0);
 
     let bet_amount = 1000u64;
     app.place_bet(&app.better, 0, bet_amount).unwrap();
-
     let deposit_fee = before_market.deposit_fee * Decimal256::from_ratio(bet_amount, 1u64);
     let deposit_fee: Uint256 = deposit_fee.to_uint_ceil();
 
-    // TODO come back to this later
-    // let tokens = app.query_tokens(&app.better, 0).unwrap();
-
-    // let tokens_in_collateral = {
-    //     let mut market = app.query_latest_market().unwrap();
-    //     market.sell(0.into(), tokens).unwrap()
-    // };
-
-    // let calculated_deposit_fees = Collateral(Uint256::from(bet_amount))
-    //     .checked_sub(tokens_in_collateral.funds)
-    //     .unwrap()
-    //     .0;
-    // assert_eq!(deposit_fee, calculated_deposit_fees);
+    let after_market = app.query_latest_market().unwrap();
+    let after_lp_shares = after_market.lp_shares;
+    let diff_lp_shares = after_lp_shares - before_lp_shares;
+    let lp_share_to_collateral = diff_lp_shares.0 / lp_share_value;
+    // Because half lp shares was burnt
+    let calculated_deposit_fee = lp_share_to_collateral
+        .checked_mul(Uint256::from_str("2").unwrap())
+        .unwrap();
+    assert_eq!(deposit_fee, calculated_deposit_fee);
     assert_eq!(deposit_fee, Uint256::from(10u8));
 }
 
