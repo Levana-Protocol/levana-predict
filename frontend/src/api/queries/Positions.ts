@@ -4,7 +4,7 @@ import { NETWORK_ID } from "@config/chain"
 import { CONTRACT_ADDRESS } from "@config/environment"
 import { fetchQuerier } from "@api/querier"
 import { Shares } from "@utils/shares"
-import type { MarketId, OutcomeId } from "./Market"
+import type { Market, MarketId, OutcomeId } from "./Market"
 
 interface PositionsResponse {
   outcomes: string[]
@@ -18,27 +18,35 @@ interface Positions {
   shares: Shares
 }
 
-const positionsFromResponse = (response: PositionsResponse): Positions => {
+const positionsFromResponse = (
+  response: PositionsResponse,
+  market: Market,
+): Positions => {
   const entries = response.outcomes.map(
-    (amount, index) => [`${index}`, Shares.fromValue(amount)] as const,
+    (amount, index) =>
+      [`${index}`, Shares.fromCollateralUnits(market.denom, amount)] as const,
   )
   return {
     outcomes: new Map(entries),
     claimed: response.claimed_winnings,
-    shares: Shares.fromValue(response.shares),
+    shares: Shares.fromCollateralUnits(market.denom, response.shares),
   }
 }
 
 const fetchPositions = (
   address: string,
-  marketId: MarketId,
+  market: Market,
 ): Promise<Positions> => {
-  return fetchQuerier("/v1/predict/positions", positionsFromResponse, {
-    network: NETWORK_ID,
-    contract: CONTRACT_ADDRESS,
-    addr: address,
-    market_id: marketId,
-  })
+  return fetchQuerier(
+    "/v1/predict/positions",
+    (res: PositionsResponse) => positionsFromResponse(res, market),
+    {
+      network: NETWORK_ID,
+      contract: CONTRACT_ADDRESS,
+      addr: address,
+      market_id: market.id,
+    },
+  )
 }
 
 const POSITIONS_KEYS = {
@@ -48,10 +56,10 @@ const POSITIONS_KEYS = {
     [...POSITIONS_KEYS.address(address), marketId] as const,
 }
 
-const positionsQuery = (address: string, marketId: MarketId) =>
+const positionsQuery = (address: string, market: Market) =>
   queryOptions({
-    queryKey: POSITIONS_KEYS.market(address, marketId),
-    queryFn: () => fetchPositions(address, marketId),
+    queryKey: POSITIONS_KEYS.market(address, market.id),
+    queryFn: () => fetchPositions(address, market),
   })
 
 export { positionsQuery, POSITIONS_KEYS, type Positions }

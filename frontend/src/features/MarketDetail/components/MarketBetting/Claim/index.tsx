@@ -50,7 +50,7 @@ const Earnings = (props: { market: Market }) => {
   return (
     <LoadableComponent
       useDeps={() =>
-        useSuspenseQuery(positionsQuery(account.bech32Address, market.id)).data
+        useSuspenseQuery(positionsQuery(account.bech32Address, market)).data
       }
       renderContent={(positions) => (
         <EarningsContent market={market} positions={positions} />
@@ -79,7 +79,7 @@ const EarningsContent = (props: { market: Market; positions: Positions }) => {
         <Typography level="body-md">
           You have claimed your earnings for this market.
         </Typography>
-      ) : earnings?.value.gt(0) ? (
+      ) : earnings?.units.gt(0) ? (
         <Box>
           <Typography
             level="title-lg"

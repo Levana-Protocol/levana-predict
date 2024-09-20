@@ -1,7 +1,8 @@
-import { Box, Stack, Typography } from "@mui/joy"
+import { Box, Chip, Stack, Typography } from "@mui/joy"
 
 import type { Market } from "@api/queries/Market"
 import type { StyleProps } from "@utils/styles"
+import { pluralize } from "@utils/string"
 import { LoadableWidget } from "@lib/Loadable/Widget"
 import { useSuspenseCurrentMarket } from "@features/MarketDetail/utils"
 
@@ -43,28 +44,31 @@ const MarketOutcomesContent = (props: { market: Market }) => {
             <Typography
               level="title-md"
               textColor="text.secondary"
-              fontWeight={500}
+              fontWeight={600}
             >
               {outcome.percentage.toFixed(1)}%
             </Typography>
             <Typography
-              level="title-md"
+              level="body-sm"
               textColor="text.secondary"
               fontWeight={500}
+              lineHeight={1}
             >
-              {outcome.wallets} {outcome.wallets === 1 ? "holder" : "holders"}
+              {pluralize("holder", outcome.wallets, true)}
             </Typography>
           </Box>
         ))}
       </Stack>
       <Box sx={{ mt: 2 }}>
-        <Typography level="body-md" textColor="text.secondary" fontWeight={600}>
+        <Chip
+          variant="solid"
+          color="neutral"
+          sx={{
+            background: "linear-gradient(90deg, #894DBD -1.61%, #5654BD 100%)",
+          }}
+        >
           Prize pool size: {market.poolSize.toFormat(true)}
-        </Typography>
-        <Typography level="body-md" textColor="text.secondary">
-          {market.totalWallets}{" "}
-          {market.totalWallets === 1 ? "participant" : "participants"}
-        </Typography>
+        </Chip>
       </Box>
     </>
   )
@@ -82,16 +86,17 @@ const MarketOutcomesPlaceholder = () => {
             <Typography level="title-lg" fontWeight={600}>
               {outcome} - 0.000
             </Typography>
-            <Typography level="title-md" fontWeight={500}>
+            <Typography level="title-md" fontWeight={600}>
               0.0%
+            </Typography>
+            <Typography level="body-sm" fontWeight={500} lineHeight={1}>
+              0 holders
             </Typography>
           </Box>
         ))}
       </Stack>
       <Box sx={{ mt: 2 }}>
-        <Typography level="body-md" fontWeight={600}>
-          Prize pool size: 0.000000 NTRN
-        </Typography>
+        <Chip variant="solid">Prize pool size: 0.000000 NTRN</Chip>
       </Box>
     </>
   )

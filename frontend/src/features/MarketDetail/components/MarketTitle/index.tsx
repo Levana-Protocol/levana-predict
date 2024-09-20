@@ -5,6 +5,7 @@ import { TickIcon } from "@assets/icons/Tick"
 import { routes } from "@config/router"
 import type { Market } from "@api/queries/Market"
 import type { StyleProps } from "@utils/styles"
+import { pluralize } from "@utils/string"
 import { useCopyToClipboard } from "@utils/hooks"
 import { LoadableWidget } from "@lib/Loadable/Widget"
 import { useSuspenseCurrentMarket } from "@features/MarketDetail/utils"
@@ -43,7 +44,10 @@ const MarketTitleContent = (props: { market: Market }) => {
         />
         <Box>
           <Typography level="h3">{market.title}</Typography>
-          <MarketStatus market={market} sx={{ mt: 1 }} />
+          <Stack direction="row" gap={1} sx={{ mt: 1, flexWrap: "wrap" }}>
+            <MarketStatus market={market} />
+            <Chip>{pluralize("participant", market.totalWallets, true)}</Chip>
+          </Stack>
         </Box>
       </Stack>
 
@@ -77,9 +81,10 @@ const MarketTitlePlaceholder = () => {
 
       <Box>
         <Typography level="h3">Loading market's title...</Typography>
-        <Chip size="md" sx={{ mt: 1 }}>
-          Loading market's status...
-        </Chip>
+        <Stack direction="row" gap={1} sx={{ mt: 1, flexWrap: "wrap" }}>
+          <Chip size="md">Loading market's status...</Chip>
+          <Chip size="md">0 participants</Chip>
+        </Stack>
       </Box>
     </Stack>
   )
