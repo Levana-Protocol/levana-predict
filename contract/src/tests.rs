@@ -815,6 +815,59 @@ fn test_cpmm_buy_sell(pool_one in 1..1000u32, pool_two in 1..1000u32, buy in 2..
 }
 
 #[test]
+fn test_cpmm_add_liquidity(pool_one in 1..1000u32, pool_two in 1..1000u32, liquidity in 1..1000u32) {
+    let pool_one_tokens = Token(pool_one.into());
+    let pool_two_tokens = Token(pool_two.into());
+    let funds = Collateral((1500u32).into());
+
+    let pool_one = OutcomeDef {
+        label: "Yes".to_owned(),
+        initial_amount: pool_one_tokens,
+    };
+    let pool_two = OutcomeDef {
+        label: "No".to_owned(),
+        initial_amount: pool_two_tokens,
+    };
+    let outcomes = vec![pool_one, pool_two];
+    let InitialOutcomes {
+        outcomes,
+        returned: _,
+    } = initial_outcomes(outcomes, funds).unwrap();
+    let mut original_variant = Uint256::one();
+    for outcome in &outcomes {
+        original_variant *= outcome.pool_tokens.0;
+    }
+
+    let ts = Timestamp::from_nanos(1_000_000_202);
+
+    let mut stored = StoredMarket {
+        id: MarketId::one(),
+        title: "ATOM_USDT".to_owned(),
+        description: "Some desc".to_owned(),
+        arbitrator: Addr::unchecked("arbitrator"),
+        outcomes,
+        denom: DENOM.to_owned(),
+        deposit_fee: "0.01".parse().unwrap(),
+        withdrawal_fee: "0.01".parse().unwrap(),
+        pool_size: funds,
+        deposit_stop_date: ts.plus_days(2),
+        withdrawal_stop_date: ts.plus_days(1),
+        winner: None,
+        house: Addr::unchecked("house"),
+        total_wallets: 0,
+        lp_shares: LpShare::zero(),
+        lp_wallets: 0,
+    };
+
+    let stats = stored.add_liquidity(Collateral(liquidity.into()));
+    for (idx, item) in stats.returned_to_user.iter().enumerate() {
+        let total = item.0 + stats.added_to_pool[idx].0;
+        assert_eq!(total, Uint256::from_u128(liquidity.into()));
+    }
+}
+
+
+#[test]
 fn test_later_purchases_more_expensive(buy1 in 100..10_000u64, buy2 in 100..10_000u64, outcome in 0..2u8) {
     let app = Predict::new();
 
