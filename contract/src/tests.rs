@@ -837,4 +837,17 @@ fn test_later_purchases_more_expensive(buy1 in 100..10_000u64, buy2 in 100..10_0
     let price2 = Decimal256::from_ratio(buy2, tokens2.0);
     assert!(price1 < price2);
 }
+
+#[test]
+fn withdraw_no_dust(buy0 in 1_000..10_000u64, buy1 in 1_000..10_000u64) {
+    let app = Predict::new();
+
+    app.place_bet(&app.better, 0, buy0).unwrap();
+    app.place_bet(&app.better, 1, buy1).unwrap();
+    let tokens = app.query_tokens(&app.better, 1).unwrap();
+    assert_ne!(tokens, Token::zero());
+    app.withdraw(&app.better, 1, tokens).unwrap();
+    let tokens = app.query_tokens(&app.better, 1).unwrap();
+    assert_eq!(tokens, Token::zero());
+}
 }
