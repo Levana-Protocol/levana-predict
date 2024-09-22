@@ -22,7 +22,13 @@ export const TESTNET_NETWORK_ID = "neutron-testnet"
 export const NETWORK_ID = IS_TESTNET ? TESTNET_NETWORK_ID : MAINNET_NETWORK_ID
 
 export const CHAIN_INFO: ChainInfo = (() => {
-  const chainInfo = IS_TESTNET ? neutrontestnet : neutron
+  const chainInfo = IS_TESTNET
+    ? neutrontestnet
+    : {
+        ...neutron,
+        rpc: "https://rpc-arch.mainnet.neutron.tm.p2p.org",
+        rest: "https://api-arch.mainnet.neutron.tm.p2p.org",
+      }
 
   // `graz generate` is misconfiguring a field, so we fix it manually:
   const currenciesWithFix = chainInfo.feeCurrencies.map((feeCurrency) => ({
