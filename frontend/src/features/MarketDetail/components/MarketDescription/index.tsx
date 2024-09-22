@@ -25,7 +25,9 @@ const MarketDescriptionContent = (props: { market: Market }) => {
         Description
       </Typography>
 
-      <Typography level="body-md">{market.description}</Typography>
+      <Typography level="body-md" whiteSpace="pre-line">
+        {market.description}
+      </Typography>
     </>
   )
 }
