@@ -4,7 +4,7 @@ export type Environment = "mainnet" | "testnet"
 
 export const ENV: Environment = match(window.location.host)
   .returnType<Environment>()
-  .with("localhost:3000", () => "mainnet")
+  .with("predict.levana.finance", () => "mainnet")
   .otherwise(() => "testnet")
 
 export const IS_TESTNET = ENV === "testnet"
