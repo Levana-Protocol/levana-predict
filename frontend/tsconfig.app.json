@@ -2,11 +2,7 @@
   "compilerOptions": {
     "target": "ES2022",
     "useDefineForClassFields": true,
-    "lib": [
-      "ES2023",
-      "DOM",
-      "DOM.Iterable"
-    ],
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "module": "ESNext",
     "skipLibCheck": true,
     "moduleResolution": "bundler",
@@ -20,37 +16,18 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "baseUrl": "./src",
+    "types": ["@types/gtag.js"],
     "paths": {
-      "@assets/*": [
-        "assets/*"
-      ],
-      "@api/*": [
-        "api/*"
-      ],
-      "@common/*": [
-        "components/common/*"
-      ],
-      "@config/*": [
-        "config/*"
-      ],
-      "@lib/*": [
-        "components/lib/*"
-      ],
-      "@utils/*": [
-        "utils/*"
-      ],
-      "@features/*": [
-        "features/*"
-      ],
-      "@pages/*": [
-        "pages/*"
-      ],
-      "@state/*": [
-        "state/*"
-      ]
+      "@assets/*": ["assets/*"],
+      "@api/*": ["api/*"],
+      "@common/*": ["components/common/*"],
+      "@config/*": ["config/*"],
+      "@lib/*": ["components/lib/*"],
+      "@utils/*": ["utils/*"],
+      "@features/*": ["features/*"],
+      "@pages/*": ["pages/*"],
+      "@state/*": ["state/*"]
     }
   },
-  "include": [
-    "src"
-  ],
+  "include": ["src"]
 }

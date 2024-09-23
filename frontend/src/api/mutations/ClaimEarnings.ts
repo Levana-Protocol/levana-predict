@@ -1,4 +1,4 @@
-import { useCosmWasmSigningClient } from "graz"
+import { useActiveWalletType, useCosmWasmSigningClient } from "graz"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate"
 
@@ -8,6 +8,7 @@ import { querierAwaitCacheAnd, querierBroadcastAndWait } from "@api/querier"
 import type { MarketId } from "@api/queries/Market"
 import { POSITIONS_KEYS } from "@api/queries/Positions"
 import { BALANCES_KEYS } from "@api/queries/Balances"
+import { trackFailure, trackSuccess } from "@utils/analytics"
 import { AppError, errorsMiddleware } from "@utils/errors"
 
 interface ClaimEarningsRequest {
@@ -39,6 +40,7 @@ const CLAIM_EARNINGS_KEYS = {
 
 const useClaimEarnings = (marketId: MarketId) => {
   const account = useCurrentAccount()
+  const walletName = useActiveWalletType().walletType
   const signer = useCosmWasmSigningClient()
   const queryClient = useQueryClient()
   const notifications = useNotifications()
@@ -58,6 +60,11 @@ const useClaimEarnings = (marketId: MarketId) => {
     onSuccess: () => {
       notifications.notifySuccess("Successfully claimed earnings.")
 
+      trackSuccess("claim_earnings", {
+        market_id: marketId,
+        wallet: walletName,
+      })
+
       return querierAwaitCacheAnd(
         () =>
           queryClient.invalidateQueries({
@@ -72,6 +79,15 @@ const useClaimEarnings = (marketId: MarketId) => {
     onError: (err) => {
       notifications.notifyError(
         AppError.withCause("Failed to claim earnings.", err),
+      )
+
+      trackFailure(
+        "claim_earnings",
+        {
+          market_id: marketId,
+          wallet: walletName,
+        },
+        err,
       )
     },
   })
