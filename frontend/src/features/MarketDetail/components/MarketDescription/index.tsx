@@ -1,10 +1,11 @@
+import { match } from "ts-pattern"
 import { Box, List, ListItem, Typography } from "@mui/joy"
 
+import { CONTRACT_ADDRESS } from "@config/environment"
 import type { Market } from "@api/queries/Market"
 import type { StyleProps } from "@utils/styles"
 import { LoadableWidget } from "@lib/Loadable/Widget"
 import { useSuspenseCurrentMarket } from "@features/MarketDetail/utils"
-import { CONTRACT_ADDRESS } from "@config/environment"
 
 const MarketDescription = (props: StyleProps) => {
   return (
@@ -17,6 +18,23 @@ const MarketDescription = (props: StyleProps) => {
   )
 }
 
+const getDescription = (market: Market) => {
+  return match({ contract: CONTRACT_ADDRESS, marketId: market.id })
+    .with(
+      {
+        contract:
+          "neutron14r4gqjhnuxzwcmypjle9grlksvjeyyy0mrw0965rdz5v3v5wcv6qjf8w55",
+        marketId: "1",
+      },
+      () => <MainnetOneDescription />,
+    )
+    .otherwise(() => (
+      <Typography level="body-md" whiteSpace="pre-wrap">
+        {market.description}
+      </Typography>
+    ))
+}
+
 const MarketDescriptionContent = (props: { market: Market }) => {
   const { market } = props
 
@@ -26,15 +44,7 @@ const MarketDescriptionContent = (props: { market: Market }) => {
         Description
       </Typography>
 
-      {CONTRACT_ADDRESS ===
-        "neutron14r4gqjhnuxzwcmypjle9grlksvjeyyy0mrw0965rdz5v3v5wcv6qjf8w55" &&
-      market.id === "1" ? (
-        <MainnetOneDescription />
-      ) : (
-        <Typography level="body-md" whiteSpace="pre-line">
-          {market.description}
-        </Typography>
-      )}
+      {getDescription(market)}
     </>
   )
 }
@@ -47,7 +57,7 @@ const MainnetOneDescription = () => {
         elections of 2024. This market will settle "Yes" if either of the
         following two conditions occurs:
       </Typography>
-      <List>
+      <List marker="circle">
         <ListItem>
           <Typography level="body-md">
             Donald Trump's primary opponent, Kamala Harris, concedes the
@@ -64,7 +74,7 @@ const MainnetOneDescription = () => {
         By contrast, this market will settle "No" if either of the following two
         conditions occurs:
       </Typography>
-      <List>
+      <List marker="circle">
         <ListItem>
           <Typography level="body-md">
             Donald Trump concedes the election
