@@ -28,7 +28,7 @@ const getPercentage = (
   }
 }
 
-const getPercentageDifference = (
+const getDifferencePercentage = (
   valueA: BigNumber.Value,
   valueB: BigNumber.Value,
 ) => {
@@ -90,7 +90,7 @@ const valueToUnits = (value: BigNumber.Value, exponent: number): BigNumber => {
 export {
   getProportion,
   getPercentage,
-  getPercentageDifference,
+  getDifferencePercentage,
   VALID_DECIMAL_REGEX,
 }
 export { formatToSignificantDigits, unitsToValue, valueToUnits }

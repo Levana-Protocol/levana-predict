@@ -10,7 +10,7 @@ import { coinPricesQuery } from "@api/queries/Prices"
 import { getPurchaseResult } from "@utils/shares"
 import { useLatestFormValues } from "@utils/forms"
 import { Coins, USD } from "@utils/coins"
-import { getPercentageDifference } from "@utils/number"
+import { getDifferencePercentage } from "@utils/number"
 import { useMarketBuyForm } from "./form"
 import { OutcomeField } from "../OutcomeField"
 import { CoinsAmountField } from "../CoinsAmountField"
@@ -89,7 +89,7 @@ const ShowSharesPurchased = (props: ShowSharesPurchasedProps) => {
 
   const differencePercentage =
     selectedOutcome !== undefined && purchaseResult !== undefined
-      ? getPercentageDifference(
+      ? getDifferencePercentage(
           selectedOutcome.price.units,
           purchaseResult.price.units,
         )
