@@ -9,13 +9,8 @@ import stosmoLogo from "@assets/coins/stosmo-logo.svg"
 import stdydxLogo from "@assets/coins/stdydx-logo.svg"
 import sttiaLogo from "@assets/coins/sttia-logo.svg"
 import stdymLogo from "@assets/coins/stdym-logo.svg"
-import ethLogo from "@assets/coins/eth-logo.svg"
-import btcLogo from "@assets/coins/btc-logo.svg"
 import axlLogo from "@assets/coins/axl-logo.svg"
 import osmoLogo from "@assets/coins/osmo-logo.svg"
-import seiLogo from "@assets/coins/sei-logo.svg"
-import aktLogo from "@assets/coins/akt-logo.svg"
-import injLogo from "@assets/coins/inj-logo.svg"
 import tiaLogo from "@assets/coins/tia-logo.svg"
 import stkatomLogo from "@assets/coins/stkatom-logo.svg"
 import dymLogo from "@assets/coins/dym-logo.svg"
@@ -54,7 +49,7 @@ export const coinConfigs: Map<Denom, CoinConfig> = new Map([
     },
   ],
   [
-    "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+    "ibc/C4CFF46FD6DE35CA4CF4CE031E643C8FDC9BA4B99AE598E9B0ED98FE3A2319F9",
     {
       icon: atomLogo,
       symbol: "ATOM",
@@ -64,7 +59,7 @@ export const coinConfigs: Map<Denom, CoinConfig> = new Map([
     },
   ],
   [
-    "ibc/EA6E1E8BA2EB9F681C4BD12C8C81A46530A62934F2BD561B120A00F46946CE87",
+    "factory/neutron1k6hr0f83e7un2wjf29cspk7j69jrnskk65k3ek2nj9dztrlzpj6q00rtsa/udatom",
     {
       icon: datomLogo,
       symbol: "dATOM",
@@ -74,7 +69,7 @@ export const coinConfigs: Map<Denom, CoinConfig> = new Map([
     },
   ],
   [
-    "ibc/C140AFD542AE77BD7DCC83F13FDD8C5E5BB8C4929785E6EC2F4C636F98F17901",
+    "ibc/B7864B03E1B9FD4F049243E92ABD691586F682137037A9F3FCA5222815620B3C",
     {
       icon: statomLogo,
       symbol: "stATOM",
@@ -84,7 +79,7 @@ export const coinConfigs: Map<Denom, CoinConfig> = new Map([
     },
   ],
   [
-    "ibc/D176154B0C63D1F9C6DCFB4F70349EBF2E2B5A87A05902F57A6AE92B863E9AEC",
+    "ibc/75249A18DEFBEFE55F83B1C70CAD234DF164F174C6BC51682EE92C2C81C18C93",
     {
       icon: stosmoLogo,
       symbol: "stOSMO",
@@ -93,7 +88,7 @@ export const coinConfigs: Map<Denom, CoinConfig> = new Map([
     },
   ],
   [
-    "ibc/980E82A9F8E7CA8CD480F4577E73682A6D3855A267D1831485D7EBEF0E7A6C2C",
+    "ibc/BAA1D21893B1D36865C6CA44D18F4ACF08BAD70CB6863C4722E0A61703808F77",
     {
       icon: stdydxLogo,
       symbol: "stDYDX",
@@ -102,7 +97,7 @@ export const coinConfigs: Map<Denom, CoinConfig> = new Map([
     },
   ],
   [
-    "ibc/698350B8A61D575025F3ED13E9AC9C0F45C89DEFE92F76D5838F1D3C1A7FF7C9",
+    "ibc/6569E05DEE32B339D9286A52BE33DFCEFC97267F23EF9CFDE0C055140967A9A5",
     {
       icon: sttiaLogo,
       symbol: "stTIA",
@@ -112,7 +107,7 @@ export const coinConfigs: Map<Denom, CoinConfig> = new Map([
     },
   ],
   [
-    "ibc/D53E785DC9C5C2CA50CADB1EFE4DE5D0C30418BE0E9C6F2AF9F092A247E8BC22",
+    "ibc/8D0C1AC5A72FB7EC187632D01BACBB68EF743CA1AF16A15C00ACBB9CF49A0070",
     {
       icon: stdymLogo,
       symbol: "stDYM",
@@ -121,27 +116,7 @@ export const coinConfigs: Map<Denom, CoinConfig> = new Map([
     },
   ],
   [
-    "ibc/A23E590BA7E0D808706FB5085A449B3B9D6864AE4DDE7DAF936243CEBB2A3D43",
-    {
-      icon: ethLogo,
-      symbol: "ETH",
-      exponent: 18,
-      pythId:
-        "ff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace",
-    },
-  ],
-  [
-    "ibc/D1542AA8762DB13087D8364F3EA6509FD6F009A34F00426AF9E4F9FA85CBBF1F",
-    {
-      icon: btcLogo,
-      symbol: "BTC",
-      exponent: 8,
-      pythId:
-        "e62df6c8b4a85fe1a67db44dc12de5db330f7ac66b72dc658afedf0f4a415b43",
-    },
-  ],
-  [
-    "ibc/903A61A498756EA560B85A85132D3AEE21B5DEDD41213725D22ABF276EA6945E",
+    "ibc/C0E66D1C81D8AAF0E6896E05190FDFBC222367148F86AC3EA679C28327A763CD",
     {
       icon: axlLogo,
       symbol: "AXL",
@@ -151,7 +126,7 @@ export const coinConfigs: Map<Denom, CoinConfig> = new Map([
     },
   ],
   [
-    "ibc/13B2C536BB057AC79D5616B8EA1B9540EC1F2170718CAFF6F0083C966FFFED0B",
+    "ibc/376222D6D9DAE23092E29740E56B758580935A6D77C24C2ABD57A6A78A1F3955",
     {
       icon: osmoLogo,
       symbol: "OSMO",
@@ -161,37 +136,7 @@ export const coinConfigs: Map<Denom, CoinConfig> = new Map([
     },
   ],
   [
-    "ibc/71F11BC0AF8E526B80E44172EBA9D3F0A8E03950BB882325435691EBC9450B1D",
-    {
-      icon: seiLogo,
-      symbol: "SEI",
-      exponent: 6,
-      pythId:
-        "53614f1cb0c031d4af66c04cb9c756234adad0e1cee85303795091499a4084eb",
-    },
-  ],
-  [
-    "ibc/1480B8FD20AD5FCAE81EA87584D269547DD4D436843C1D20F15E00EB64743EF4",
-    {
-      icon: aktLogo,
-      symbol: "AKT",
-      exponent: 18,
-      pythId:
-        "4ea5bb4d2f5900cc2e97ba534240950740b4d3b89fe712a94a7304fd2fd92702",
-    },
-  ],
-  [
-    "ibc/64BA6E31FE887D66C6F8F31C7B1A80C7CA179239677B4088BB55F5EA07DBE273",
-    {
-      icon: injLogo,
-      symbol: "INJ",
-      exponent: 18,
-      pythId:
-        "7a5bc1d2b56ad029048cd63964b3ad2776eadf812edc1a43a31406cb54bff592",
-    },
-  ],
-  [
-    "ibc/D79E7D83AB399BFFF93433E54FAA480C191248FC556924A2A8351AE2638B3877",
+    "ibc/773B4D0A3CD667B2275D5A4A7A2F0909C0BA0F4059C0B9181E680DDF4965DCC7",
     {
       icon: tiaLogo,
       symbol: "TIA",
@@ -201,7 +146,7 @@ export const coinConfigs: Map<Denom, CoinConfig> = new Map([
     },
   ],
   [
-    "ibc/CAA179E40F0266B0B29FB5EAA288FB9212E628822265D4141EBD1C47C3CBFCBC",
+    "ibc/3649CE0C8A2C79048D8C6F31FF18FA69C9BC7EB193512E0BD03B733011290445",
     {
       icon: stkatomLogo,
       symbol: "stkATOM",
@@ -210,7 +155,7 @@ export const coinConfigs: Map<Denom, CoinConfig> = new Map([
     },
   ],
   [
-    "ibc/9A76CDF0CBCEF37923F32518FA15E5DC92B9F56128292BC4D63C4AEA76CBB110",
+    "ibc/4A6A46D4263F2ED3DCE9CF866FE15E6903FB5E12D87EB8BDC1B6B1A1E2D397B4",
     {
       icon: dymLogo,
       symbol: "DYM",
