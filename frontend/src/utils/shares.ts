@@ -123,6 +123,7 @@ interface PurchaseResult {
   shares: Shares
   liquidity: Coins
   fees: Coins
+  price: Coins
 }
 
 const addToPool = (poolInit: BigNumber[], amount: BigNumber): PoolSize => {
@@ -204,6 +205,7 @@ const getPurchaseResult = (
 
   return {
     shares: Shares.fromCollateralUnits(market.denom, purchasedShares),
+    price: buyAmountTotalCoins.dividedBy(purchasedShares),
     liquidity: Coins.fromUnits(buyAmountTotalCoins.denom, liquidity),
     fees: Coins.fromUnits(buyAmountTotalCoins.denom, fees),
   }
