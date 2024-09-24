@@ -8,7 +8,7 @@ import { querierAwaitCacheAnd, querierBroadcastAndWait } from "@api/querier"
 import { MARKET_KEYS, type MarketId, type OutcomeId } from "@api/queries/Market"
 import { POSITIONS_KEYS } from "@api/queries/Positions"
 import { BALANCES_KEYS } from "@api/queries/Balances"
-import { trackFailure, trackSuccess } from "@utils/analytics"
+import { trackPlaceBet } from "@utils/analytics"
 import type { Coins } from "@utils/coins"
 import { AppError, errorsMiddleware } from "@utils/errors"
 
@@ -85,11 +85,11 @@ const usePlaceBet = (marketId: MarketId) => {
         `Successfully bet ${args.coinsAmount.toFormat(true)}.`,
       )
 
-      trackSuccess("place_bet", {
-        market_id: marketId,
-        outcome_id: args.outcomeId,
-        tokens_amount: args.coinsAmount.toFullPrecision(true),
-        wallet: walletName,
+      trackPlaceBet({
+        marketId: marketId,
+        outcomeId: args.outcomeId,
+        coins: args.coinsAmount,
+        walletName: walletName,
       })
 
       return querierAwaitCacheAnd(
@@ -115,13 +115,12 @@ const usePlaceBet = (marketId: MarketId) => {
         ),
       )
 
-      trackFailure(
-        "place_bet",
+      trackPlaceBet(
         {
-          market_id: marketId,
-          outcome_id: args.outcomeId,
-          tokens_amount: args.coinsAmount.toFullPrecision(true),
-          wallet: walletName,
+          marketId: marketId,
+          outcomeId: args.outcomeId,
+          coins: args.coinsAmount,
+          walletName: walletName,
         },
         err,
       )

@@ -8,7 +8,7 @@ import { querierAwaitCacheAnd, querierBroadcastAndWait } from "@api/querier"
 import { MARKET_KEYS, type MarketId, type OutcomeId } from "@api/queries/Market"
 import { POSITIONS_KEYS } from "@api/queries/Positions"
 import { BALANCES_KEYS } from "@api/queries/Balances"
-import { trackFailure, trackSuccess } from "@utils/analytics"
+import { trackCancelBet } from "@utils/analytics"
 import { AppError, errorsMiddleware } from "@utils/errors"
 import type { Shares } from "@utils/shares"
 
@@ -73,11 +73,11 @@ const useCancelBet = (marketId: MarketId) => {
         `Successfully cancelled bet of ${args.sharesAmount.toFormat(true)}.`,
       )
 
-      trackSuccess("cancel_bet", {
-        market_id: marketId,
-        outcome_id: args.outcomeId,
-        shares_amount: args.sharesAmount.toFullPrecision(true),
-        wallet: walletName,
+      trackCancelBet({
+        marketId: marketId,
+        outcomeId: args.outcomeId,
+        shares: args.sharesAmount,
+        walletName: walletName,
       })
 
       return querierAwaitCacheAnd(
@@ -103,13 +103,12 @@ const useCancelBet = (marketId: MarketId) => {
         ),
       )
 
-      trackFailure(
-        "cancel_bet",
+      trackCancelBet(
         {
-          market_id: marketId,
-          outcome_id: args.outcomeId,
-          shares_amount: args.sharesAmount.toFullPrecision(true),
-          wallet: walletName,
+          marketId: marketId,
+          outcomeId: args.outcomeId,
+          shares: args.sharesAmount,
+          walletName: walletName,
         },
         err,
       )

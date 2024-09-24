@@ -8,7 +8,7 @@ import { querierAwaitCacheAnd, querierBroadcastAndWait } from "@api/querier"
 import type { MarketId } from "@api/queries/Market"
 import { POSITIONS_KEYS } from "@api/queries/Positions"
 import { BALANCES_KEYS } from "@api/queries/Balances"
-import { trackFailure, trackSuccess } from "@utils/analytics"
+import { trackClaimEarnings } from "@utils/analytics"
 import { AppError, errorsMiddleware } from "@utils/errors"
 
 interface ClaimEarningsRequest {
@@ -60,9 +60,9 @@ const useClaimEarnings = (marketId: MarketId) => {
     onSuccess: () => {
       notifications.notifySuccess("Successfully claimed earnings.")
 
-      trackSuccess("claim_earnings", {
-        market_id: marketId,
-        wallet: walletName,
+      trackClaimEarnings({
+        marketId: marketId,
+        walletName: walletName,
       })
 
       return querierAwaitCacheAnd(
@@ -81,11 +81,10 @@ const useClaimEarnings = (marketId: MarketId) => {
         AppError.withCause("Failed to claim earnings.", err),
       )
 
-      trackFailure(
-        "claim_earnings",
+      trackClaimEarnings(
         {
-          market_id: marketId,
-          wallet: walletName,
+          marketId: marketId,
+          walletName: walletName,
         },
         err,
       )
