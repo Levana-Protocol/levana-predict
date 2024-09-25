@@ -21,14 +21,21 @@ const getPercentage = (
   value: BigNumber.Value,
   total: BigNumber.Value,
 ): number => {
-  const bigTotal = BigNumber(total)
-
-  if (bigTotal.isZero()) {
+  if (BigNumber(total).isZero()) {
     return 0
   } else {
-    const bigValue = BigNumber(value)
-    return Number(bigValue.dividedBy(bigTotal).times(100).toFixed())
+    return BigNumber(value).dividedBy(total).times(100).toNumber()
   }
+}
+
+const getDifferencePercentage = (
+  valueA: BigNumber.Value,
+  valueB: BigNumber.Value,
+) => {
+  const difference = BigNumber(valueA).minus(valueB).abs()
+  const average = BigNumber(valueA).plus(valueB).dividedBy(2)
+
+  return getPercentage(difference, average)
 }
 
 /**
@@ -80,5 +87,10 @@ const valueToUnits = (value: BigNumber.Value, exponent: number): BigNumber => {
   return BigNumber(value).times(10 ** exponent)
 }
 
-export { getProportion, getPercentage, VALID_DECIMAL_REGEX }
+export {
+  getProportion,
+  getPercentage,
+  getDifferencePercentage,
+  VALID_DECIMAL_REGEX,
+}
 export { formatToSignificantDigits, unitsToValue, valueToUnits }

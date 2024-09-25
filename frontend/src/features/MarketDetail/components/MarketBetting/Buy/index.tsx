@@ -2,6 +2,7 @@ import { Button, Stack, Typography } from "@mui/joy"
 import { FormProvider } from "react-hook-form"
 import { useQuery } from "@tanstack/react-query"
 
+import { InfoIcon } from "@assets/icons/Info"
 import { useCurrentAccount } from "@config/chain"
 import type { Market, OutcomeId } from "@api/queries/Market"
 import { balancesQuery } from "@api/queries/Balances"
@@ -9,9 +10,12 @@ import { coinPricesQuery } from "@api/queries/Prices"
 import { getPurchaseResult } from "@utils/shares"
 import { useLatestFormValues } from "@utils/forms"
 import { Coins, USD } from "@utils/coins"
+import { getDifferencePercentage } from "@utils/number"
 import { useMarketBuyForm } from "./form"
 import { OutcomeField } from "../OutcomeField"
 import { CoinsAmountField } from "../CoinsAmountField"
+
+const SLIPPAGE_THRESHOLD = 5
 
 const MarketBuyForm = (props: { market: Market }) => {
   const { market } = props
@@ -79,6 +83,18 @@ const ShowSharesPurchased = (props: ShowSharesPurchasedProps) => {
       ? getPurchaseResult(market, betOutcome, coinsAmount)
       : undefined
 
+  const selectedOutcome = market.possibleOutcomes.find(
+    (outcome) => outcome.id === betOutcome,
+  )
+
+  const differencePercentage =
+    selectedOutcome !== undefined && purchaseResult !== undefined
+      ? getDifferencePercentage(
+          selectedOutcome.price.units,
+          purchaseResult.price.units,
+        )
+      : undefined
+
   return (
     <>
       <Stack direction="row" justifyContent="space-between">
@@ -87,18 +103,41 @@ const ShowSharesPurchased = (props: ShowSharesPurchasedProps) => {
           {purchaseResult?.shares.toFormat(false) ?? "-"}
         </Typography>
       </Stack>
+
       <Stack direction="row" justifyContent="space-between">
         <Typography level="body-sm">Liquidity deposit</Typography>
         <Typography level="body-sm">
           {purchaseResult?.liquidity.toFormat(true) ?? "-"}
         </Typography>
       </Stack>
+
       <Stack direction="row" justifyContent="space-between">
         <Typography level="body-sm">Fees</Typography>
         <Typography level="body-sm">
           {purchaseResult?.liquidity.toFormat(true) ?? "-"}
         </Typography>
       </Stack>
+
+      {differencePercentage !== undefined &&
+        differencePercentage > SLIPPAGE_THRESHOLD && (
+          <Typography
+            level="title-sm"
+            color="warning"
+            startDecorator={
+              <InfoIcon
+                sx={{
+                  "--Icon-fontSize": "1rem",
+                  borderRadius: "calc(var(--Icon-fontSize) / 2)",
+                  p: 0.5,
+                  backgroundColor: (theme) => theme.palette.warning[900],
+                }}
+              />
+            }
+          >
+            Warning: the effective price of this purchase differs from the
+            quoted price by {differencePercentage.toFixed(1)}%
+          </Typography>
+        )}
     </>
   )
 }
