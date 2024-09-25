@@ -6,7 +6,6 @@ import {
   DialogTitle,
   ModalClose,
   ModalDialog,
-  Sheet,
 } from "@mui/joy"
 
 import keplrLogo from "@assets/logos/keplr.svg"
@@ -76,47 +75,51 @@ const ConnectionModal = () => {
         {supportedWallets
           .filter((wallet) => checkWallet(wallet.type))
           .map((wallet) => (
-            <Sheet key={wallet.type} sx={{ p: 1 }}>
-              <Button
-                color="neutral"
-                variant="plain"
-                disabled={account.isConnecting}
-                sx={{ "--Button-gap": (theme) => theme.spacing(2) }}
-                startDecorator={
-                  <Box
-                    component="img"
-                    alt={`${wallet.name} logo`}
-                    src={wallet.logo}
-                    width={(theme) => theme.spacing(7)}
-                    sx={{ borderRadius: 14 }}
-                  />
+            <Button
+              key={wallet.type}
+              color="neutral"
+              variant="soft"
+              disabled={account.isConnecting}
+              sx={{
+                "--Button-gap": (theme) => theme.spacing(2),
+                height: (theme) => theme.spacing(10),
+                justifyContent: "flex-start",
+                px: 3,
+              }}
+              startDecorator={
+                <Box
+                  component="img"
+                  alt={`${wallet.name} logo`}
+                  src={wallet.logo}
+                  width={(theme) => theme.spacing(6)}
+                  sx={{ borderRadius: 14 }}
+                />
+              }
+              onClick={() => {
+                if (wallet.type === WalletType.WALLETCONNECT) {
+                  dismissConnectionModal()
                 }
-                onClick={() => {
-                  if (wallet.type === WalletType.WALLETCONNECT) {
+
+                connectWallet(wallet.type)
+                  .then(() => {
                     dismissConnectionModal()
-                  }
+                  })
+                  .catch((err) => {
+                    notifications.notifyError(
+                      AppError.withCause(
+                        `Failed to connect with ${wallet.name}.`,
+                        err,
+                      ),
+                    )
 
-                  connectWallet(wallet.type)
-                    .then(() => {
-                      dismissConnectionModal()
-                    })
-                    .catch((err) => {
-                      notifications.notifyError(
-                        AppError.withCause(
-                          `Failed to connect with ${wallet.name}.`,
-                          err,
-                        ),
-                      )
-
-                      if (wallet.type === WalletType.WALLETCONNECT) {
-                        presentConnectionModal()
-                      }
-                    })
-                }}
-              >
-                {wallet.name}
-              </Button>
-            </Sheet>
+                    if (wallet.type === WalletType.WALLETCONNECT) {
+                      presentConnectionModal()
+                    }
+                  })
+              }}
+            >
+              {wallet.name}
+            </Button>
           ))}
       </DialogContent>
     </ModalDialog>

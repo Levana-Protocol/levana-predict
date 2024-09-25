@@ -81,6 +81,9 @@ importers:
       '@biomejs/biome':
         specifier: 1.9.0
         version: 1.9.0
+      '@types/gtag.js':
+        specifier: ^0.0.20
+        version: 0.0.20
       '@types/react':
         specifier: ^18.3.3
         version: 18.3.5
@@ -1306,6 +1309,9 @@ packages:
 
   '@types/ethereumjs-util@5.2.0':
     resolution: {integrity: sha512-qwQgQqXXTRv2h2AlJef+tMEszLFkCB9dWnrJYIdAwqjubERXEc/geB+S3apRw0yQyTVnsBf8r6BhlrE8vx+3WQ==}
+
+  '@types/gtag.js@0.0.20':
+    resolution: {integrity: sha512-wwAbk3SA2QeU67unN7zPxjEHmPmlXwZXZvQEpbEUQuMCRGgKyE1m6XDuTUA9b6pCGb/GqJmdfMOY5LuDjJSbbg==}
 
   '@types/long@4.0.2':
     resolution: {integrity: sha512-MqTGEo5bj5t157U6fA/BiDynNkn0YknVdh48CMPkTSpFTVmvao5UQmm7uEF6xBEo7qIMAlY/JSleYaE6VOdpaA==}
@@ -4623,6 +4629,8 @@ snapshots:
     dependencies:
       '@types/bn.js': 5.1.5
       '@types/node': 22.5.2
+
+  '@types/gtag.js@0.0.20': {}
 
   '@types/long@4.0.2': {}
 

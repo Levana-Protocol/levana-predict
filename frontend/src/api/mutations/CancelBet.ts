@@ -1,4 +1,4 @@
-import { useCosmWasmSigningClient } from "graz"
+import { useActiveWalletType, useCosmWasmSigningClient } from "graz"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate"
 
@@ -8,6 +8,7 @@ import { querierAwaitCacheAnd, querierBroadcastAndWait } from "@api/querier"
 import { MARKET_KEYS, type MarketId, type OutcomeId } from "@api/queries/Market"
 import { POSITIONS_KEYS } from "@api/queries/Positions"
 import { BALANCES_KEYS } from "@api/queries/Balances"
+import { trackCancelBet } from "@utils/analytics"
 import { AppError, errorsMiddleware } from "@utils/errors"
 import type { Shares } from "@utils/shares"
 
@@ -50,6 +51,7 @@ const CANCEL_BET_KEYS = {
 
 const useCancelBet = (marketId: MarketId) => {
   const account = useCurrentAccount()
+  const walletName = useActiveWalletType().walletType
   const signer = useCosmWasmSigningClient()
   const queryClient = useQueryClient()
   const notifications = useNotifications()
@@ -70,6 +72,13 @@ const useCancelBet = (marketId: MarketId) => {
       notifications.notifySuccess(
         `Successfully cancelled bet of ${args.sharesAmount.toFormat(true)}.`,
       )
+
+      trackCancelBet({
+        marketId: marketId,
+        outcomeId: args.outcomeId,
+        shares: args.sharesAmount,
+        walletName: walletName,
+      })
 
       return querierAwaitCacheAnd(
         () =>
@@ -92,6 +101,16 @@ const useCancelBet = (marketId: MarketId) => {
           `Failed to cancel bet of ${args.sharesAmount.toFormat(true)}.`,
           err,
         ),
+      )
+
+      trackCancelBet(
+        {
+          marketId: marketId,
+          outcomeId: args.outcomeId,
+          shares: args.sharesAmount,
+          walletName: walletName,
+        },
+        err,
       )
     },
   })

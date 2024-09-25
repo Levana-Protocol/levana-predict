@@ -1,4 +1,4 @@
-import { useCosmWasmSigningClient } from "graz"
+import { useActiveWalletType, useCosmWasmSigningClient } from "graz"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import type { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate"
 
@@ -8,6 +8,7 @@ import { querierAwaitCacheAnd, querierBroadcastAndWait } from "@api/querier"
 import { MARKET_KEYS, type MarketId, type OutcomeId } from "@api/queries/Market"
 import { POSITIONS_KEYS } from "@api/queries/Positions"
 import { BALANCES_KEYS } from "@api/queries/Balances"
+import { trackPlaceBet } from "@utils/analytics"
 import type { Coins } from "@utils/coins"
 import { AppError, errorsMiddleware } from "@utils/errors"
 
@@ -62,6 +63,7 @@ const PLACE_BET_KEYS = {
 
 const usePlaceBet = (marketId: MarketId) => {
   const account = useCurrentAccount()
+  const walletName = useActiveWalletType().walletType
   const signer = useCosmWasmSigningClient()
   const queryClient = useQueryClient()
   const notifications = useNotifications()
@@ -82,6 +84,13 @@ const usePlaceBet = (marketId: MarketId) => {
       notifications.notifySuccess(
         `Successfully bet ${args.coinsAmount.toFormat(true)}.`,
       )
+
+      trackPlaceBet({
+        marketId: marketId,
+        outcomeId: args.outcomeId,
+        coins: args.coinsAmount,
+        walletName: walletName,
+      })
 
       return querierAwaitCacheAnd(
         () =>
@@ -104,6 +113,16 @@ const usePlaceBet = (marketId: MarketId) => {
           `Failed to bet ${args.coinsAmount.toFormat(true)}.`,
           err,
         ),
+      )
+
+      trackPlaceBet(
+        {
+          marketId: marketId,
+          outcomeId: args.outcomeId,
+          coins: args.coinsAmount,
+          walletName: walletName,
+        },
+        err,
       )
     },
   })
