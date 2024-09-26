@@ -214,8 +214,8 @@ const getPurchaseResult = (
 }
 
 interface SaleResult {
-  /// Tokens returned to the user's ownership
-  returnedTokens: Shares[]
+  /// Shares returned to the user's ownership
+  returned: { 0: Shares; 1: Shares }
   /// Funds returned to the user
   funds: Coins
   /// Funds taken as fees by the house
@@ -226,7 +226,7 @@ interface SaleResult {
 
 const getSaleResult = (
   market: Market,
-  selectedOutcomeString: OutcomeId,
+  outcomeId: OutcomeId,
   sharesAmount: Shares,
 ): SaleResult | undefined => {
   // For now, we only support selling in 2-outcome markets
@@ -242,13 +242,13 @@ const getSaleResult = (
   // equation to solve for the amount to burn.
 
   const [selectedOutcome, unselectedOutcome] = (() => {
-    switch (selectedOutcomeString) {
+    switch (outcomeId) {
       case "0":
         return [0, 1]
       case "1":
         return [1, 0]
       default:
-        throw new Error(`Impossible selected outcome: ${selectedOutcomeString}`)
+        throw new Error(`Impossible selected outcome: ${outcomeId}`)
     }
   })()
 
@@ -309,10 +309,10 @@ const getSaleResult = (
     unselectedToBuy.minus(toRedeem),
     sharesAmount.exponent,
   )
-  const returnedTokens =
+  const returnedShares =
     selectedOutcome === 0
-      ? [selectedReturned, unselectedReturned]
-      : [unselectedReturned, selectedReturned]
+      ? { 0: selectedReturned, 1: unselectedReturned }
+      : { 0: unselectedReturned, 1: selectedReturned }
 
   const fees = toRedeem
     .times(market.withdrawalFee)
@@ -320,7 +320,7 @@ const getSaleResult = (
   const funds = toRedeem.minus(fees)
 
   return {
-    returnedTokens,
+    returned: returnedShares,
     fees: Coins.fromUnits(market.denom, fees),
     funds: Coins.fromUnits(market.denom, funds),
     price: Coins.fromUnits(market.denom, toRedeem.div(sharesAmount.units)),

@@ -89,7 +89,7 @@ const ShowSharesSold = (props: ShowSharesSoldProps) => {
   return (
     <>
       <Stack direction="row" justifyContent="space-between">
-        <Typography level="body-sm">Estimated coins</Typography>
+        <Typography level="body-sm">Estimated funds</Typography>
         <Typography level="body-sm">
           {saleResult?.funds.toFormat(true) ?? "-"}
         </Typography>
@@ -101,6 +101,17 @@ const ShowSharesSold = (props: ShowSharesSoldProps) => {
           {saleResult?.fees.toFormat(true) ?? "-"}
         </Typography>
       </Stack>
+
+      {([0, 1] as const).map((outcome) => (
+        <Stack key={outcome} direction="row" justifyContent="space-between">
+          <Typography level="body-sm">
+            Returned "{market.possibleOutcomes[outcome].label}" shares
+          </Typography>
+          <Typography level="body-sm">
+            {saleResult?.returned[outcome].toFormat(false) ?? "-"}
+          </Typography>
+        </Stack>
+      ))}
 
       {differencePercentage !== undefined &&
         differencePercentage > SLIPPAGE_THRESHOLD && (
@@ -122,17 +133,6 @@ const ShowSharesSold = (props: ShowSharesSoldProps) => {
             price by {differencePercentage.toFixed(1)}%
           </Typography>
         )}
-
-      {[0, 1].map((outcome) => (
-        <Stack key={outcome} direction="row" justifyContent="space-between">
-          <Typography level="body-sm">
-            Returned {market.possibleOutcomes[outcome].id} shares
-          </Typography>
-          <Typography level="body-sm">
-            {saleResult?.returnedTokens[outcome].toFormat(true) ?? "-"}
-          </Typography>
-        </Stack>
-      ))}
     </>
   )
 }
