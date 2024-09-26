@@ -12,6 +12,8 @@ import {
 } from "./coins"
 import { formatToSignificantDigits, unitsToValue, valueToUnits } from "./number"
 
+export const SLIPPAGE_THRESHOLD = 5
+
 class Shares extends Asset {
   static symbol = "shares"
 
@@ -147,8 +149,8 @@ const addToPool = (poolInit: BigNumber[], amount: BigNumber): PoolSize => {
 
 const getPurchaseResult = (
   market: Market,
-  selectedOutcomeString: OutcomeId,
-  buyAmountTotalCoins: Coins,
+  outcomeId: OutcomeId,
+  coinsAmount: Coins,
 ): PurchaseResult => {
   // To calculate the shares properly, we need to follow the same steps as
   // are taken by the contract, namely:
@@ -163,8 +165,8 @@ const getPurchaseResult = (
   //    remaining buy amount for the selected token.
 
   // Step 0: convert all values to raw integers
-  const selectedOutcome = Number.parseInt(selectedOutcomeString)
-  const buyAmountTotal = buyAmountTotalCoins.units
+  const selectedOutcome = Number.parseInt(outcomeId)
+  const buyAmountTotal = coinsAmount.units
   const poolBeforeFees = market.possibleOutcomes.map(
     (outcome) => outcome.poolShares.units,
   )
@@ -205,17 +207,133 @@ const getPurchaseResult = (
 
   return {
     shares: Shares.fromCollateralUnits(market.denom, purchasedShares),
-    price: buyAmountTotalCoins.dividedBy(purchasedShares),
-    liquidity: Coins.fromUnits(buyAmountTotalCoins.denom, liquidity),
-    fees: Coins.fromUnits(buyAmountTotalCoins.denom, fees),
+    price: coinsAmount.dividedBy(purchasedShares),
+    liquidity: Coins.fromUnits(market.denom, liquidity),
+    fees: Coins.fromUnits(market.denom, fees),
+  }
+}
+
+interface SaleResult {
+  /// Shares returned to the user's ownership
+  returned: { 0: Shares; 1: Shares }
+  /// Funds returned to the user
+  funds: Coins
+  /// Funds taken as fees by the house
+  fees: Coins
+  /// Calculated price received for each outcome token sold
+  price: Coins
+}
+
+const getSaleResult = (
+  market: Market,
+  outcomeId: OutcomeId,
+  sharesAmount: Shares,
+): SaleResult | undefined => {
+  // For now, we only support selling in 2-outcome markets
+  if (market.possibleOutcomes.length !== 2) {
+    return undefined
+  }
+
+  // We need to swap some of the selected outcome token for the unselected token.
+  // We want the two values to be as close to each other as possible to maximize
+  // the collateral we can withdraw. To do that, we use some math to determine
+  // how much of the selected token to swap for unselected. Proofs provided elsewhere,
+  // but if you're wondering what the a/b/c nomenclature is: we're using the qudaratic
+  // equation to solve for the amount to burn.
+
+  const [selectedOutcome, unselectedOutcome] = (() => {
+    switch (outcomeId) {
+      case "0":
+        return [0, 1]
+      case "1":
+        return [1, 0]
+      default:
+        throw new Error(`Impossible selected outcome: ${outcomeId}`)
+    }
+  })()
+
+  const poolSelected = market.possibleOutcomes[selectedOutcome].poolShares.units
+  const poolUnselected =
+    market.possibleOutcomes[unselectedOutcome].poolShares.units
+
+  // If we put all of the tokens we're trying to liquidate in the pool,
+  // what would be the size?
+  const newPoolSelected = poolSelected.plus(sharesAmount.units)
+
+  // Quadratic equation coefficients
+  const a = BigNumber(1)
+  // b is always negative, and Decimal256 (in Rust) only supports positive values.
+  // Mirroring the decision in the contract to just deal with the negative version.
+  const negb = newPoolSelected.plus(poolUnselected)
+  const c = newPoolSelected
+    .times(poolUnselected)
+    .minus(poolSelected.times(poolUnselected))
+
+  // // There are two roots for quadratic equations, but we always take the lower value.
+  const negbSquared = negb.times(negb)
+  const fourAC = a.times(c).times(4)
+  const radical = negbSquared.minus(fourAC).sqrt()
+  const selectedToBurnUnrounded = negb.minus(radical).div(a.times(2))
+  const selectedToSellUnrounded = sharesAmount.units.minus(
+    selectedToBurnUnrounded,
+  )
+
+  // We can only sell integer values, not fractions. We want to round down the amount
+  // we're going to sell.
+  const selectedToSell = selectedToSellUnrounded.integerValue(
+    BigNumber.ROUND_DOWN,
+  )
+  const selectedToBurn = sharesAmount.units.minus(selectedToSell)
+
+  // Now calculate how many unselected tokens we end up buying. This is determined
+  // by respecting the CPMM invariant.
+  const invariant = poolSelected.times(poolUnselected)
+  const finalPoolSelected = poolSelected.plus(selectedToSell)
+  const finalPoolUnselected = invariant.div(finalPoolSelected)
+
+  const unselectedToBuy = poolUnselected
+    .minus(finalPoolUnselected)
+    .integerValue(BigNumber.ROUND_DOWN)
+
+  // We'll redeem as many of these tokens as possible for collateral.
+  // The remainder will be given back to the user.
+  const toRedeem = selectedToBurn.isLessThan(unselectedToBuy)
+    ? selectedToBurn
+    : unselectedToBuy
+
+  const selectedReturned = Shares.fromUnits(
+    selectedToBurn.minus(toRedeem),
+    sharesAmount.exponent,
+  )
+  const unselectedReturned = Shares.fromUnits(
+    unselectedToBuy.minus(toRedeem),
+    sharesAmount.exponent,
+  )
+  const returnedShares =
+    selectedOutcome === 0
+      ? { 0: selectedReturned, 1: unselectedReturned }
+      : { 0: unselectedReturned, 1: selectedReturned }
+
+  const fees = toRedeem
+    .times(market.withdrawalFee)
+    .integerValue(BigNumber.ROUND_UP)
+  const funds = toRedeem.minus(fees)
+
+  return {
+    returned: returnedShares,
+    fees: Coins.fromUnits(market.denom, fees),
+    funds: Coins.fromUnits(market.denom, funds),
+    price: Coins.fromUnits(market.denom, toRedeem.div(sharesAmount.units)),
   }
 }
 
 export {
   Shares,
   type PurchaseResult,
+  type SaleResult,
   getShares,
   getPotentialWinnings,
   getOddsForOutcome,
   getPurchaseResult,
+  getSaleResult,
 }

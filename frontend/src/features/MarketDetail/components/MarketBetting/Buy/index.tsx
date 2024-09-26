@@ -7,15 +7,13 @@ import { useCurrentAccount } from "@config/chain"
 import type { Market, OutcomeId } from "@api/queries/Market"
 import { balancesQuery } from "@api/queries/Balances"
 import { coinPricesQuery } from "@api/queries/Prices"
-import { getPurchaseResult } from "@utils/shares"
-import { useLatestFormValues } from "@utils/forms"
 import { Coins, USD } from "@utils/coins"
+import { useLatestFormValues } from "@utils/forms"
 import { getDifferencePercentage } from "@utils/number"
+import { getPurchaseResult, SLIPPAGE_THRESHOLD } from "@utils/shares"
 import { useMarketBuyForm } from "./form"
 import { OutcomeField } from "../OutcomeField"
 import { CoinsAmountField } from "../CoinsAmountField"
-
-const SLIPPAGE_THRESHOLD = 5
 
 const MarketBuyForm = (props: { market: Market }) => {
   const { market } = props
@@ -114,7 +112,7 @@ const ShowSharesPurchased = (props: ShowSharesPurchasedProps) => {
       <Stack direction="row" justifyContent="space-between">
         <Typography level="body-sm">Fees</Typography>
         <Typography level="body-sm">
-          {purchaseResult?.liquidity.toFormat(true) ?? "-"}
+          {purchaseResult?.fees.toFormat(true) ?? "-"}
         </Typography>
       </Stack>
 
