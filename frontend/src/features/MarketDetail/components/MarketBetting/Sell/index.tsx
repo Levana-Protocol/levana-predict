@@ -91,21 +91,14 @@ const ShowSharesSold = (props: ShowSharesSoldProps) => {
       <Stack direction="row" justifyContent="space-between">
         <Typography level="body-sm">Estimated coins</Typography>
         <Typography level="body-sm">
-          {saleResult?.coins.toFormat(true) ?? "-"}
-        </Typography>
-      </Stack>
-
-      <Stack direction="row" justifyContent="space-between">
-        <Typography level="body-sm">Liquidity deposit</Typography>
-        <Typography level="body-sm">
-          {saleResult?.liquidity.toFormat(true) ?? "-"}
+          {saleResult?.funds.toFormat(true) ?? "-"}
         </Typography>
       </Stack>
 
       <Stack direction="row" justifyContent="space-between">
         <Typography level="body-sm">Fees</Typography>
         <Typography level="body-sm">
-          {saleResult?.liquidity.toFormat(true) ?? "-"}
+          {saleResult?.fees.toFormat(true) ?? "-"}
         </Typography>
       </Stack>
 
@@ -129,6 +122,17 @@ const ShowSharesSold = (props: ShowSharesSoldProps) => {
             price by {differencePercentage.toFixed(1)}%
           </Typography>
         )}
+
+      {[0, 1].map((outcome) => (
+        <Stack key={outcome} direction="row" justifyContent="space-between">
+          <Typography level="body-sm">
+            Returned {market.possibleOutcomes[outcome].id} shares
+          </Typography>
+          <Typography level="body-sm">
+            {saleResult?.returnedTokens[outcome].toFormat(true) ?? "-"}
+          </Typography>
+        </Stack>
+      ))}
     </>
   )
 }
