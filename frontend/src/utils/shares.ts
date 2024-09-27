@@ -116,6 +116,11 @@ const getOddsForOutcome = (
   return oddsForOutcome
 }
 
+const getTransactionPrice = (coins: Coins, shares: Shares): Coins => {
+  const newValue = coins.units.dividedBy(shares.units)
+  return Coins.fromValue(coins.denom, newValue)
+}
+
 interface PoolSize {
   pool: BigNumber[]
   returned: BigNumber[]
@@ -203,11 +208,14 @@ const getPurchaseResult = (
   const selectedPool = invariantStep2
     .div(productOthers)
     .integerValue(BigNumber.ROUND_DOWN)
-  const purchasedShares = pool[selectedOutcome].minus(selectedPool)
+  const purchasedShares = Shares.fromCollateralUnits(
+    market.denom,
+    pool[selectedOutcome].minus(selectedPool),
+  )
 
   return {
-    shares: Shares.fromCollateralUnits(market.denom, purchasedShares),
-    price: coinsAmount.dividedBy(purchasedShares),
+    shares: purchasedShares,
+    price: getTransactionPrice(coinsAmount, purchasedShares),
     liquidity: Coins.fromUnits(market.denom, liquidity),
     fees: Coins.fromUnits(market.denom, fees),
   }
@@ -297,16 +305,17 @@ const getSaleResult = (
 
   // We'll redeem as many of these tokens as possible for collateral.
   // The remainder will be given back to the user.
-  const toRedeem = selectedToBurn.isLessThan(unselectedToBuy)
-    ? selectedToBurn
-    : unselectedToBuy
+  const toRedeem = Coins.fromUnits(
+    market.denom,
+    BigNumber.min(selectedToBurn, unselectedToBuy),
+  )
 
   const selectedReturned = Shares.fromUnits(
-    selectedToBurn.minus(toRedeem),
+    selectedToBurn.minus(toRedeem.units),
     sharesAmount.exponent,
   )
   const unselectedReturned = Shares.fromUnits(
-    unselectedToBuy.minus(toRedeem),
+    unselectedToBuy.minus(toRedeem.units),
     sharesAmount.exponent,
   )
   const returnedShares =
@@ -314,16 +323,14 @@ const getSaleResult = (
       ? { 0: selectedReturned, 1: unselectedReturned }
       : { 0: unselectedReturned, 1: selectedReturned }
 
-  const fees = toRedeem
-    .times(market.withdrawalFee)
-    .integerValue(BigNumber.ROUND_UP)
+  const fees = toRedeem.times(market.withdrawalFee)
   const funds = toRedeem.minus(fees)
 
   return {
     returned: returnedShares,
-    fees: Coins.fromUnits(market.denom, fees),
-    funds: Coins.fromUnits(market.denom, funds),
-    price: Coins.fromUnits(market.denom, toRedeem.div(sharesAmount.units)),
+    fees: fees,
+    funds: funds,
+    price: getTransactionPrice(toRedeem, sharesAmount),
   }
 }
 
