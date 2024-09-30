@@ -86,10 +86,12 @@ const SharesAmountField = (props: SharesAmountFieldProps) => {
    */
   const onChange = useCallback(
     (newAmount: string) => {
-      const regex = VALID_DECIMAL_REGEX(3)
+      if (balance) {
+        const regex = VALID_DECIMAL_REGEX(balance?.maxDecimalPlaces)
 
-      if (balance && matchesRegex(newAmount, regex)) {
-        setFormValue(newAmount === "." ? "0." : newAmount)
+        if (matchesRegex(newAmount, regex)) {
+          setFormValue(newAmount === "." ? "0." : newAmount)
+        }
       }
     },
     [balance, setFormValue],

@@ -210,7 +210,7 @@ abstract class Asset {
   }
 
   toFullPrecision(withSuffix: boolean): string {
-    return `${this.getValue().toFormat(this.exponent)}${withSuffix ? ` ${this.symbol}` : ""}`
+    return `${this.getValue().toFormat(this.maxDecimalPlaces)}${withSuffix ? ` ${this.symbol}` : ""}`
   }
 
   getValue(): BigNumber {
