@@ -2,7 +2,6 @@ import BigNumber from "bignumber.js"
 
 import type { Market, OutcomeId } from "@api/queries/Market"
 import type { Positions } from "@api/queries/Positions"
-import { LIQUDITY_PORTION } from "@api/mutations/PlaceBet"
 import {
   Asset,
   Coins,
@@ -156,6 +155,7 @@ const getPurchaseResult = (
   market: Market,
   outcomeId: OutcomeId,
   coinsAmount: Coins,
+  liquidityPortion: BigNumber.Value,
 ): PurchaseResult => {
   // To calculate the shares properly, we need to follow the same steps as
   // are taken by the contract, namely:
@@ -185,7 +185,7 @@ const getPurchaseResult = (
 
   // Step 2: take off the liquidity, add to pool, prepare to use the remainder
   const liquidity = buyAmountWithoutFees
-    .times(BigNumber(LIQUDITY_PORTION))
+    .times(liquidityPortion)
     .integerValue(BigNumber.ROUND_DOWN)
   const buyAmount = buyAmountWithoutFees.minus(liquidity)
   const { pool, returned } = addToPool(poolAfterFees, liquidity)

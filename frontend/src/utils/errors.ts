@@ -100,6 +100,18 @@ const errorForAction = (err: any, actionType?: UserAction): AppError | any => {
         },
         () => AppError.withCause("You don't have enough gas funds.", err),
       )
+      .with(
+        {
+          message: P.string.regex(
+            "The transaction will use all your funds, not leaving any funds available for paying gas fees",
+          ),
+        },
+        () =>
+          AppError.withCause(
+            "This transaction will use all your funds, not leaving enough for gas. Try using a different token for paying gas fees.",
+            err,
+          ),
+      )
       .otherwise(() => err)
   }
 

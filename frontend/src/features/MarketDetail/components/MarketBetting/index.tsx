@@ -15,6 +15,7 @@ import {
 import { MarketClaimForm } from "./Claim"
 import { MarketBuyForm } from "./Buy"
 import { MarketSellForm } from "./Sell"
+import { MarketBuyLiquidityForm } from "./BuyLiquidity"
 
 const MarketBetting = (props: StyleProps) => {
   return (
@@ -46,7 +47,7 @@ const MarketBettingContent = (props: { market: Market }) => {
 
 const MarketBettingForm = (props: { market: Market; status: MarketStatus }) => {
   const { market, status } = props
-  const [action, setAction] = useState<"buy" | "sell">("buy")
+  const [action, setAction] = useState<"buy" | "sell" | "liquidity">("buy")
 
   return (
     <>
@@ -68,6 +69,7 @@ const MarketBettingForm = (props: { market: Market; status: MarketStatus }) => {
         >
           Buy
         </Button>
+
         <Button
           color="neutral"
           variant="plain"
@@ -86,11 +88,30 @@ const MarketBettingForm = (props: { market: Market; status: MarketStatus }) => {
         >
           Sell
         </Button>
+
+        <Button
+          color="neutral"
+          variant="plain"
+          size="lg"
+          sx={{
+            px: 2,
+            py: 1,
+            width: "max-content",
+            borderRadius: 0,
+            borderBottom: action === "sell" ? "2px solid white" : undefined,
+          }}
+          onClick={() => {
+            setAction("liquidity")
+          }}
+        >
+          Liquidity
+        </Button>
       </Stack>
 
       {match(action)
         .with("buy", () => <MarketBuyForm market={market} />)
         .with("sell", () => <MarketSellForm market={market} />)
+        .with("liquidity", () => <MarketBuyLiquidityForm market={market} />)
         .exhaustive()}
     </>
   )
