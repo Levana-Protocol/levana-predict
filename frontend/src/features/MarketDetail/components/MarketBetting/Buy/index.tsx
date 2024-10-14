@@ -7,7 +7,6 @@ import { useCurrentAccount } from "@config/chain"
 import type { Market, OutcomeId } from "@api/queries/Market"
 import { balancesQuery } from "@api/queries/Balances"
 import { coinPricesQuery } from "@api/queries/Prices"
-import { LIQUDITY_PORTION } from "@api/mutations/PlaceBet"
 import { Coins, USD } from "@utils/coins"
 import { useLatestFormValues } from "@utils/forms"
 import { getDifferencePercentage } from "@utils/number"
@@ -79,7 +78,7 @@ const ShowSharesPurchased = (props: ShowSharesPurchasedProps) => {
   const { market, betOutcome, coinsAmount } = props
   const purchaseResult =
     betOutcome !== undefined && coinsAmount !== undefined
-      ? getPurchaseResult(market, betOutcome, coinsAmount, LIQUDITY_PORTION)
+      ? getPurchaseResult(market, betOutcome, coinsAmount)
       : undefined
 
   const selectedOutcome = market.possibleOutcomes.find(
