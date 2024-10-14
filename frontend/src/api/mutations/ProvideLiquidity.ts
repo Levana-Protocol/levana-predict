@@ -5,45 +5,38 @@ import type { SigningCosmWasmClient } from "@cosmjs/cosmwasm-stargate"
 import { useCurrentAccount } from "@config/chain"
 import { useNotifications } from "@config/notifications"
 import { querierAwaitCacheAnd, querierBroadcastAndWait } from "@api/querier"
-import { MARKET_KEYS, type MarketId, type OutcomeId } from "@api/queries/Market"
+import { MARKET_KEYS, type MarketId } from "@api/queries/Market"
 import { POSITIONS_KEYS } from "@api/queries/Positions"
 import { BALANCES_KEYS } from "@api/queries/Balances"
-import { trackBuyLiquidity } from "@utils/analytics"
+import { trackProvideLiquidity } from "@utils/analytics"
 import type { Coins } from "@utils/coins"
 import { AppError, errorsMiddleware } from "@utils/errors"
 
-export const LIQUIDITY_PORTION = "1"
-
-interface BuyLiquidityRequest {
-  deposit: {
+interface ProvideLiquidityRequest {
+  provide: {
     id: number
-    outcome: number
-    liquidity: string
   }
 }
 
-interface BuyLiquidityArgs {
-  outcomeId: OutcomeId
+interface ProvideLiquidityArgs {
   coinsAmount: Coins
 }
 
-const putBuyLiquidity = (
+const putProvideLiquidity = (
   address: string,
   signer: SigningCosmWasmClient,
   marketId: MarketId,
-  args: BuyLiquidityArgs,
+  args: ProvideLiquidityArgs,
 ) => {
-  const depositMsg: BuyLiquidityRequest = {
-    deposit: {
+  const provideMsg: ProvideLiquidityRequest = {
+    provide: {
       id: Number(marketId),
-      outcome: Number(args.outcomeId),
-      liquidity: LIQUIDITY_PORTION,
     },
   }
 
   return querierBroadcastAndWait(address, signer, [
     {
-      payload: depositMsg,
+      payload: provideMsg,
       funds: [
         {
           denom: args.coinsAmount.denom,
@@ -54,14 +47,15 @@ const putBuyLiquidity = (
   ])
 }
 
-const BUY_LIQUIDITY_KEYS = {
-  all: ["buy_liquidity"] as const,
-  address: (address: string) => [...BUY_LIQUIDITY_KEYS.all, address] as const,
+const PROVIDE_LIQUIDITY_KEYS = {
+  all: ["provide_liquidity"] as const,
+  address: (address: string) =>
+    [...PROVIDE_LIQUIDITY_KEYS.all, address] as const,
   market: (address: string, marketId: MarketId) =>
-    [...BUY_LIQUIDITY_KEYS.address(address), marketId] as const,
+    [...PROVIDE_LIQUIDITY_KEYS.address(address), marketId] as const,
 }
 
-const useBuyLiquidity = (marketId: MarketId) => {
+const useProvideLiquidity = (marketId: MarketId) => {
   const account = useCurrentAccount()
   const walletName = useActiveWalletType().walletType
   const signer = useCosmWasmSigningClient()
@@ -69,12 +63,17 @@ const useBuyLiquidity = (marketId: MarketId) => {
   const notifications = useNotifications()
 
   const mutation = useMutation({
-    mutationKey: BUY_LIQUIDITY_KEYS.market(account.bech32Address, marketId),
-    mutationFn: (args: BuyLiquidityArgs) => {
+    mutationKey: PROVIDE_LIQUIDITY_KEYS.market(account.bech32Address, marketId),
+    mutationFn: (args: ProvideLiquidityArgs) => {
       if (signer.data) {
         return errorsMiddleware(
-          "buy",
-          putBuyLiquidity(account.bech32Address, signer.data, marketId, args),
+          "provide",
+          putProvideLiquidity(
+            account.bech32Address,
+            signer.data,
+            marketId,
+            args,
+          ),
         )
       } else {
         return Promise.reject()
@@ -82,12 +81,11 @@ const useBuyLiquidity = (marketId: MarketId) => {
     },
     onSuccess: (_, args) => {
       notifications.notifySuccess(
-        `Successfully bet ${args.coinsAmount.toFormat(true)}.`,
+        `Successfully provided ${args.coinsAmount.toFormat(true)} of liquidity.`,
       )
 
-      trackBuyLiquidity({
+      trackProvideLiquidity({
         marketId: marketId,
-        outcomeId: args.outcomeId,
         coins: args.coinsAmount,
         walletName: walletName,
       })
@@ -110,15 +108,14 @@ const useBuyLiquidity = (marketId: MarketId) => {
     onError: (err, args) => {
       notifications.notifyError(
         AppError.withCause(
-          `Failed to buy ${args.coinsAmount.toFormat(true)} of liquidity.`,
+          `Failed to provide ${args.coinsAmount.toFormat(true)} of liquidity.`,
           err,
         ),
       )
 
-      trackBuyLiquidity(
+      trackProvideLiquidity(
         {
           marketId: marketId,
-          outcomeId: args.outcomeId,
           coins: args.coinsAmount,
           walletName: walletName,
         },
@@ -130,4 +127,4 @@ const useBuyLiquidity = (marketId: MarketId) => {
   return mutation
 }
 
-export { useBuyLiquidity }
+export { useProvideLiquidity }

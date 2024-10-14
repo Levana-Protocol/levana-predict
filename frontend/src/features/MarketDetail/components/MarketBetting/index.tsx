@@ -15,7 +15,7 @@ import {
 import { MarketClaimForm } from "./Claim"
 import { MarketBuyForm } from "./Buy"
 import { MarketSellForm } from "./Sell"
-import { MarketBuyLiquidityForm } from "./BuyLiquidity"
+import { MarketProvideLiquidityForm } from "./ProvideLiquidity"
 
 const MarketBetting = (props: StyleProps) => {
   return (
@@ -111,7 +111,7 @@ const MarketBettingForm = (props: { market: Market; status: MarketStatus }) => {
       {match(action)
         .with("buy", () => <MarketBuyForm market={market} />)
         .with("sell", () => <MarketSellForm market={market} />)
-        .with("liquidity", () => <MarketBuyLiquidityForm market={market} />)
+        .with("liquidity", () => <MarketProvideLiquidityForm market={market} />)
         .exhaustive()}
     </>
   )

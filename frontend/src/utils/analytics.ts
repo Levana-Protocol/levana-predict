@@ -2,7 +2,11 @@ import type { MarketId, OutcomeId } from "@api/queries/Market"
 import type { Coins } from "./coins"
 import type { Shares } from "./shares"
 
-type EventName = "place_bet" | "cancel_bet" | "buy_liquidity" | "claim_earnings"
+type EventName =
+  | "place_bet"
+  | "cancel_bet"
+  | "provide_liquidity"
+  | "claim_earnings"
 
 const trackSuccess = (eventName: EventName, params: Gtag.CustomParams) => {
   gtag("event", eventName, {
@@ -78,20 +82,18 @@ const trackCancelBet = (params: TrackCancelBetParams, failure?: Error) => {
 
 interface TrackBuyLiquidityParams {
   marketId: MarketId
-  outcomeId: OutcomeId
   coins: Coins
   walletName: string
 }
 
-const trackBuyLiquidity = (
+const trackProvideLiquidity = (
   params: TrackBuyLiquidityParams,
   failure?: Error,
 ) => {
   trackEvent(
-    "buy_liquidity",
+    "provide_liquidity",
     {
       market_id: params.marketId,
-      outcome_id: params.outcomeId,
       tokens_amount: params.coins.units.toFixed(0),
       denom: params.coins.denom,
       wallet: params.walletName,
@@ -119,4 +121,9 @@ const trackClaimEarnings = (
   )
 }
 
-export { trackPlaceBet, trackCancelBet, trackBuyLiquidity, trackClaimEarnings }
+export {
+  trackPlaceBet,
+  trackCancelBet,
+  trackProvideLiquidity,
+  trackClaimEarnings,
+}

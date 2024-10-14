@@ -35,7 +35,7 @@ class AppError extends Error {
   }
 }
 
-type UserAction = "connect" | "buy" | "sell" | "claim"
+type UserAction = "connect" | "buy" | "sell" | "provide" | "claim"
 
 /**
  * @returns user-friendly errors (if possible), based on the action that is being performed.
