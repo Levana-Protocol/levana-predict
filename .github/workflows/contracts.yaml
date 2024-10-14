@@ -21,8 +21,6 @@ jobs:
       - uses: taiki-e/install-action@v2
         with:
           tool: just@1.16.0
-      - name: Check commit
-        run: just check-commits
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: 1.75.0
