@@ -185,7 +185,7 @@ const getPurchaseResult = (
 
   // Step 2: take off the liquidity, add to pool, prepare to use the remainder
   const liquidity = buyAmountWithoutFees
-    .times(BigNumber(LIQUDITY_PORTION))
+    .times(LIQUDITY_PORTION)
     .integerValue(BigNumber.ROUND_DOWN)
   const buyAmount = buyAmountWithoutFees.minus(liquidity)
   const { pool, returned } = addToPool(poolAfterFees, liquidity)

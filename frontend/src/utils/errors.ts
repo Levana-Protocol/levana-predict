@@ -35,7 +35,7 @@ class AppError extends Error {
   }
 }
 
-type UserAction = "connect" | "buy" | "sell" | "claim"
+type UserAction = "connect" | "buy" | "sell" | "provide" | "claim"
 
 /**
  * @returns user-friendly errors (if possible), based on the action that is being performed.
@@ -99,6 +99,18 @@ const errorForAction = (err: any, actionType?: UserAction): AppError | any => {
           message: P.string.regex("spendable balance .+ is smaller than .+"),
         },
         () => AppError.withCause("You don't have enough gas funds.", err),
+      )
+      .with(
+        {
+          message: P.string.regex(
+            "The transaction will use all your funds, not leaving any funds available for paying gas fees",
+          ),
+        },
+        () =>
+          AppError.withCause(
+            "This transaction will use all your funds, not leaving enough for gas. Try using a different token for paying gas fees.",
+            err,
+          ),
       )
       .otherwise(() => err)
   }
