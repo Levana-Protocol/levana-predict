@@ -21,9 +21,3 @@ cargo-compile:
 # cargo test
 cargo-test:
     cd contract && cargo test --locked
-
-# Check commits
-check-commits:
-	git fetch origin main --depth=1
-	git log --pretty=format:"%ae" $(git branch --show-current)...origin/main > email
-	awk -f ./.ci/commit-check.awk email
