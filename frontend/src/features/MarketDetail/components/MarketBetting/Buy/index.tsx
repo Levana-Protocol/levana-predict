@@ -15,8 +15,13 @@ import { useMarketBuyForm } from "./form"
 import { OutcomeField } from "../OutcomeField"
 import { CoinsAmountField } from "../CoinsAmountField"
 
-const MarketBuyForm = (props: { market: Market }) => {
-  const { market } = props
+interface MarketBuyFormProps {
+  market: Market
+  isActive: boolean
+}
+
+const MarketBuyForm = (props: MarketBuyFormProps) => {
+  const { market, isActive } = props
   const account = useCurrentAccount()
   const balances = useQuery(balancesQuery(account.bech32Address))
   const price = useQuery(coinPricesQuery).data?.get(market.denom)
@@ -32,39 +37,41 @@ const MarketBuyForm = (props: { market: Market }) => {
       : undefined
 
   return (
-    <FormProvider {...form}>
-      <Stack
-        component="form"
-        onSubmit={form.handleSubmit(onSubmit)}
-        direction="column"
-        rowGap={1.5}
-      >
-        <OutcomeField name="betOutcome" market={market} />
-
-        <CoinsAmountField
-          name="betAmount"
-          denom={market.denom}
-          balance={balances.data?.get(market.denom)}
-          price={price}
-        />
-
-        <Button
-          aria-label="Place bet"
-          type="submit"
-          size="lg"
-          disabled={!canSubmit}
-          fullWidth
+    isActive && (
+      <FormProvider {...form}>
+        <Stack
+          component="form"
+          onSubmit={form.handleSubmit(onSubmit)}
+          direction="column"
+          rowGap={1.5}
         >
-          {form.formState.isSubmitting ? "Placing bet..." : "Place bet"}
-        </Button>
+          <OutcomeField name="betOutcome" market={market} />
 
-        <ShowSharesPurchased
-          market={market}
-          betOutcome={formValues.betOutcome ?? undefined}
-          coinsAmount={coinsAmount}
-        />
-      </Stack>
-    </FormProvider>
+          <CoinsAmountField
+            name="betAmount"
+            denom={market.denom}
+            balance={balances.data?.get(market.denom)}
+            price={price}
+          />
+
+          <Button
+            aria-label="Place bet"
+            type="submit"
+            size="lg"
+            disabled={!canSubmit}
+            fullWidth
+          >
+            {form.formState.isSubmitting ? "Placing bet..." : "Place bet"}
+          </Button>
+
+          <ShowSharesPurchased
+            market={market}
+            betOutcome={formValues.betOutcome ?? undefined}
+            coinsAmount={coinsAmount}
+          />
+        </Stack>
+      </FormProvider>
+    )
   )
 }
 
