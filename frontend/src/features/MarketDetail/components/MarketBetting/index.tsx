@@ -98,7 +98,8 @@ const MarketBettingForm = (props: { market: Market; status: MarketStatus }) => {
             py: 1,
             width: "max-content",
             borderRadius: 0,
-            borderBottom: action === "sell" ? "2px solid white" : undefined,
+            borderBottom:
+              action === "liquidity" ? "2px solid white" : undefined,
           }}
           onClick={() => {
             setAction("liquidity")
@@ -108,11 +109,12 @@ const MarketBettingForm = (props: { market: Market; status: MarketStatus }) => {
         </Button>
       </Stack>
 
-      {match(action)
-        .with("buy", () => <MarketBuyForm market={market} />)
-        .with("sell", () => <MarketSellForm market={market} />)
-        .with("liquidity", () => <MarketProvideLiquidityForm market={market} />)
-        .exhaustive()}
+      <MarketBuyForm market={market} isActive={action === "buy"} />
+      <MarketSellForm market={market} isActive={action === "sell"} />
+      <MarketProvideLiquidityForm
+        market={market}
+        isActive={action === "liquidity"}
+      />
     </>
   )
 }
