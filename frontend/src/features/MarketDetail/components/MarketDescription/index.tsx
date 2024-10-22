@@ -71,7 +71,7 @@ const MarketDescriptionContent = (props: { market: Market }) => {
               textColor="text.secondary"
               fontSize="1.25rem"
               fontWeight={600}
-              sx={{ mb: 0.75 }}
+              sx={{ mt: 0.5, mb: 0.75 }}
             >
               {props.children}
             </Typography>
@@ -81,7 +81,7 @@ const MarketDescriptionContent = (props: { market: Market }) => {
               textColor="text.secondary"
               fontSize="1.1rem"
               fontWeight={600}
-              sx={{ mb: 0.6 }}
+              sx={{ mt: 0.5, mb: 0.6 }}
             >
               {props.children}
             </Typography>
@@ -91,7 +91,7 @@ const MarketDescriptionContent = (props: { market: Market }) => {
               textColor="text.secondary"
               fontSize="1rem"
               fontWeight={600}
-              sx={{ mb: 0.5 }}
+              sx={{ mt: 0.5, mb: 0.5 }}
             >
               {props.children}
             </Typography>
