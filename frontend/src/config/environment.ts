@@ -10,7 +10,7 @@ export const ENV: Environment = match(window.location.host)
 export const IS_TESTNET = ENV === "testnet"
 
 export const CONTRACT_ADDRESS = IS_TESTNET
-  ? "neutron145uqzvq0u5t5flkk0ne4trkx80my65jny9tzxr9z6u0urerf3mgqgvxk4z"
+  ? "neutron17d3z82pkjn37fazkkay2p76cty2ele7zp27gas29ju6x8s5awzysjcuaec"
   : "neutron14r4gqjhnuxzwcmypjle9grlksvjeyyy0mrw0965rdz5v3v5wcv6qjf8w55"
 
 export const QUERIER_ADDRESS = IS_TESTNET
