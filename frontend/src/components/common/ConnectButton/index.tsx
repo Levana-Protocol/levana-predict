@@ -1,14 +1,16 @@
 import { useAccount } from "graz"
 import { Button, type ButtonProps, Typography } from "@mui/joy"
+import { useModal } from "@levana-protocol/utils/modal"
 
 import { mergeSx, useCurrentBreakpoint } from "@utils/styles"
-import { presentConnectionModal } from "@common/ConnectionModal"
+import { ConnectionModal } from "@common/ConnectionModal"
 
 interface ConnectButtonProps
   extends Omit<ButtonProps, "children" | "onClick"> {}
 
 const ConnectButton = (props: ConnectButtonProps) => {
   const { ...buttonProps } = props
+  const { present } = useModal()
   const isXsScreen = useCurrentBreakpoint() === "xs"
   const { isConnecting, isDisconnected, isLoading } = useAccount()
 
@@ -27,7 +29,7 @@ const ConnectButton = (props: ConnectButtonProps) => {
       )}
       aria-label="Connect wallet"
       onClick={() => {
-        presentConnectionModal()
+        present(ConnectionModal.name)
       }}
     >
       <Typography textColor="text.primary" fontWeight={600}>
