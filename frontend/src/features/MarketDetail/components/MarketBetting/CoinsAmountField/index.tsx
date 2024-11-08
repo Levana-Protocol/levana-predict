@@ -160,15 +160,12 @@ const CoinsAmountField = (props: CoinsAmountFieldProps) => {
         <Sheet
           {...sheetProps}
           sx={mergeSx(
-            {
-              borderWidth: "0.125rem",
-              borderStyle: "solid",
-              borderColor: (theme) =>
-                fieldState.error
-                  ? theme.palette.warning.plainColor
-                  : "transparent",
+            (theme) => ({
+              ...(fieldState.error && {
+                boxShadow: `0 0 0 2px ${theme.vars.palette.danger[500]} inset`,
+              }),
               p: 2,
-            },
+            }),
             sheetProps.sx,
           )}
         >
@@ -224,7 +221,7 @@ const CoinsAmountField = (props: CoinsAmountFieldProps) => {
                 value={formValue}
                 placeholder="0.00"
                 disabled={isDisabled}
-                {...(!!fieldState.error && { color: "warning" })}
+                {...(!!fieldState.error && { color: "danger" })}
                 onChange={(e) => {
                   onChange(e.currentTarget.value)
                 }}
@@ -281,7 +278,7 @@ const CoinsAmountField = (props: CoinsAmountFieldProps) => {
               >
                 <Slider
                   size="lg"
-                  color={fieldState.error ? "warning" : "success"}
+                  color={fieldState.error ? "danger" : "success"}
                   value={percentage}
                   disabled={isDisabled}
                   onChange={(_, value) =>

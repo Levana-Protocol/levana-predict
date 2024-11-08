@@ -1,16 +1,11 @@
-import {
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  type IconButtonProps,
-  ModalClose,
-  ModalDialog,
-  Typography,
-} from "@mui/joy"
+import { IconButton, type IconButtonProps, Typography } from "@mui/joy"
+import NavigationModal, {
+  NavigationModalDynamicItem,
+} from "@levana-protocol/ui/NavigationModal"
+import { useModal } from "@levana-protocol/utils/modal"
 
 import { QuestionMarkIcon } from "@assets/icons/QuestionMark"
 import { mergeSx } from "@utils/styles"
-import { dismiss, present } from "@state/modals"
 
 interface MoreInfoButtonProps
   extends Omit<IconButtonProps, "children" | "onClick"> {
@@ -27,6 +22,7 @@ interface MoreInfoButtonProps
  */
 const MoreInfoButton = (props: MoreInfoButtonProps) => {
   const { infoTitle, infoContent, ...iconButtonProps } = props
+  const { present } = useModal()
 
   return (
     <IconButton
@@ -42,7 +38,7 @@ const MoreInfoButton = (props: MoreInfoButtonProps) => {
         iconButtonProps.sx,
       )}
       onClick={() => {
-        presentMoreInfoModal({ title: infoTitle, content: infoContent })
+        present(<MoreInfoModal title={infoTitle} content={infoContent} />)
       }}
     >
       <QuestionMarkIcon />
@@ -55,35 +51,30 @@ interface MoreInfoModalProps {
   content: string
 }
 
-const MORE_INFO_MODAL_KEY = "more_info_modal" as const
-
-const presentMoreInfoModal = (props: MoreInfoModalProps) => {
-  present(MORE_INFO_MODAL_KEY, <MoreInfoModal {...props} />)
-}
-
-const dismissMoreInfoModal = () => {
-  dismiss(MORE_INFO_MODAL_KEY)
-}
-
 const MoreInfoModal = (props: MoreInfoModalProps) => {
   const { title, content } = props
 
   return (
-    <ModalDialog size="lg" sx={{ pt: { sm: 6 } }}>
-      <ModalClose color="neutral" variant="outlined" aria-label="Close" />
-      {title && <DialogTitle>{title}</DialogTitle>}
-      <DialogContent sx={{ textAlign: "center" }}>
-        <Typography level="body-md" textColor="text.primary">
-          {content}
-        </Typography>
-      </DialogContent>
-    </ModalDialog>
+    <NavigationModal rootId={MoreInfoModal.name}>
+      {() => (
+        <>
+          <NavigationModalDynamicItem
+            id={MoreInfoModal.name}
+            title={title}
+            canClose
+          >
+            <Typography
+              level="body-md"
+              textColor="text.primary"
+              textAlign="center"
+            >
+              {content}
+            </Typography>
+          </NavigationModalDynamicItem>
+        </>
+      )}
+    </NavigationModal>
   )
 }
 
-export {
-  MoreInfoButton,
-  type MoreInfoButtonProps,
-  presentMoreInfoModal,
-  dismissMoreInfoModal,
-}
+export { MoreInfoButton, type MoreInfoButtonProps }
