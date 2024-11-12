@@ -107,10 +107,10 @@ const MarketsListItemPlaceholder = () => {
         </Box>
       </Stack>
       <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
-        gap={2}
+        direction={{ xs: "column", sm: "row" }}
+        alignItems={{ sm: "center" }}
+        justifyContent={{ sm: "space-between" }}
+        spacing={{ xs: 1, sm: 2 }}
         sx={{ mt: 2 }}
       >
         <Stack direction="row" spacing={1}>
