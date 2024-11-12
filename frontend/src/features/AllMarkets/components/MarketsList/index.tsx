@@ -1,4 +1,4 @@
-import { Box } from "@mui/joy"
+import { Box, Typography } from "@mui/joy"
 import { useSuspenseQuery } from "@tanstack/react-query"
 
 import { type GlobalInfo, globalInfoQuery } from "@api/queries/GlobalInfo"
@@ -24,7 +24,7 @@ const MarketsListContent = (props: { globalInfo: GlobalInfo }) => {
     return [...Array(globalInfo.latestMarketId).keys()].map((i) => `${i + 1}`)
   }, [globalInfo.latestMarketId])
 
-  return (
+  return marketIds.length > 0 ? (
     <Box
       sx={{
         display: "grid",
@@ -40,6 +40,10 @@ const MarketsListContent = (props: { globalInfo: GlobalInfo }) => {
         <MarketsListItem key={marketId} marketId={marketId} />
       ))}
     </Box>
+  ) : (
+    <Typography level="body-md" fontStyle="italic">
+      No markets found
+    </Typography>
   )
 }
 
