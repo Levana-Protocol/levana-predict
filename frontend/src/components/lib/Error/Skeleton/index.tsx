@@ -16,7 +16,13 @@ const ErrorSkeleton = (props: ErrorSkeletonProps) => {
     <Sheet
       color="danger"
       {...sheetProps}
-      sx={mergeSx({ position: "relative" }, sheetProps.sx)}
+      sx={mergeSx(
+        {
+          position: "relative",
+          backgroundColor: (theme) => theme.palette.danger[900],
+        },
+        sheetProps.sx,
+      )}
     >
       <Box sx={{ visibility: "hidden" }}>{placeholderContent}</Box>
       <AlertIcon

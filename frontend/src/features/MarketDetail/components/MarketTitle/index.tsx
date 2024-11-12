@@ -4,7 +4,7 @@ import { CopyIcon } from "@assets/icons/Copy"
 import { TickIcon } from "@assets/icons/Tick"
 import { routes } from "@config/router"
 import type { Market } from "@api/queries/Market"
-import type { StyleProps } from "@utils/styles"
+import { stylesOnlyAt, type StyleProps } from "@utils/styles"
 import { pluralize } from "@utils/string"
 import { useCopyToClipboard } from "@utils/hooks"
 import { LoadableWidget } from "@lib/Loadable/Widget"
@@ -32,6 +32,7 @@ const MarketTitleContent = (props: { market: Market }) => {
       direction={{ xs: "column", sm: "row" }}
       justifyContent="space-between"
       columnGap={4}
+      rowGap={1}
     >
       <Stack direction="row" alignItems="center" columnGap={2}>
         <MarketImage
@@ -51,7 +52,7 @@ const MarketTitleContent = (props: { market: Market }) => {
         </Box>
       </Stack>
 
-      <Box>
+      <Box sx={stylesOnlyAt("xs", { alignSelf: "flex-end" })}>
         <IconButton
           aria-label="Copy market URL to clipboard"
           size="sm"

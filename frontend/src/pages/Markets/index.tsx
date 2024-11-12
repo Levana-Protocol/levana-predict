@@ -1,7 +1,15 @@
-import { Navigate } from "react-router-dom"
+import { Typography } from "@mui/joy"
 
-import { routes } from "@config/router"
+import { BasePage } from "@common/BasePage"
+import { MarketsList } from "@features/AllMarkets/components/MarketsList"
 
-const MarketsPage = () => <Navigate to={routes.market("1")} /> // ToDo: implement markets page
+const MarketsPage = () => {
+  return (
+    <BasePage>
+      <Typography level="h3">Markets</Typography>
+      <MarketsList />
+    </BasePage>
+  )
+}
 
 export { MarketsPage }
