@@ -5,6 +5,7 @@ import type { StyleProps } from "@utils/styles"
 import { pluralize } from "@utils/string"
 import { LoadableWidget } from "@lib/Loadable/Widget"
 import { useSuspenseCurrentMarket } from "@features/MarketDetail/utils"
+import { MarketPrizePool } from "../MarketPrizePool"
 
 const MarketOutcomes = (props: StyleProps) => {
   return (
@@ -60,15 +61,7 @@ const MarketOutcomesContent = (props: { market: Market }) => {
         ))}
       </Stack>
       <Box sx={{ mt: 2 }}>
-        <Chip
-          variant="solid"
-          color="neutral"
-          sx={{
-            background: "linear-gradient(90deg, #894DBD -1.61%, #5654BD 100%)",
-          }}
-        >
-          Prize pool size: {market.poolSize.toFormat(true)}
-        </Chip>
+        <MarketPrizePool market={market} />
       </Box>
     </>
   )
