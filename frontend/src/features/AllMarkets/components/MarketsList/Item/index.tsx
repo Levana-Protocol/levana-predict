@@ -36,7 +36,11 @@ const MarketsListItemContent = (props: { market: Market }) => {
   const { market } = props
 
   return (
-    <>
+    <Stack
+      direction="column"
+      justifyContent="space-between"
+      sx={{ height: "100%" }}
+    >
       <Stack direction="row" alignItems="center" columnGap={2}>
         <MarketImage
           market={market}
@@ -47,7 +51,7 @@ const MarketsListItemContent = (props: { market: Market }) => {
           <Typography level="title-lg" fontWeight={600}>
             {market.title}
           </Typography>
-          <MarketStatus market={market} sx={{ mt: 0.5 }} />
+          <MarketStatus market={market} sx={{ mt: 0.5 }} size="sm" />
         </Box>
       </Stack>
       <Stack
@@ -82,7 +86,7 @@ const MarketsListItemContent = (props: { market: Market }) => {
           Prize Pool: {market.poolSize.toFormat(true)}
         </Typography>
       </Stack>
-    </>
+    </Stack>
   )
 }
 
