@@ -21,7 +21,9 @@ const MarketsList = () => {
 const MarketsListContent = (props: { globalInfo: GlobalInfo }) => {
   const { globalInfo } = props
   const marketIds = useMemo(() => {
-    return [...Array(globalInfo.latestMarketId).keys()].map((i) => `${i + 1}`)
+    return [...Array(Number(globalInfo.latestMarketId)).keys()].map(
+      (i) => `${i + 1}`,
+    )
   }, [globalInfo.latestMarketId])
 
   return marketIds.length > 0 ? (
